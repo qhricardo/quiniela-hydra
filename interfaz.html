@@ -394,88 +394,56 @@ if (userDoc.exists) {
 } else {
     document.getElementById('username').textContent = user.email;
 }
-            
-            // Cargar pronósticos anteriores
-            const pronosticosSnapshot = await db.collection('pronosticos')
-                .where('userId', '==', user.uid)
-                .orderBy('fecha', 'desc')
-                .limit(1)
-                .get();
-                
-            if (!pronosticosSnapshot.empty) {
-                const pronosticos = pronosticosSnapshot.docs[0].data();
-                pronosticos.partidos.forEach((partido, index) => {
-                    const opcion = document.querySelector(`.partido:nth-child(${index + 1}) .opcion[data-result="${partido.prediccion}"]`);
-                    if (opcion) opcion.classList.add('selected');
-                });
-            }
-        });
+         // Referencias
+const grupoForm = document.getElementById("grupoForm");
+const nombreGrupo = document.getElementById("nombreGrupo");
+const listaGrupos = document.getElementById("listaGrupos");
 
-        // Selección de resultados
-        document.querySelectorAll('.opcion').forEach(opcion => {
-            opcion.addEventListener('click', function() {
-                this.closest('.partido').querySelectorAll('.opcion').forEach(el => {
-                    el.classList.remove('selected');
-                });
-                this.classList.add('selected');
-            });
-        });
-
-        // Guardar pronósticos
-      document.getElementById('guardar-btn').addEventListener('click', async () => {
-    if (userCredits <= 0) {
-        alert('No tienes créditos suficientes para guardar tus pronósticos.');
-        return;
-    }
-
-    const partidos = [];
-    let completo = true;
-
-    document.querySelectorAll('.partido').forEach(partidoEl => {
-        const opcion = partidoEl.querySelector('.opcion.selected');
-        if (!opcion) {
-            completo = false;
-            partidoEl.style.border = '1px solid red';
-            setTimeout(() => partidoEl.style.border = 'none', 1000);
-            return;
-        }
-
-        const equipos = partidoEl.querySelectorAll('.equipo');
-        partidos.push({
-            local: equipos[0].textContent,
-            visitante: equipos[1].textContent,
-            prediccion: opcion.getAttribute('data-result')
-        });
-    });
-
-    if (!completo) {
-        alert('¡Debes seleccionar un resultado para todos los partidos!');
-        return;
-    }
-
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('guardar-btn').disabled = true;
+// Crear grupo
+grupoForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nombre = nombreGrupo.value.trim();
+    if (!nombre) return;
 
     try {
-        await db.runTransaction(async (transaction) => {
-            const userRef = db.collection('users').doc(currentUser.uid);
-            const userDoc = await transaction.get(userRef);
-
-            if (!userDoc.exists || (userDoc.data().creditos ?? 0) <= 0) {
-                throw new Error("Créditos insuficientes.");
-            }
-
-            transaction.update(userRef, {
-                creditos: firebase.firestore.FieldValue.increment(-1)
-            });
-
-            const pronosticoRef = db.collection('pronosticos').doc();
-            transaction.set(pronosticoRef, {
-                userId: currentUser.uid,
-                fecha: firebase.firestore.FieldValue.serverTimestamp(),
-                partidos: partidos
-            });
+        await db.collection("grupos").add({
+            nombre,
+            creadoPor: currentUser.uid,
+            fecha: firebase.firestore.FieldValue.serverTimestamp()
         });
+        nombreGrupo.value = "";
+        cargarGrupos(); // recargar lista
+    } catch (error) {
+        console.error("Error creando grupo:", error);
+        alert("❌ No se pudo crear el grupo");
+    }
+});
+
+// Mostrar lista de grupos
+async function cargarGrupos() {
+    listaGrupos.innerHTML = "";
+    const snapshot = await db.collection("grupos").get();
+    snapshot.forEach((doc) => {
+        const li = document.createElement("li");
+        li.textContent = doc.data().nombre;
+        li.style.cursor = "pointer";
+        li.onclick = () => {
+            // Redirigir a index.html con el grupo seleccionado
+            window.location.href = `index.html?grupo=${doc.id}`;
+        };
+        listaGrupos.appendChild(li);
+    });
+}
+
+// Llamar después de que el usuario esté autenticado
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) {
+        window.location.href = 'login.html';
+        return;
+    }
+    currentUser = user;
+    cargarGrupos(); // 👈 cargar grupos aquí
+});
 
         // Puedes actualizar la vista de créditos aquí si no haces redirección
         userCredits -= 1;
@@ -515,6 +483,7 @@ if (userDoc.exists) {
 </footer>
 </body>
 </html>
+
 
 
 
