@@ -157,7 +157,7 @@
 
       try {
         await firebase.auth().signInWithEmailAndPassword(email, password);
-        window.location.href = "index.html";
+        window.location.href = "interfaz.html";
       } catch (error) {
         let errorMessage;
         switch(error.code) {
@@ -206,7 +206,7 @@
           });
         }
 
-        window.location.href = "index.html";
+        window.location.href = "interfaz.html";
       } catch (error) {
         alert("Error al iniciar sesión con Google: " + error.message);
       }
@@ -214,3 +214,4 @@
   </script>
 </body>
 </html>
+
