@@ -66,211 +66,69 @@
             text-align: center;
             margin-bottom: 30px;
         }
-        .partido {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .equipos {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .equipo {
-            width: 40%;
-            text-align: center;
-            font-weight: 500;
-        }
-        .vs {
-            width: 20%;
-            text-align: center;
-            color: var(--rojo);
-            font-weight: bold;
-        }
-        .opciones {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        .opcion {
-            padding: 8px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            border: 1px solid #ddd;
-            transition: all 0.3s;
-        }
-        .opcion:hover {
-            background-color: #f0f0f0;
-        }
-        .opcion.selected {
-            background-color: var(--verde);
-            color: white;
-            border-color: var(--verde);
-        }
-        .local { background-color: #e8f5e9; }
-        .empate { background-color: #fff8e1; }
-        .visitante { background-color: #ffebee; }
-        .actions {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-        }
-        #guardar-btn {
-            background-color: var(--verde);
-            color: white;
-            padding: 12px 25px;
-            font-size: 16px;
-        }
-        #guardar-btn:disabled {
-            background-color: #cccccc;
-            color: #666666;
-            cursor: not-allowed;
-        }
-        #guardar-btn:hover {
-            background-color: #004d33;
-        }
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-            color: var(--verde);
-        }
-    #countdown {
-  font-family: Arial, sans-serif;
-  font-size: 1.25rem;
-  color: #006847;
-  background: #f5f5f5;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  display: inline-block;
-}
-#countdown span {
-  font-weight: bold;
-}
-  /* Estilos del recuadro derecho */
- #recuadro-derecho {
-  float: right;
-  width: 300px;
-  margin: -300px 10px;         /* separaciones a tu gusto */
-  /* borra position, top, right */
-}
-  #recuadro-derecho img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border-radius: 5px;
-  }
-
-     /* Tablet (≤1024px) */
-    @media screen and (max-width: 1024px) {
-      #recuadro-derecho {
-        width: 250px;
-        top: 15px;
-        right: 15px;
-      }
-      #tabla-standings th, #tabla-standings td {
-        font-size: 13px;
-        padding: 6px;
-      }
+       <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
     }
-
-    /* Móvil grande (≤768px) */
-    @media screen and (max-width: 768px) {
-      #recuadro-derecho {
-        position: static;
-        width: 90%;
-        margin: 0 auto 20px;
-        top: 400px;
-        right: 10;
-      }
-      #tabla-standings {
-        margin-top: 0;
-      }
+    header {
+      background: #006847;
+      color: white;
+      padding: 15px;
+      text-align: center;
     }
-
-    /* Móvil pequeño (≤480px) */
-    @media screen and (max-width: 480px) {
-      #recuadro-derecho {
-        padding: 5px;
-        box-shadow: none;
-      }
-      #tabla-standings th, #tabla-standings td {
-        font-size: 12px;
-        padding: 4px;
-      }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
-<!-- ─── Partidos live ─────────── -->
-        /* Estilos base */
-  .live-wrapper {
-    margin-top: 20px;
-    text-align: center;
-  }
-  .btn-live {
-    background-color: #006847;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  .iframe-container {
-    margin-top: 20px;
-    /* centrar el iframe en móviles */
-    display: flex;
-    justify-content: center;
-  }
-    .iframe-container iframe {
-    border: 1px solid #006847;
-    border-radius: 3px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    width: 580px;     /* ancho base */
-    height: 320px;    /* alto base */
-  }
-        
-  /* Tablets y pantallas medianas (≤1024px) */
-  @media screen and (max-width: 1024px) {
-    .iframe-container iframe {
-      width: 80%;      /* ocupa 80% del contenedor */
-      height: auto;    /* ajusta proporcionalmente */
+    h2 {
+      color: #006847;
+      margin-bottom: 15px;
+      text-align: center;
     }
-    .btn-live {
-      font-size: 15px;
-      padding: 8px 16px;
+    form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
     }
-  }
-
-  /* Móviles grandes (≤768px) */
-  @media screen and (max-width: 768px) {
-    .iframe-container iframe {
-      width: 100%;     /* ocupa todo el ancho disponible */
-      max-width: 480px;
-      height: auto;
+    form input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
-    .btn-live {
-      width: 90%;
-      max-width: 300px;
-      font-size: 14px;
+    form button {
+      padding: 10px 15px;
+      background: #006847;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
-  }
-
-  /* Móviles pequeños (≤480px) */
-  @media screen and (max-width: 480px) {
-    .iframe-container iframe {
-      width: 100%;
-      max-width: 360px;
-      height: auto;
+    form button:hover {
+      background: #004d33;
     }
-    .btn-live {
-      width: 100%;
-      font-size: 13px;
-      padding: 6px 12px;
+    ul {
+      list-style: none;
+      padding: 0;
     }
-  }
-</style>
+    li {
+      padding: 12px;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    li:hover {
+      background: #e6f2ec;
+    }
   </style>
         
     </style>
@@ -289,103 +147,60 @@
  <div style="display: flex; flex-wrap: wrap; align-items: flex-start;">
     
   <div class="container">
-    <a href="#" class="btn-nuevo" onclick="abrirModal()">➕ Crear Grupo</a>
+    <h2>Crear Grupo</h2>
+    <form id="grupoForm">
+      <input type="text" id="nombreGrupo" placeholder="Nombre del grupo" required />
+      <button type="submit">Crear</button>
+    </form>
 
-    <div class="grupos-lista">
-      <!-- Tarjeta de ejemplo -->
-      <div class="grupo-card">
-        <h3>Amigos del Barrio</h3>
-        <p><b>Creador:</b> Richar</p>
-        <p><b>Participantes:</b> 8</p>
-        <p><b>Estado:</b> Abierto</p>
-        <button>Entrar</button>
-      </div>
-
-      <div class="grupo-card">
-        <h3>Oficina MX</h3>
-        <p><b>Creador:</b> Ana</p>
-        <p><b>Participantes:</b> 12</p>
-        <p><b>Estado:</b> En juego</p>
-        <button>Entrar</button>
-      </div>
-    </div>
+    <h2>Mis Grupos</h2>
+    <ul id="listaGrupos"></ul>
   </div>
 
-  <!-- Modal Crear Grupo -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <h2>Crear Grupo de Quiniela</h2>
-      <label>Nombre del Grupo</label>
-      <input type="text" placeholder="Ej. Jornada 10 - Liga MX">
-
-      <label>Acceso</label>
-      <select>
-        <option>Público</option>
-        <option>Privado (con código)</option>
-      </select>
-
-      <label>Monto de entrada</label>
-      <input type="number" placeholder="$0 si es gratis">
-
-      <label>Fecha límite</label>
-      <input type="datetime-local">
-
-      <label>Reglas</label>
-      <textarea rows="3" placeholder="Describe las reglas de tu grupo..."></textarea>
-
-      <div class="modal-buttons">
-        <button class="btn-ok" onclick="cerrarModal()">Crear Grupo</button>
-        <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
-      </div>
-    </div>
-  </div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
 
   <script>
-    function abrirModal() {
-      document.getElementById('modal').style.display = 'flex';
+    const db = firebase.firestore();
+    const grupoForm = document.getElementById("grupoForm");
+    const nombreGrupo = document.getElementById("nombreGrupo");
+    const listaGrupos = document.getElementById("listaGrupos");
+
+    // Crear grupo
+    grupoForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nombre = nombreGrupo.value.trim();
+      if (!nombre) return;
+
+      try {
+        await db.collection("grupos").add({ nombre });
+        nombreGrupo.value = "";
+        cargarGrupos(); // recargar lista
+      } catch (error) {
+        console.error("Error creando grupo:", error);
+        alert("❌ No se pudo crear el grupo");
+      }
+    });
+
+    // Cargar grupos
+    async function cargarGrupos() {
+      listaGrupos.innerHTML = "";
+      const snapshot = await db.collection("grupos").get();
+      snapshot.forEach((doc) => {
+        const li = document.createElement("li");
+        li.textContent = doc.data().nombre;
+        li.onclick = () => {
+          // Redirigir a index.html con el grupo seleccionado
+          window.location.href = `index.html?grupo=${doc.id}`;
+        };
+        listaGrupos.appendChild(li);
+      });
     }
-    function cerrarModal() {
-      document.getElementById('modal').style.display = 'none';
-    }
-  </script>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-    
-    <!-- Configuración -->
-    <script src="js/firebase-config.js"></script>
-    
-    <!-- Lógica -->
-    <script>
-        const db = firebase.firestore();
-        let currentUser = null;
-        let userCredits = 0;
-
-// Fecha meta para contador (11 de julio 2025, 23:00hrs)
-        const targetDate = new Date('2025-08-22T19:00:00');
-
-        // Función para actualizar el contador
-        function updateCountdown() {
-            const now = new Date();
-            const diffMs = targetDate - now;
-            if (diffMs <= 0) {
-                clearInterval(countdownInterval);
-                ['days','hours','minutes','seconds'].forEach(id => document.getElementById(id).textContent = '00');
-                document.getElementById('guardar-btn').disabled = true;
-                return;
-            }
-            const totalSeconds = Math.floor(diffMs / 1000);
-            const days = Math.floor(totalSeconds / (3600 * 24));
-            const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            document.getElementById('days').textContent = String(days).padStart(2, '0');
-            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-        }
+    // Al cargar la página
+    cargarGrupos();
             // Inicia el intervalo al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
             updateCountdown();
@@ -531,6 +346,7 @@ if (userDoc.exists) {
 </footer>
 </body>
 </html>
+
 
 
 
