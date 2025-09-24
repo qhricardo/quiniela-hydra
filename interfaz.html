@@ -1,188 +1,222 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiniela 360 - Registro</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Cambia esta URL por la tuya */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .register-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            width: 350px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        h1 {
-            color: #006847;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #006847;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #004d33;
-        }
-        #form-message {
-            margin-top: 1rem;
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-            text-align: center;
-        }
-        .error {
-            background: #ffebee;
-            color: #c62828;
-        }
-        .success {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        .login-link {
-            text-align: center;
-            margin-top: 1.5rem;
-        }
-        .login-link a {
-            color: #006847;
-            text-decoration: none;
-            font-weight: 500;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiniela360 | Grupos</title>
+  <style>
+    /* ======== ESTILOS GENERALES ======== */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    header {
+      background: #006847;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 10px;
+    }
+
+    /* ======== BOTÓN CREAR GRUPO ======== */
+    .btn-nuevo {
+      display: inline-block;
+      background: #006847;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .btn-nuevo:hover {
+      background: #004d36;
+    }
+
+    /* ======== TARJETAS DE GRUPOS ======== */
+    .grupos-lista {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 15px;
+    }
+
+    .grupo-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 15px;
+      transition: 0.3s;
+    }
+    .grupo-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .grupo-card h3 {
+      margin: 0 0 10px;
+      color: #006847;
+    }
+    .grupo-card p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    .grupo-card button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #ce1126;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.3s;
+    }
+    .grupo-card button:hover {
+      background: #a50d1e;
+    }
+
+    /* ======== MODAL CREAR GRUPO ======== */
+    .modal {
+      display: none; /* Oculto por defecto */
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      animation: aparecer 0.3s ease;
+    }
+    @keyframes aparecer {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-content h2 {
+      margin-top: 0;
+      color: #006847;
+    }
+    .modal-content label {
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .modal-content input,
+    .modal-content select,
+    .modal-content textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .modal-buttons {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .btn-ok {
+      background: #006847;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-cancel {
+      background: #ccc;
+      color: #333;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <div class="register-container">
-        <h1>Crear Cuenta</h1>
-        
-        <form id="register-form">
-            <div class="form-group">
-                <label for="name">Nombre completo</label>
-                <input type="text" id="name" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Correo electrónico</label>
-                <input type="email" id="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Contraseña (mínimo 6 caracteres)</label>
-                <input type="password" id="password" minlength="6" required>
-            </div>
-            <div class="form-group">
-                <label for="confirm-password">Confirmar contraseña</label>
-                <input type="password" id="confirm-password" minlength="6" required>
-            </div>
-            <button type="submit">Registrarse</button>
-            <div id="form-message"></div>
-        </form>
 
-        <div class="login-link">
-            ¿Ya tienes cuenta? <a href="login.html">Inicia sesión aquí</a>
-        </div>
+  <header>
+    Bienvenido a Quiniela360 🎉
+  </header>
+
+  <div class="container">
+    <a href="#" class="btn-nuevo" onclick="abrirModal()">➕ Crear Grupo</a>
+
+    <div class="grupos-lista">
+      <!-- Tarjeta de ejemplo -->
+      <div class="grupo-card">
+        <h3>Amigos del Barrio</h3>
+        <p><b>Creador:</b> Richar</p>
+        <p><b>Participantes:</b> 8</p>
+        <p><b>Estado:</b> Abierto</p>
+        <button>Entrar</button>
+      </div>
+
+      <div class="grupo-card">
+        <h3>Oficina MX</h3>
+        <p><b>Creador:</b> Ana</p>
+        <p><b>Participantes:</b> 12</p>
+        <p><b>Estado:</b> En juego</p>
+        <button>Entrar</button>
+      </div>
     </div>
+  </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-    
-    <!-- Configuración Firebase -->
-    <script src="js/firebase-config.js"></script>
-    
-    <!-- Lógica de registro -->
-    <script>
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-            const messageDiv = document.getElementById('form-message');
+  <!-- Modal Crear Grupo -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h2>Crear Grupo de Quiniela</h2>
+      <label>Nombre del Grupo</label>
+      <input type="text" placeholder="Ej. Jornada 10 - Liga MX">
 
-            // Validación de contraseña
-            if (password !== confirmPassword) {
-                messageDiv.textContent = 'Las contraseñas no coinciden';
-                messageDiv.className = 'error';
-                messageDiv.style.display = 'block';
-                return;
-            }
+      <label>Acceso</label>
+      <select>
+        <option>Público</option>
+        <option>Privado (con código)</option>
+      </select>
 
-            try {
-                // Crear usuario en Firebase Auth
-                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-                
-                // Guardar información adicional en Firestore
-                await firebase.firestore().collection('users').doc(userCredential.user.uid).set({
-                    name: name,
-                    email: email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+      <label>Monto de entrada</label>
+      <input type="number" placeholder="$0 si es gratis">
 
-                // Mensaje de éxito
-                messageDiv.textContent = '¡Cuenta creada con éxito! Redirigiendo...';
-                messageDiv.className = 'success';
-                messageDiv.style.display = 'block';
-                
-                // Redirección después de 1.5 segundos
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1500);
-            } catch (error) {
-                // Manejo de errores
-                let errorMessage;
-                switch(error.code) {
-                    case 'auth/email-already-in-use':
-                        errorMessage = 'El correo ya está registrado';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage = 'Correo electrónico inválido';
-                        break;
-                    case 'auth/weak-password':
-                        errorMessage = 'La contraseña debe tener al menos 6 caracteres';
-                        break;
-                    default:
-                        errorMessage = 'Error al registrar usuario';
-                }
-                
-                messageDiv.textContent = errorMessage;
-                messageDiv.className = 'error';
-                messageDiv.style.display = 'block';
-            }
-        });
-    </script>
+      <label>Fecha límite</label>
+      <input type="datetime-local">
+
+      <label>Reglas</label>
+      <textarea rows="3" placeholder="Describe las reglas de tu grupo..."></textarea>
+
+      <div class="modal-buttons">
+        <button class="btn-ok" onclick="cerrarModal()">Crear Grupo</button>
+        <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function abrirModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+    function cerrarModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+  </script>
+
 </body>
 </html>
