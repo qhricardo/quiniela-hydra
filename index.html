@@ -252,8 +252,184 @@
         <div id="loading" class="loading">
             Guardando tus pronósticos...
         </div>
+        <!-- Configuración -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- Lógica -->
+    <script>
+        const db = firebase.firestore();
+        let currentUser = null;
+        let userCredits = 0;
 
+// Fecha meta para contador (11 de julio 2025, 23:00hrs)
+        const targetDate = new Date('2025-08-22T19:00:00');
+
+        // Función para actualizar el contador
+        function updateCountdown() {
+            const now = new Date();
+            const diffMs = targetDate - now;
+            if (diffMs <= 0) {
+                clearInterval(countdownInterval);
+                ['days','hours','minutes','seconds'].forEach(id => document.getElementById(id).textContent = '00');
+                document.getElementById('guardar-btn').disabled = true;
+                return;
+            }
+            const totalSeconds = Math.floor(diffMs / 1000);
+            const days = Math.floor(totalSeconds / (3600 * 24));
+            const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            document.getElementById('days').textContent = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        }
+            // Inicia el intervalo al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        });
+
+        // Manejar estado de autenticación
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+         currentUser = user;
+
+const userDoc = await db.collection('users').doc(user.uid).get();
+
+if (userDoc.exists) {
+    const userData = userDoc.data();
+    userCredits = userData.creditos ?? 0;
+    document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
+} else {
+    document.getElementById('username').textContent = user.email;
+}
+            
+            // Cargar pronósticos anteriores
+            const pronosticosSnapshot = await db.collection('pronosticos')
+                .where('userId', '==', user.uid)
+                .orderBy('fecha', 'desc')
+                .limit(1)
+                .get();
+                
+            if (!pronosticosSnapshot.empty) {
+                const pronosticos = pronosticosSnapshot.docs[0].data();
+                pronosticos.partidos.forEach((partido, index) => {
+                    const opcion = document.querySelector(`.partido:nth-child(${index + 1}) .opcion[data-result="${partido.prediccion}"]`);
+                    if (opcion) opcion.classList.add('selected');
+                });
+            }
+        });
+
+        // Selección de resultados
+        document.querySelectorAll('.opcion').forEach(opcion => {
+            opcion.addEventListener('click', function() {
+                this.closest('.partido').querySelectorAll('.opcion').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+
+        // Guardar pronósticos
+      document.getElementById('guardar-btn').addEventListener('click', async () => {
+    if (userCredits <= 0) {
+        alert('No tienes créditos suficientes para guardar tus pronósticos.');
+        return;
+    }
+
+    const partidos = [];
+    let completo = true;
+
+    document.querySelectorAll('.partido').forEach(partidoEl => {
+        const opcion = partidoEl.querySelector('.opcion.selected');
+        if (!opcion) {
+            completo = false;
+            partidoEl.style.border = '1px solid red';
+            setTimeout(() => partidoEl.style.border = 'none', 1000);
+            return;
+        }
+
+        const equipos = partidoEl.querySelectorAll('.equipo');
+        partidos.push({
+            local: equipos[0].textContent,
+            visitante: equipos[1].textContent,
+            prediccion: opcion.getAttribute('data-result')
+        });
+    });
+
+    if (!completo) {
+        alert('¡Debes seleccionar un resultado para todos los partidos!');
+        return;
+    }
+
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('guardar-btn').disabled = true;
+
+    try {
+        await db.runTransaction(async (transaction) => {
+            const userRef = db.collection('users').doc(currentUser.uid);
+            const userDoc = await transaction.get(userRef);
+
+            if (!userDoc.exists || (userDoc.data().creditos ?? 0) <= 0) {
+                throw new Error("Créditos insuficientes.");
+            }
+
+            transaction.update(userRef, {
+                creditos: firebase.firestore.FieldValue.increment(-1)
+            });
+
+            const pronosticoRef = db.collection('pronosticos').doc();
+            transaction.set(pronosticoRef, {
+                userId: currentUser.uid,
+                fecha: firebase.firestore.FieldValue.serverTimestamp(),
+                partidos: partidos
+            });
+        });
+
+        // Puedes actualizar la vista de créditos aquí si no haces redirección
+        userCredits -= 1;
+        document.getElementById('username').textContent = `${currentUser.email} | Créditos: ${userCredits}`;
+
+        window.location.href = 'resultados.html';
+    } catch (error) {
+        console.error(error);
+        alert('Error al guardar: ' + error.message);
+    } finally {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('guardar-btn').disabled = false;
+    }
+});
+
+        // Cerrar sesión
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            firebase.auth().signOut();
+        });
+        
+    </script>
+    <footer style="background-color: #1a1a1a; color: white; padding: 40px 20px; font-family: 'Arial', sans-serif;">
+  <div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
+
+    <!-- Sección Logo o Nombre -->
+    <div style="flex: 1 1 200px; margin-bottom: 20px;">
+      <h2 style="margin: 0; color: #00d084;">Quiniela360</h2>
+      <p style="font-size: 14px; color: #ccc;">
+        Plataforma de pronósticos deportivos en línea.
+      </p>
+        <p style="font-size: 14px; color: #ccc;">
+        © 2025 Quiniela360.com - Todos los derechos reservados.
+        <p style="font-size: 10px; color: #ccc;">  q.h.ricardoarturo@gmail.com </p>
+      </p>
+         
+    </div>
+</footer>
 </body>
 </html>
+
+
 
 
