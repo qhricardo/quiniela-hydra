@@ -2,434 +2,139 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Quiniela360 | Pronósticos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiniela - Pronósticos</title>
   <style>
-    body { font-family: Arial, sans-serif; padding:20px; }
-    .card { background:#fff; padding:15px; margin:10px 0; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    input, select { padding:8px; margin:5px 0; width:100%; }
-    button { background:#006847; color:white; padding:8px 14px; border:none; border-radius:5px; cursor:pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    header {
+      background: #006847;
+      color: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pronostico-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .equipos {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .opciones {
+      display: flex;
+      gap: 15px;
+    }
+    label {
+      cursor: pointer;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      background: #006847;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background: #004d33;
+    }
   </style>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-       apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
-      authDomain: "quiniela-hydra.firebaseapp.com",
-      projectId: "quiniela-hydra",
-      storageBucket: "quiniela-hydra.firebasestorage.app",
-      messagingSenderId: "329849216739",
-      appId: "1:329849216739:web:83d23ff1424eb167172fd6"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    let usuarioActual = null;
-    const grupoId = localStorage.getItem("grupoSeleccionado");
-
-    if (!grupoId) {
-      alert("Debes seleccionar un grupo primero");
-      window.location.href = "interfaz.html";
-    }
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        usuarioActual = user;
-        document.getElementById("usuario").innerText = `Usuario: ${user.displayName}`;
-      }
-    });
-
-    // Guardar pronóstico
-    async function guardarPronostico() {
-      if (!usuarioActual) return alert("Debes iniciar sesión");
-
-      const equipo1 = document.getElementById("equipo1").value;
-      const equipo2 = document.getElementById("equipo2").value;
-
-      await addDoc(collection(db, "grupos", grupoId, "pronosticos"), {
-        userId: usuarioActual.uid,
-        equipo1: equipo1,
-        equipo2: equipo2,
-        creadoEn: new Date()
-      });
-
-      alert("Pronóstico guardado ✅");
-    }
-
-    window.guardarPronostico = guardarPronostico;
-  </script>
 </head>
 <body>
-  <!-- 🔵 Tu contenido principal va aquí -->
-    <div style="flex: 3 1 600px; padding: 10px;">
-      <!-- AQUÍ PEGA TODO LO QUE TENÍAS EN TU BODY -->
-      <!-- Como tus formularios, botones, encabezados, etc. -->
+
+  <header>
+    <div>
+      Usuario: <span id="username">Cargando...</span><br>
+      Créditos: <span id="creditos">0</span>
     </div>
+    <div>
+      Grupo: Liga MX
+    </div>
+  </header>
 
-  </div>
-    <div class="container">
-     <h1 style="color: #000000; text-align: center;">Liga-MX Jornada 6</h1>
-        
-        <!-- Partido 1 -->
-        <div class="partido">
-             <h3 style="color: #006847; text-align: center;">Viernes, 22/08/2025 19:00hrs</h3>
-            <div class="equipos">
-            <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/222.png" alt="" width="75"> </h2>
-       <div class="equipo">Queretaro </div>
-                <div class="vs">VS</div>
-                <div class="equipo">Atletico San Luis</div>
-             <h2><img src="https://upload.wikimedia.org/wikipedia/en/thumb/2/28/Atl%C3%A9tico_San_Luis_Logo_Proper.svg/1200px-Atl%C3%A9tico_San_Luis_Logo_Proper.svg.png" alt="" width="75"> </h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
+  <main id="lista-pronosticos">
+    <!-- Aquí van los 10 partidos generados -->
+  </main>
+
+  <button id="guardarBtn">Guardar Pronósticos</button>
+
+  <script>
+    // Ejemplo de usuario simulado de Firebase
+    const user = {
+      displayName: "Richar",
+      email: "richar@correo.com",
+      creditos: 120
+    };
+
+    // Mostrar datos del usuario
+    document.getElementById("username").textContent = user.displayName || user.email;
+    document.getElementById("creditos").textContent = user.creditos;
+
+    // Lista de 10 partidos ejemplo
+    const partidos = [
+      ["América", "Chivas"],
+      ["Pumas", "Cruz Azul"],
+      ["Tigres", "Monterrey"],
+      ["Toluca", "León"],
+      ["Santos", "Atlas"],
+      ["Querétaro", "Pachuca"],
+      ["Necaxa", "Tijuana"],
+      ["Juárez", "San Luis"],
+      ["Mazatlán", "Puebla"],
+      ["Morelia", "Dorados"]
+    ];
+
+    const contenedor = document.getElementById("lista-pronosticos");
+
+    partidos.forEach((p, i) => {
+      const card = document.createElement("div");
+      card.className = "pronostico-card";
+      card.innerHTML = `
+        <div class="equipos">Partido ${i+1}: ${p[0]} vs ${p[1]}</div>
+        <div class="opciones">
+          <label><input type="radio" name="partido${i}" value="local"> Gana ${p[0]}</label>
+          <label><input type="radio" name="partido${i}" value="empate"> Empate</label>
+          <label><input type="radio" name="partido${i}" value="visitante"> Gana ${p[1]}</label>
         </div>
-
-        <!-- Partido 2 -->
-        <div class="partido">
-             <h3 style="color: #006847; text-align: center;">Viernes, 22/08/2025 19:00hrs</h3>
-            <div class="equipos">
-                 <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/17851.png" alt="" width="75"> </h2>
-                <div class="equipo">FC Juarez </div>
-                <div class="vs">VS</div>
-                <div class="equipo">Santos </div>
-                <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/225.png" alt="" width="75"> </h2>
- 
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-
-        <!-- Partido 3 -->
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center;">Viernes, 22/08/2025 21:00hrs:</h3>
-            <div class="equipos">
-                  <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/10125.png" alt="" width="75"> </h2>
-                <div class="equipo">Tijuana </div>
-                <div class="vs">VS</div>
-                <div class="equipo">Chivas </div>
-                <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/219.png" alt="" width="75"> </h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-
-        <!-- Partido 4 -->
-        <div class="partido">
-             <h3 style="color: #006847; text-align: center;">Sábado, 23/08/2025:17:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="https://a.espncdn.com/i/teamlogos/soccer/500-dark/228.png" alt="" width="75"> </h2>
-                <div class="equipo">Leon </div>
-                <div class="vs">VS</div>
-                <div class="equipo">Pachuca </div>
-                <h2><img src="https://as01.epimg.net/img/comunes/fotos/fichas/equipos/large/4245.png" alt="" width="75"> </h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-
-        <!-- Partido 5 -->
-        <div class="partido">
-             <h3 style="color: #006847; text-align: center;">Sábado, 23/08/2025:19:00hrs:</h3>
-            <div class="equipos">
-                 <h2><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Club_de_F%C3%BAtbol_Monterrey_2019_Logo.svg/1200px-Club_de_F%C3%BAtbol_Monterrey_2019_Logo.svg.png" alt="" width="75"> </h2>
-                <div class="equipo">Monterrey </div>
-                <div class="vs">VS</div>
-                <div class="equipo">Necaxa</div>
-                 <h2><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Club_Necaxa_Logo.svg/250px-Club_Necaxa_Logo.svg.png" alt="" width="75"> </h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-
-        <!-- Partido 6 -->
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center;">Sábado, 23/08/2025 19:00hrs:</h3>
-            <div class="equipos">
-                <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/20702.png" alt="" width="75"> </h2>
-                <div class="equipo">Mazatlan </div>
-                <div class="vs">VS</div>
-                <div class="equipo">Tigres </div>
-                <h2><img src="https://upload.wikimedia.org/wikipedia/en/thumb/8/82/Tigres_UANL_logo_%28crest%29.svg/1200px-Tigres_UANL_logo_%28crest%29.svg.png" alt="" width="75"> </h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-
-        <!-- Partido 7 -->
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center;">Domingo, 23/08/2025 21:00hrs:</h3>
-            <div class="equipos">
-                 <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/218.png" alt="" width="75"> </h2>
-                <div class="equipo">Cruz Azul </div>
-                <div class="vs">VS</div>
-                <div class="equipo">Toluca </div>
-                 <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/223.png" alt="" width="75"> </h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-
-        <!-- Partido 8 -->
-        <div class="partido">
-             <h3 style="color: #006847; text-align: center;">Domingo, 24/08/2025 17:00hrs:</h3>
-            <div class="equipos">
-                 <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/233.png" alt="" width="75"> </h2>
-                <div class="equipo">Pumas</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Puebla </div>
-                 <h2><img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5d/Club_Puebla_logo.svg/1200px-Club_Puebla_logo.svg.png" alt="" width="75"> </h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-
-        <!-- Partido 9 -->
-        <div class="partido">
-             <h3 style="color: #006847; text-align: center;">Domingo, 24/07/2025 19:05hrs:</h3>
-            <div class="equipos">
-                  <h2><img src="https://a.espncdn.com/i/teamlogos/soccer/500/216.png" alt="" width="75"> </h2>
-                <div class="equipo">Atlas</div>
-                <div class="vs">VS</div>
-                <div class="equipo">America </div>
-                  <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/227.png" alt="" width="75"> </h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-
-        <!-- Partido 10 -->
-        <div class="partido">
-              <h3 style="color: #006847; text-align: center;">Domingo, 24/08/2025 17:00hrs:</h3>
-            <div class="equipos">
-                <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/15720.png" alt="" width="75"> </h2>
-                <div class="equipo">Atletico Sanl Luis Femenil </div>
-                <div class="vs">VS</div>
-                <div class="equipo">Necaxa Femenil</div>
-                <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/229.png" alt="" width="75"> </h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-        <!-- Partidos 2 al 10 (misma estructura) -->
-        <!-- ... -->
-
-        <div class="actions">
-            <button id="guardar-btn">Guardar Pronósticos</button>
-        </div>
-        <div id="loading" class="loading">
-            Guardando tus pronósticos...
-        </div>
-        <!-- Configuración -->
-    <script src="js/firebase-config.js"></script>
-    
-    <!-- Lógica -->
-    <script>
-        const db = firebase.firestore();
-        let currentUser = null;
-        let userCredits = 0;
-
-// Fecha meta para contador (11 de julio 2025, 23:00hrs)
-        const targetDate = new Date('2025-08-22T19:00:00');
-
-        // Función para actualizar el contador
-        function updateCountdown() {
-            const now = new Date();
-            const diffMs = targetDate - now;
-            if (diffMs <= 0) {
-                clearInterval(countdownInterval);
-                ['days','hours','minutes','seconds'].forEach(id => document.getElementById(id).textContent = '00');
-                document.getElementById('guardar-btn').disabled = true;
-                return;
-            }
-            const totalSeconds = Math.floor(diffMs / 1000);
-            const days = Math.floor(totalSeconds / (3600 * 24));
-            const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            document.getElementById('days').textContent = String(days).padStart(2, '0');
-            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-        }
-            // Inicia el intervalo al cargar la página
-        document.addEventListener('DOMContentLoaded', () => {
-            updateCountdown();
-            countdownInterval = setInterval(updateCountdown, 1000);
-        });
-
-        // Manejar estado de autenticación
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-         currentUser = user;
-
-const userDoc = await db.collection('users').doc(user.uid).get();
-
-if (userDoc.exists) {
-    const userData = userDoc.data();
-    userCredits = userData.creditos ?? 0;
-    document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
-} else {
-    document.getElementById('username').textContent = user.email;
-}
-            
-            // Cargar pronósticos anteriores
-            const pronosticosSnapshot = await db.collection('pronosticos')
-                .where('userId', '==', user.uid)
-                .orderBy('fecha', 'desc')
-                .limit(1)
-                .get();
-                
-            if (!pronosticosSnapshot.empty) {
-                const pronosticos = pronosticosSnapshot.docs[0].data();
-                pronosticos.partidos.forEach((partido, index) => {
-                    const opcion = document.querySelector(`.partido:nth-child(${index + 1}) .opcion[data-result="${partido.prediccion}"]`);
-                    if (opcion) opcion.classList.add('selected');
-                });
-            }
-        });
-
-        // Selección de resultados
-        document.querySelectorAll('.opcion').forEach(opcion => {
-            opcion.addEventListener('click', function() {
-                this.closest('.partido').querySelectorAll('.opcion').forEach(el => {
-                    el.classList.remove('selected');
-                });
-                this.classList.add('selected');
-            });
-        });
-
-        // Guardar pronósticos
-      document.getElementById('guardar-btn').addEventListener('click', async () => {
-    if (userCredits <= 0) {
-        alert('No tienes créditos suficientes para guardar tus pronósticos.');
-        return;
-    }
-
-    const partidos = [];
-    let completo = true;
-
-    document.querySelectorAll('.partido').forEach(partidoEl => {
-        const opcion = partidoEl.querySelector('.opcion.selected');
-        if (!opcion) {
-            completo = false;
-            partidoEl.style.border = '1px solid red';
-            setTimeout(() => partidoEl.style.border = 'none', 1000);
-            return;
-        }
-
-        const equipos = partidoEl.querySelectorAll('.equipo');
-        partidos.push({
-            local: equipos[0].textContent,
-            visitante: equipos[1].textContent,
-            prediccion: opcion.getAttribute('data-result')
-        });
+      `;
+      contenedor.appendChild(card);
     });
 
-    if (!completo) {
-        alert('¡Debes seleccionar un resultado para todos los partidos!');
-        return;
-    }
-
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('guardar-btn').disabled = true;
-
-    try {
-        await db.runTransaction(async (transaction) => {
-            const userRef = db.collection('users').doc(currentUser.uid);
-            const userDoc = await transaction.get(userRef);
-
-            if (!userDoc.exists || (userDoc.data().creditos ?? 0) <= 0) {
-                throw new Error("Créditos insuficientes.");
-            }
-
-            transaction.update(userRef, {
-                creditos: firebase.firestore.FieldValue.increment(-1)
-            });
-
-            const pronosticoRef = db.collection('pronosticos').doc();
-            transaction.set(pronosticoRef, {
-                userId: currentUser.uid,
-                fecha: firebase.firestore.FieldValue.serverTimestamp(),
-                partidos: partidos
-            });
+    // Botón guardar
+    document.getElementById("guardarBtn").addEventListener("click", () => {
+      let pronosticos = [];
+      for (let i = 0; i < partidos.length; i++) {
+        const seleccion = document.querySelector(`input[name="partido${i}"]:checked`);
+        pronosticos.push({
+          partido: partidos[i],
+          eleccion: seleccion ? seleccion.value : "no seleccionado"
         });
+      }
 
-        // Puedes actualizar la vista de créditos aquí si no haces redirección
-        userCredits -= 1;
-        document.getElementById('username').textContent = `${currentUser.email} | Créditos: ${userCredits}`;
+      // Guardar en localStorage (para leer después en resultados.html)
+      localStorage.setItem("pronosticos", JSON.stringify(pronosticos));
 
-        window.location.href = 'resultados.html';
-    } catch (error) {
-        console.error(error);
-        alert('Error al guardar: ' + error.message);
-    } finally {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('guardar-btn').disabled = false;
-    }
-});
+      // Redirigir a resultados.html
+      window.location.href = "resultados.html";
+    });
+  </script>
 
-        // Cerrar sesión
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            firebase.auth().signOut();
-        });
-        
-    </script>
-    <footer style="background-color: #1a1a1a; color: white; padding: 40px 20px; font-family: 'Arial', sans-serif;">
-  <div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
-
-    <!-- Sección Logo o Nombre -->
-    <div style="flex: 1 1 200px; margin-bottom: 20px;">
-      <h2 style="margin: 0; color: #00d084;">Quiniela360</h2>
-      <p style="font-size: 14px; color: #ccc;">
-        Plataforma de pronósticos deportivos en línea.
-      </p>
-        <p style="font-size: 14px; color: #ccc;">
-        © 2025 Quiniela360.com - Todos los derechos reservados.
-        <p style="font-size: 10px; color: #ccc;">  q.h.ricardoarturo@gmail.com </p>
-      </p>
-         
-    </div>
-</footer>
 </body>
 </html>
-
-
-
-
