@@ -33,7 +33,7 @@
 </head>
 <body>
   <header>
-    <h2 id="username">Cargando...</h2>
+    <h2 id="usuario">Cargando...</h2>
     <div class="info">Créditos: <span id="creditos">0</span></div>
   </header>
 
@@ -87,23 +87,27 @@
     }
 
     onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        usuarioActual = user;
-        document.getElementById("usuario").innerText = `Bienvenido, ${user.displayName}`;
+  if (user) {
+    usuarioActual = user;
 
-        // Cargar créditos del usuario
-        const docUser = await getDoc(doc(db, "users", user.uid));
-        if (docUser.exists()) {
-          document.getElementById("creditos").innerText = docUser.data().creditos || 0;
-        } else {
-          document.getElementById("creditos").innerText = 0;
-        }
+    // Si no tiene displayName, tomamos el email como fallback
+    const nombreUsuario = user.displayName || user.email.split("@")[0];
 
-        cargarGrupos();
-      } else {
-        login();
-      }
-    });
+    document.getElementById("usuario").innerText = `Bienvenido, ${nombreUsuario}`;
+
+    // Créditos desde Firestore
+    const docUser = await getDoc(doc(db, "users", user.uid));
+    if (docUser.exists()) {
+      document.getElementById("creditos").innerText = docUser.data().creditos || 0;
+    } else {
+      document.getElementById("creditos").innerText = 0;
+    }
+
+    cargarGrupos();
+  } else {
+    login();
+  }
+});
 
     // 🔹 Crear grupo
     async function crearGrupo() {
@@ -173,5 +177,6 @@
   </script>
 </body>
 </html>
+
 
 
