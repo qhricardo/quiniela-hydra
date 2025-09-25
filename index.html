@@ -1,164 +1,140 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pronósticos</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiniela - Pronósticos</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; }
-    header { background: #006847; color: #fff; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-    header .info { font-size: 14px; }
-    .container { padding: 20px; }
-    .partido { background: white; margin-bottom: 15px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-    .equipo { font-weight: bold; margin-bottom: 10px; }
-    .botones button {
-      padding: 12px 20px;
-      margin-right: 10px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #eee;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
     }
-    .botones button.selected { background: #006847; color: #fff; }
-    #guardarBtn {
-      margin-top: 20px;
-      width: 100%;
-      padding: 15px;
-      font-size: 18px;
-      background: #ce1126;
+    header {
+      background: #006847;
       color: #fff;
-      border: none;
-      border-radius: 6px;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pronostico-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .equipos {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .opciones {
+      display: flex;
+      gap: 15px;
+    }
+    label {
       cursor: pointer;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      background: #006847;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      background: #004d33;
     }
   </style>
 </head>
 <body>
+
   <header>
-    <div class="info">
-      <div><strong>Usuario:</strong> <span id="usuarioNombre">Cargando...</span></div>
-      <div><strong>Créditos:</strong> <span id="usuarioCreditos">0</span></div>
+    <div>
+      Usuario: <span id="username">Cargando...</span><br>
+      Créditos: <span id="creditos">0</span>
     </div>
-    <div class="info">
-      <div><strong>Grupo:</strong> <span id="grupoSeleccionado">Ninguno</span></div>
+    <div>
+      Grupo: Liga MX
     </div>
   </header>
 
-  <div class="container" id="partidosContainer"></div>
+  <main id="lista-pronosticos">
+    <!-- Aquí van los 10 partidos generados -->
+  </main>
+
   <button id="guardarBtn">Guardar Pronósticos</button>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
-
   <script>
-    // Configuración Firebase
-    const firebaseConfig = {
-      apiKey: "TU_APIKEY",
-      authDomain: "TU_AUTHDOMAIN",
-      projectId: "TU_PROJECTID",
-      storageBucket: "TU_BUCKET",
-      messagingSenderId: "TU_MSG",
-      appId: "TU_APPID"
+    // Ejemplo de usuario simulado de Firebase
+    const user = {
+      displayName: "Richar",
+      email: "richar@correo.com",
+      creditos: 120
     };
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
 
-    let grupoActual = localStorage.getItem("grupoSeleccionado") || "Ninguno";
+    // Mostrar datos del usuario
+    document.getElementById("username").textContent = user.displayName || user.email;
+    document.getElementById("creditos").textContent = user.creditos;
 
-    // Mostrar grupo seleccionado
-    document.getElementById("grupoSeleccionado").textContent = grupoActual;
-
-    // Escuchar usuario autenticado
-    auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        const userRef = db.collection("users").doc(user.uid);
-        const snap = await userRef.get();
-        if (snap.exists) {
-          const data = snap.data();
-          document.getElementById("usuarioNombre").textContent = data.username || user.email;
-          document.getElementById("usuarioCreditos").textContent = data.creditos || 0;
-        } else {
-          document.getElementById("usuarioNombre").textContent = user.email;
-        }
-      }
-    });
-
-    // Lista de partidos
+    // Lista de 10 partidos ejemplo
     const partidos = [
       ["América", "Chivas"],
       ["Pumas", "Cruz Azul"],
-      ["León", "Toluca"],
       ["Tigres", "Monterrey"],
+      ["Toluca", "León"],
       ["Santos", "Atlas"],
-      ["Querétaro", "Puebla"],
-      ["Mazatlán", "Necaxa"],
+      ["Querétaro", "Pachuca"],
+      ["Necaxa", "Tijuana"],
       ["Juárez", "San Luis"],
-      ["Morelia", "Dorados"],
-      ["Tijuana", "Veracruz"]
+      ["Mazatlán", "Puebla"],
+      ["Morelia", "Dorados"]
     ];
 
-    const partidosContainer = document.getElementById("partidosContainer");
-    const pronosticos = {};
+    const contenedor = document.getElementById("lista-pronosticos");
 
-    partidos.forEach((equipos, i) => {
-      const div = document.createElement("div");
-      div.classList.add("partido");
-      div.innerHTML = `
-        <div class="equipo">${equipos[0]} vs ${equipos[1]}</div>
-        <div class="botones">
-          <button data-index="${i}" data-res="local">Gana ${equipos[0]}</button>
-          <button data-index="${i}" data-res="empate">Empate</button>
-          <button data-index="${i}" data-res="visitante">Gana ${equipos[1]}</button>
+    partidos.forEach((p, i) => {
+      const card = document.createElement("div");
+      card.className = "pronostico-card";
+      card.innerHTML = `
+        <div class="equipos">Partido ${i+1}: ${p[0]} vs ${p[1]}</div>
+        <div class="opciones">
+          <label><input type="radio" name="partido${i}" value="local"> Gana ${p[0]}</label>
+          <label><input type="radio" name="partido${i}" value="empate"> Empate</label>
+          <label><input type="radio" name="partido${i}" value="visitante"> Gana ${p[1]}</label>
         </div>
       `;
-      partidosContainer.appendChild(div);
+      contenedor.appendChild(card);
     });
 
-    // Selección de pronóstico
-    partidosContainer.addEventListener("click", (e) => {
-      if (e.target.tagName === "BUTTON") {
-        const index = e.target.dataset.index;
-        const res = e.target.dataset.res;
-        pronosticos[index] = res;
-
-        // Quitar selección previa
-        e.target.parentNode.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
-        e.target.classList.add("selected");
-      }
-    });
-
-    // Guardar pronósticos
-    document.getElementById("guardarBtn").addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Debes iniciar sesión primero.");
-        return;
-      }
-      if (!grupoActual || grupoActual === "Ninguno") {
-        alert("Debes seleccionar un grupo.");
-        return;
+    // Botón guardar
+    document.getElementById("guardarBtn").addEventListener("click", () => {
+      let pronosticos = [];
+      for (let i = 0; i < partidos.length; i++) {
+        const seleccion = document.querySelector(`input[name="partido${i}"]:checked`);
+        pronosticos.push({
+          partido: partidos[i],
+          eleccion: seleccion ? seleccion.value : "no seleccionado"
+        });
       }
 
-      try {
-        await db.collection("grupos").doc(grupoActual)
-          .collection("pronosticos")
-          .doc(user.uid)
-          .set({
-            userId: user.uid,
-            pronosticos: pronosticos,
-            fecha: new Date()
-          });
-        alert("Pronósticos guardados correctamente ✅");
-        window.location.href = "resultados.html?grupo=" + grupoActual;
-      } catch (err) {
-        console.error(err);
-        alert("Error al guardar pronósticos");
-      }
+      // Guardar en localStorage (para leer después en resultados.html)
+      localStorage.setItem("pronosticos", JSON.stringify(pronosticos));
+
+      // Redirigir a resultados.html
+      window.location.href = "resultados.html";
     });
   </script>
+
 </body>
 </html>
