@@ -161,246 +161,132 @@
   <!-- Ejemplo de firebase-config.js debe contener firebase.initializeApp({...}) -->
 
   <script>
-    // --- Config / referencias ---
     const auth = firebase.auth();
-    const db = firebase.firestore();
+const db = firebase.firestore();
 
-    const usernameEl = document.getElementById('username');
-    const creditosEl = document.getElementById('creditos');
-    const grupoNombreEl = document.getElementById('grupoNombre');
-    const grupoIdSpan = document.getElementById('grupoIdSpan');
-    const matchesContainer = document.getElementById('matchesContainer');
-    const guardarBtn = document.getElementById('guardarBtn');
+const usernameEl = document.getElementById('username');
+const creditosEl = document.getElementById('creditos');
+const grupoNombreEl = document.getElementById('grupoNombre');
+const grupoIdSpan = document.getElementById('grupoIdSpan');
+const matchesContainer = document.getElementById('matchesContainer');
+const guardarBtn = document.getElementById('guardarBtn');
 
-    // --- Partidos (10) ---
-    const PARTIDOS = [
-      ['América', 'Chivas'],
-      ['Pumas', 'Cruz Azul'],
-      ['Tigres', 'Monterrey'],
-      ['Toluca', 'León'],
-      ['Santos', 'Atlas'],
-      ['Querétaro', 'Pachuca'],
-      ['Necaxa', 'Tijuana'],
-      ['Juárez', 'San Luis'],
-      ['Mazatlán', 'Puebla'],
-      ['Morelia', 'Dorados']
-    ];
+const PARTIDOS = [
+  ['América', 'Chivas'],
+  ['Pumas', 'Cruz Azul'],
+  ['Tigres', 'Monterrey'],
+  ['Toluca', 'León'],
+  ['Santos', 'Atlas'],
+  ['Querétaro', 'Pachuca'],
+  ['Necaxa', 'Tijuana'],
+  ['Juárez', 'San Luis'],
+  ['Mazatlán', 'Puebla'],
+  ['Morelia', 'Dorados']
+];
 
-    // Estado local de selecciones
-    const selecciones = new Array(PARTIDOS.length).fill(null);
+let selecciones = new Array(PARTIDOS.length).fill(null);
 
-    // --- Obtener grupo seleccionado (localStorage puede contener id o JSON) ---
-    function parseGrupoSeleccionado() {
-      const raw = localStorage.getItem('grupoSeleccionado');
-      if (!raw) return null;
-      try {
-        const parsed = JSON.parse(raw);
-        // Puede venir como string, objeto con id/nombre, o {id:.., nombre:..}
-        if (typeof parsed === 'string') return { id: parsed, nombre: null };
-        if (parsed && (parsed.id || parsed.uid)) {
-          return { id: parsed.id || parsed.uid, nombre: parsed.nombre || null };
-        }
-        // si el objeto tiene nombre directamente
-        if (parsed && parsed.nombre && parsed.id) return { id: parsed.id, nombre: parsed.nombre };
-        // fallback: not recognized
-        return null;
-      } catch (e) {
-        // no es JSON, puede ser solo ID string
-        return { id: raw, nombre: null };
-      }
+function renderPartidos() {
+  matchesContainer.innerHTML = '';
+  PARTIDOS.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'card match';
+    card.innerHTML = `
+      <div class="match-header">Partido ${i+1}: ${p[0]} vs ${p[1]}</div>
+      <div class="buttons">
+        <button class="btn-option btn-local" data-partido="${i}" data-eleccion="L">Gana ${p[0]}</button>
+        <button class="btn-option btn-empate" data-partido="${i}" data-eleccion="E">Empate</button>
+        <button class="btn-option btn-visitante" data-partido="${i}" data-eleccion="V">Gana ${p[1]}</button>
+      </div>
+    `;
+    matchesContainer.appendChild(card);
+  });
+}
+renderPartidos();
+
+document.addEventListener('click', (ev) => {
+  const btn = ev.target.closest('.btn-option');
+  if (!btn) return;
+  const idx = Number(btn.dataset.partido);
+  const ele = btn.dataset.eleccion;
+
+  document.querySelectorAll(`.btn-option[data-partido="${idx}"]`)
+    .forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  selecciones[idx] = {
+    local: PARTIDOS[idx][0],
+    visitante: PARTIDOS[idx][1],
+    prediccion: ele
+  };
+});
+
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+  usernameEl.textContent = user.displayName || user.email;
+
+  const userDoc = await db.collection('users').doc(user.uid).get();
+  creditosEl.textContent = userDoc.exists ? (userDoc.data().creditos ?? 0) : 0;
+
+  const raw = localStorage.getItem('grupoSeleccionado');
+  if (raw) {
+    const grp = JSON.parse(raw);
+    grupoNombreEl.textContent = grp.nombre || 'Grupo ' + grp.id;
+    grupoIdSpan.textContent = 'ID: ' + grp.id;
+  }
+
+});
+
+guardarBtn.addEventListener('click', async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert('Debes iniciar sesión.');
+    return;
+  }
+
+  const raw = localStorage.getItem('grupoSeleccionado');
+  if (!raw) {
+    alert('No hay grupo seleccionado.');
+    return;
+  }
+  const grp = JSON.parse(raw);
+  if (!grp.id) {
+    alert('Grupo inválido.');
+    return;
+  }
+
+  // validar todas seleccionadas
+  for (let i = 0; i < PARTIDOS.length; i++) {
+    if (!selecciones[i]) {
+      alert(`Debes seleccionar todos los partidos. Faltó el partido ${i+1}`);
+      return;
     }
+  }
 
-    let GRUPO = parseGrupoSeleccionado(); // {id, nombre|null}
-    if (!GRUPO) {
-      grupoNombreEl.textContent = 'Ninguno';
-      grupoIdSpan.textContent = '';
-    } else {
-      grupoIdSpan.textContent = `ID: ${GRUPO.id}`;
-      // si no tenemos nombre, lo consultamos luego
-    }
-
-    // --- Render UI de partidos ---
-    function renderPartidos() {
-      matchesContainer.innerHTML = '';
-      PARTIDOS.forEach((p, i) => {
-        const card = document.createElement('div');
-        card.className = 'card match';
-
-        const header = document.createElement('div');
-        header.className = 'match-header';
-        header.innerHTML = `<span>Partido ${i+1}: ${p[0]} vs ${p[1]}</span><span class="small-muted">#${i+1}</span>`;
-
-        const btns = document.createElement('div');
-        btns.className = 'buttons';
-
-        const btnLocal = document.createElement('button');
-        btnLocal.className = 'btn-option btn-local';
-        btnLocal.textContent = `Gana ${p[0]}`;
-        btnLocal.dataset.partido = i;
-        btnLocal.dataset.eleccion = 'L';
-
-        const btnEmpate = document.createElement('button');
-        btnEmpate.className = 'btn-option btn-empate';
-        btnEmpate.textContent = 'Empate';
-        btnEmpate.dataset.partido = i;
-        btnEmpate.dataset.eleccion = 'E';
-
-        const btnVisit = document.createElement('button');
-        btnVisit.className = 'btn-option btn-visitante';
-        btnVisit.textContent = `Gana ${p[1]}`;
-        btnVisit.dataset.partido = i;
-        btnVisit.dataset.eleccion = 'V';
-
-        btns.appendChild(btnLocal);
-        btns.appendChild(btnEmpate);
-        btns.appendChild(btnVisit);
-
-        card.appendChild(header);
-        card.appendChild(btns);
-        matchesContainer.appendChild(card);
-      });
-    }
-
-    renderPartidos();
-
-    // --- Manejo de selección (delegación) ---
-    document.addEventListener('click', (ev) => {
-      const btn = ev.target.closest('.btn-option');
-      if (!btn) return;
-      const idx = Number(btn.dataset.partido);
-      const eleccion = btn.dataset.eleccion; // L / E / V
-
-      // quitar selected de ese partido
-      document.querySelectorAll(`.btn-option[data-partido="${idx}"]`).forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-
-      // guardar
-      selecciones[idx] = {
-        local: PARTIDOS[idx][0],
-        visitante: PARTIDOS[idx][1],
-        prediccion: eleccion
-      };
+  // Asegurar miembro
+  const miembroRef = db.collection('grupos').doc(grp.id).collection('miembros').doc(user.uid);
+  const miembroDoc = await miembroRef.get();
+  if (!miembroDoc.exists) {
+    await miembroRef.set({
+      nombre: user.displayName || user.email.split('@')[0],
+      agregadoPor: user.uid,
+      fechaIngreso: firebase.firestore.FieldValue.serverTimestamp()
     });
+  }
 
-    // --- Autenticación y datos de usuario ---
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        // No logueado: redirigir a login para que entre
-        window.location.href = 'login.html';
-        return;
-      }
+  // Guardar pronóstico
+  const prRef = db.collection('grupos').doc(grp.id).collection('pronosticos');
+  await prRef.add({
+    userId: user.uid,
+    fecha: firebase.firestore.FieldValue.serverTimestamp(),
+    partidos: selecciones
+  });
 
-      // Show username (displayName o email@parte)
-      const username = user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario');
-      usernameEl.textContent = username;
-
-      // Cargar créditos desde users/{uid}
-      try {
-        const docUser = await db.collection('users').doc(user.uid).get();
-        if (docUser.exists) {
-          const data = docUser.data();
-          creditosEl.textContent = (data.creditos !== undefined) ? data.creditos : 0;
-        } else {
-          // Si no hay documento, podemos crearlo con creditos: 0 (opcional)
-          creditosEl.textContent = 0;
-          // opcional: crear doc inicial (descomenta si quieres crear)
-          // await db.collection('users').doc(user.uid).set({ email: user.email, name: username, creditos: 0 });
-        }
-      } catch (err) {
-        console.error('Error leyendo usuario:', err);
-        creditosEl.textContent = 0;
-      }
-
-      // Si tenemos grupoId pero sin nombre, solicitarlo
-      if (GRUPO && !GRUPO.nombre) {
-        try {
-          const grupoDoc = await db.collection('grupos').doc(GRUPO.id).get();
-          if (grupoDoc.exists) {
-            const d = grupoDoc.data();
-            GRUPO.nombre = d.nombre || ('Grupo ' + GRUPO.id);
-            grupoNombreEl.textContent = GRUPO.nombre;
-            grupoIdSpan.textContent = `ID: ${GRUPO.id}`;
-            // también actualizar localStorage para futuros accesos
-            localStorage.setItem('grupoSeleccionado', JSON.stringify({ id: GRUPO.id, nombre: GRUPO.nombre }));
-          } else {
-            grupoNombreEl.textContent = 'Grupo no encontrado';
-            grupoIdSpan.textContent = `ID: ${GRUPO.id}`;
-          }
-        } catch (err) {
-          console.error('Error cargando grupo:', err);
-          grupoNombreEl.textContent = 'Error cargando grupo';
-        }
-      } else if (GRUPO && GRUPO.nombre) {
-        grupoNombreEl.textContent = GRUPO.nombre;
-      } else {
-        grupoNombreEl.textContent = 'Ninguno';
-      }
-    });
-
-    // --- Guardar pronósticos ---
-    guardarBtn.addEventListener('click', async () => {
-      // Validaciones
-      // 1) Usuario
-      const user = auth.currentUser;
-      if (!user) {
-        alert('Debes iniciar sesión.');
-        return;
-      }
-      // 2) Grupo
-      if (!GRUPO || !GRUPO.id) {
-        alert('No hay grupo seleccionado. Ve a Interfaz y elige un grupo.');
-        return;
-      }
-      // 3) Todas las selecciones hechas
-      const faltantes = selecciones.map((s,i)=> s ? null : i+1).filter(Boolean);
-      if (faltantes.length) {
-        alert('Debes seleccionar todos los partidos. Faltan: ' + faltantes.join(', '));
-        return;
-      }
-
-      guardarBtn.disabled = true;
-      guardarBtn.textContent = 'Guardando...';
-
-      try {
-        // Asegurar que el usuario sea miembro del grupo (si no, lo añadimos)
-        const miembroRef = db.collection('grupos').doc(GRUPO.id).collection('miembros').doc(user.uid);
-        const miembroDoc = await miembroRef.get();
-        if (!miembroDoc.exists) {
-          // crear miembro con agregadoPor = user.uid (las reglas permiten esto)
-          await miembroRef.set({
-            nombre: user.displayName || user.email.split('@')[0],
-            agregadoPor: user.uid,
-            fechaIngreso: firebase.firestore.FieldValue.serverTimestamp()
-          });
-        }
-
-        // Guardar pronóstico en la subcolección pronosticos
-        const pronosticosRef = db.collection('grupos').doc(GRUPO.id).collection('pronosticos');
-        await pronosticosRef.add({
-          userId: user.uid,
-          fecha: firebase.firestore.FieldValue.serverTimestamp(),
-          partidos: selecciones
-        });
-
-        // (Opcional) descontar créditos: si quieres descontar 1 crédito por guardar,
-        // descomenta el siguiente bloque. Ten cuidado con reglas/transacciones.
-        /*
-        const userRef = db.collection('users').doc(user.uid);
-        await userRef.update({
-          creditos: firebase.firestore.FieldValue.increment(-1)
-        });
-        */
-
-        // Guardado exitoso: redirigir a resultados con parámetro grupo
-        window.location.href = `resultados.html?grupo=${encodeURIComponent(GRUPO.id)}`;
-      } catch (err) {
-        console.error('Error al guardar pronósticos:', err);
-        alert('Ocurrió un error al guardar pronósticos: ' + (err.message || err));
-      } finally {
-        guardarBtn.disabled = false;
-        guardarBtn.textContent = 'Guardar Pronósticos y Ver Resultados';
-      }
-    });
-  </script>
+  window.location.href = `resultados.html?grupo=${encodeURIComponent(grp.id)}`;
+});
 </body>
 </html>
+
