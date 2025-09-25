@@ -495,7 +495,57 @@ if (userDoc.exists) {
         document.getElementById('logout-btn').addEventListener('click', () => {
             firebase.auth().signOut();
         });
-        
+        // Referencias
+const grupoForm = document.getElementById("grupoForm");
+const nombreGrupo = document.getElementById("nombreGrupo");
+const listaGrupos = document.getElementById("listaGrupos");
+
+// Crear grupo
+grupoForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nombre = nombreGrupo.value.trim();
+    if (!nombre) return;
+
+    try {
+        await db.collection("grupos").add({
+            nombre,
+            creadoPor: currentUser.uid,
+            fecha: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        nombreGrupo.value = "";
+        cargarGrupos(); // recargar lista
+    } catch (error) {
+        console.error("Error creando grupo:", error);
+        alert("❌ No se pudo crear el grupo");
+    }
+});
+
+// Mostrar lista de grupos
+async function cargarGrupos() {
+    listaGrupos.innerHTML = "";
+    const snapshot = await db.collection("grupos").get();
+    snapshot.forEach((doc) => {
+        const li = document.createElement("li");
+        li.textContent = doc.data().nombre;
+        li.style.cursor = "pointer";
+        li.onclick = () => {
+            // Redirigir a index.html con el grupo seleccionado
+            window.location.href = `index.html?grupo=${doc.id}`;
+        };
+        listaGrupos.appendChild(li);
+    });
+}
+
+// Llamar después de que el usuario esté autenticado
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) {
+        window.location.href = 'login.html';
+        return;
+    }
+    currentUser = user;
+    cargarGrupos(); // 👈 cargar grupos aquí
+});
+
     </script>
     <footer style="background-color: #1a1a1a; color: white; padding: 40px 20px; font-family: 'Arial', sans-serif;">
   <div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
@@ -515,6 +565,7 @@ if (userDoc.exists) {
 </footer>
 </body>
 </html>
+
 
 
 
