@@ -20,9 +20,10 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
     }
     header div {
-      margin-right: 20px;
+      margin: 5px 15px;
     }
     .pronostico-card {
       background: #fff;
@@ -74,6 +75,21 @@
       background: #004d33;
     }
   </style>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  <script>
+    // Configuración de Firebase (pon la tuya)
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
 
@@ -87,29 +103,46 @@
     </div>
   </header>
 
-  <main id="lista-pronosticos">
-    <!-- Aquí van los 10 partidos generados -->
-  </main>
+  <main id="lista-pronosticos"></main>
 
   <button id="guardarBtn">Guardar Pronósticos</button>
 
   <script>
-    // Simulación de usuario de Firebase
-    const user = {
-      displayName: "Richar",
-      email: "richar@correo.com",
-      creditos: 120
-    };
+    const usernameSpan = document.getElementById("username");
+    const creditosSpan = document.getElementById("creditos");
+    const grupoSpan = document.getElementById("grupoSeleccionado");
 
-    // Grupo seleccionado desde localStorage (si existe)
-    const grupo = localStorage.getItem("grupoSeleccionado") || "Liga MX";
+    // Grupo seleccionado desde interfaz.html
+    const grupoSeleccionado = JSON.parse(localStorage.getItem("grupoSeleccionado"));
+    if (grupoSeleccionado) {
+      grupoSpan.textContent = grupoSeleccionado.nombre || "Ninguno";
+    }
 
-    // Mostrar datos del header
-    document.getElementById("username").textContent = user.displayName || user.email;
-    document.getElementById("creditos").textContent = user.creditos;
-    document.getElementById("grupoSeleccionado").textContent = grupo;
+    // Verificar sesión de usuario
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = "login.html"; // redirige si no hay sesión
+        return;
+      }
 
-    // Lista de 10 partidos ejemplo
+      // Mostrar nombre de usuario
+      usernameSpan.textContent = user.displayName || user.email;
+
+      // Buscar créditos en Firestore (colección users)
+      try {
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        if (userDoc.exists) {
+          creditosSpan.textContent = userDoc.data().creditos || 0;
+        } else {
+          creditosSpan.textContent = 0;
+        }
+      } catch (e) {
+        console.error("Error al cargar créditos:", e);
+        creditosSpan.textContent = 0;
+      }
+    });
+
+    // Lista de partidos
     const partidos = [
       ["América", "Chivas"],
       ["Pumas", "Cruz Azul"],
@@ -124,6 +157,7 @@
     ];
 
     const contenedor = document.getElementById("lista-pronosticos");
+    const pronosticos = {};
 
     // Render de partidos
     partidos.forEach((p, i) => {
@@ -140,22 +174,17 @@
       contenedor.appendChild(card);
     });
 
-    // Manejo de selección
-    const pronosticos = {};
-
+    // Selección de pronósticos
     document.addEventListener("click", (e) => {
       if (e.target.classList.contains("opcion-btn")) {
         const partido = e.target.getAttribute("data-partido");
         const eleccion = e.target.getAttribute("data-eleccion");
 
-        // Desmarcar botones anteriores
         document.querySelectorAll(`.opcion-btn[data-partido="${partido}"]`)
           .forEach(btn => btn.classList.remove("seleccionado"));
 
-        // Marcar seleccionado
         e.target.classList.add("seleccionado");
 
-        // Guardar en objeto
         pronosticos[partido] = {
           partido: partidos[partido],
           eleccion: eleccion
@@ -166,9 +195,7 @@
     // Guardar pronósticos
     document.getElementById("guardarBtn").addEventListener("click", () => {
       localStorage.setItem("pronosticos", JSON.stringify(pronosticos));
-      localStorage.setItem("grupoSeleccionado", grupo);
-
-      // Ir a resultados
+      localStorage.setItem("grupoSeleccionado", JSON.stringify(grupoSeleccionado));
       window.location.href = "resultados.html";
     });
   </script>
