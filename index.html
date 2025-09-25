@@ -75,22 +75,12 @@
       background: #004d33;
     }
   </style>
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-  <script>
-    // Configuración de Firebase (pon la tuya)
-    const firebaseConfig = {
-      apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
-      authDomain: "quiniela-hydra.firebaseapp.com",
-      projectId: "quiniela-hydra",
-    };
-     
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
+
+  <!-- Firebase (API compat, igual que en login.html) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
 </head>
 <body>
 
@@ -109,27 +99,30 @@
   <button id="guardarBtn">Guardar Pronósticos</button>
 
   <script>
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
     const usernameSpan = document.getElementById("username");
     const creditosSpan = document.getElementById("creditos");
     const grupoSpan = document.getElementById("grupoSeleccionado");
 
-    // Grupo seleccionado desde interfaz.html
+    // Grupo desde interfaz.html
     const grupoSeleccionado = JSON.parse(localStorage.getItem("grupoSeleccionado"));
     if (grupoSeleccionado) {
       grupoSpan.textContent = grupoSeleccionado.nombre || "Ninguno";
     }
 
-    // Verificar sesión de usuario
+    // Verificar sesión
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
-        window.location.href = "login.html"; // redirige si no hay sesión
+        window.location.href = "login.html";
         return;
       }
 
-      // Mostrar nombre de usuario
+      // Nombre de usuario
       usernameSpan.textContent = user.displayName || user.email;
 
-      // Buscar créditos en Firestore (colección users)
+      // Créditos desde Firestore
       try {
         const userDoc = await db.collection("users").doc(user.uid).get();
         if (userDoc.exists) {
@@ -137,9 +130,8 @@
         } else {
           creditosSpan.textContent = 0;
         }
-      } catch (e) {
-        console.error("Error al cargar créditos:", e);
-        creditosSpan.textContent = 0;
+      } catch (err) {
+        console.error("Error cargando créditos:", err);
       }
     });
 
@@ -160,7 +152,6 @@
     const contenedor = document.getElementById("lista-pronosticos");
     const pronosticos = {};
 
-    // Render de partidos
     partidos.forEach((p, i) => {
       const card = document.createElement("div");
       card.className = "pronostico-card";
@@ -175,7 +166,6 @@
       contenedor.appendChild(card);
     });
 
-    // Selección de pronósticos
     document.addEventListener("click", (e) => {
       if (e.target.classList.contains("opcion-btn")) {
         const partido = e.target.getAttribute("data-partido");
@@ -193,7 +183,6 @@
       }
     });
 
-    // Guardar pronósticos
     document.getElementById("guardarBtn").addEventListener("click", () => {
       localStorage.setItem("pronosticos", JSON.stringify(pronosticos));
       localStorage.setItem("grupoSeleccionado", JSON.stringify(grupoSeleccionado));
@@ -203,4 +192,3 @@
 
 </body>
 </html>
-
