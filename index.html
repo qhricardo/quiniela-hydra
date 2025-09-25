@@ -1,194 +1,406 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiniela - Pronósticos</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiniela360 — Pronósticos</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f5f5f5;
+    :root {
+      --verde: #006847;
+      --verde-oscuro: #004d33;
+      --amarillo: #ffc107;
+      --rojo: #dc3545;
+      --fondo: #f5f7fa;
     }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--fondo);
+      padding: 20px;
+    }
+
     header {
-      background: #006847;
-      color: #fff;
-      padding: 15px;
+      background: var(--verde);
+      color: white;
       border-radius: 10px;
-      margin-bottom: 20px;
+      padding: 14px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 16px;
       flex-wrap: wrap;
     }
-    header div {
-      margin: 5px 15px;
+    .user-block { font-size: 15px; }
+    .user-block b { display:block; font-size:16px; }
+    .group-block { font-size:15px; text-align:right; }
+    .center { text-align:center; }
+
+    main {
+      max-width: 960px;
+      margin: 18px auto 40px;
     }
-    .pronostico-card {
+
+    .card {
       background: #fff;
       border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-bottom: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      padding: 16px;
+      margin-bottom: 16px;
     }
-    .equipos {
-      font-weight: bold;
-      margin-bottom: 15px;
-      font-size: 18px;
-    }
-    .opciones {
+
+    .match {
       display: flex;
-      gap: 15px;
-    }
-    .opcion-btn {
-      flex: 1;
-      padding: 15px;
-      font-size: 16px;
-      font-weight: bold;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px;
       border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s;
+      background: #ffffff;
+      border: 1px solid #eef2f4;
     }
-    .local { background: #28a745; color: #fff; }
-    .empate { background: #ffc107; color: #000; }
-    .visitante { background: #dc3545; color: #fff; }
-    .opcion-btn.seleccionado {
-      box-shadow: 0 0 0 3px #333 inset;
-      transform: scale(1.05);
+
+    .match-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      color:#222;
+      font-size:16px;
     }
-    button#guardarBtn {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      font-size: 18px;
-      font-weight: bold;
+
+    .buttons {
+      display:flex;
+      gap:12px;
+      margin-top:6px;
+    }
+
+    .btn-option {
+      flex:1;
+      padding:14px 10px;
+      border-radius:10px;
       border: none;
-      border-radius: 10px;
-      background: #006847;
+      font-weight:700;
+      font-size:15px;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .btn-option:active { transform: translateY(1px); }
+
+    .btn-local { background:#28a745; color:#fff; }
+    .btn-empate { background:var(--amarillo); color:#000; }
+    .btn-visitante { background:var(--rojo); color:#fff; }
+
+    .btn-option.selected {
+      outline: 3px solid rgba(0,0,0,0.08);
+      transform: scale(1.03);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    #guardarBtn {
+      display:block;
+      width:100%;
+      max-width:420px;
+      margin: 20px auto 80px;
+      padding:14px;
+      border-radius: 12px;
+      border:none;
+      background: var(--verde);
       color: #fff;
-      cursor: pointer;
-      margin-top: 20px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor:pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
-    button#guardarBtn:hover {
-      background: #004d33;
+    #guardarBtn:disabled { background:#9fcdb6; cursor:not-allowed; }
+
+    .small-muted { color:#666; font-size:13px; }
+    .top-actions { display:flex; gap:12px; align-items:center; }
+    @media (max-width:640px){
+      .buttons { flex-direction: column; }
     }
   </style>
-
-  <!-- Firebase (API compat, igual que en login.html) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
 </head>
 <body>
 
   <header>
-    <div>
-      Usuario: <span id="username">Cargando...</span><br>
-      Créditos: <span id="creditos">0</span>
+    <div class="user-block">
+      <b id="username">Cargando usuario...</b>
+      <div class="small-muted">Créditos: <span id="creditos">0</span></div>
     </div>
-    <div>
-      Grupo: <span id="grupoSeleccionado">Ninguno</span>
+
+    <div class="top-actions">
+      <div class="small-muted">Grupo seleccionado:</div>
+      <div class="group-block">
+        <b id="grupoNombre">Cargando...</b>
+        <div class="small-muted" id="grupoIdSpan"></div>
+      </div>
     </div>
   </header>
 
-  <main id="lista-pronosticos"></main>
+  <main>
+    <div class="card center">
+      <h2 style="margin:0 0 8px">Jornada — Elige el resultado</h2>
+      <p class="small-muted" style="margin:0">Selecciona una opción por partido: <b>GANA local / EMPATE / GANA visitante</b></p>
+    </div>
 
-  <button id="guardarBtn">Guardar Pronósticos</button>
+    <!-- Partidos -->
+    <div id="matchesContainer"></div>
+
+    <button id="guardarBtn">Guardar Pronósticos y Ver Resultados</button>
+  </main>
+
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+
+  <!-- Tu configuración: debe inicializar firebase en este archivo o en js/firebase-config.js -->
+  <!-- Si usas js/firebase-config.js, mantenlo y coméntalo aquí; si no, pega tu config en el bloque siguiente -->
+  <script src="js/firebase-config.js"></script>
+  <!-- Ejemplo de firebase-config.js debe contener firebase.initializeApp({...}) -->
 
   <script>
+    // --- Config / referencias ---
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    const usernameSpan = document.getElementById("username");
-    const creditosSpan = document.getElementById("creditos");
-    const grupoSpan = document.getElementById("grupoSeleccionado");
+    const usernameEl = document.getElementById('username');
+    const creditosEl = document.getElementById('creditos');
+    const grupoNombreEl = document.getElementById('grupoNombre');
+    const grupoIdSpan = document.getElementById('grupoIdSpan');
+    const matchesContainer = document.getElementById('matchesContainer');
+    const guardarBtn = document.getElementById('guardarBtn');
 
-    // Grupo desde interfaz.html
-    const grupoSeleccionado = JSON.parse(localStorage.getItem("grupoSeleccionado"));
-    if (grupoSeleccionado) {
-      grupoSpan.textContent = grupoSeleccionado.nombre || "Ninguno";
+    // --- Partidos (10) ---
+    const PARTIDOS = [
+      ['América', 'Chivas'],
+      ['Pumas', 'Cruz Azul'],
+      ['Tigres', 'Monterrey'],
+      ['Toluca', 'León'],
+      ['Santos', 'Atlas'],
+      ['Querétaro', 'Pachuca'],
+      ['Necaxa', 'Tijuana'],
+      ['Juárez', 'San Luis'],
+      ['Mazatlán', 'Puebla'],
+      ['Morelia', 'Dorados']
+    ];
+
+    // Estado local de selecciones
+    const selecciones = new Array(PARTIDOS.length).fill(null);
+
+    // --- Obtener grupo seleccionado (localStorage puede contener id o JSON) ---
+    function parseGrupoSeleccionado() {
+      const raw = localStorage.getItem('grupoSeleccionado');
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        // Puede venir como string, objeto con id/nombre, o {id:.., nombre:..}
+        if (typeof parsed === 'string') return { id: parsed, nombre: null };
+        if (parsed && (parsed.id || parsed.uid)) {
+          return { id: parsed.id || parsed.uid, nombre: parsed.nombre || null };
+        }
+        // si el objeto tiene nombre directamente
+        if (parsed && parsed.nombre && parsed.id) return { id: parsed.id, nombre: parsed.nombre };
+        // fallback: not recognized
+        return null;
+      } catch (e) {
+        // no es JSON, puede ser solo ID string
+        return { id: raw, nombre: null };
+      }
     }
 
-    // Verificar sesión
+    let GRUPO = parseGrupoSeleccionado(); // {id, nombre|null}
+    if (!GRUPO) {
+      grupoNombreEl.textContent = 'Ninguno';
+      grupoIdSpan.textContent = '';
+    } else {
+      grupoIdSpan.textContent = `ID: ${GRUPO.id}`;
+      // si no tenemos nombre, lo consultamos luego
+    }
+
+    // --- Render UI de partidos ---
+    function renderPartidos() {
+      matchesContainer.innerHTML = '';
+      PARTIDOS.forEach((p, i) => {
+        const card = document.createElement('div');
+        card.className = 'card match';
+
+        const header = document.createElement('div');
+        header.className = 'match-header';
+        header.innerHTML = `<span>Partido ${i+1}: ${p[0]} vs ${p[1]}</span><span class="small-muted">#${i+1}</span>`;
+
+        const btns = document.createElement('div');
+        btns.className = 'buttons';
+
+        const btnLocal = document.createElement('button');
+        btnLocal.className = 'btn-option btn-local';
+        btnLocal.textContent = `Gana ${p[0]}`;
+        btnLocal.dataset.partido = i;
+        btnLocal.dataset.eleccion = 'L';
+
+        const btnEmpate = document.createElement('button');
+        btnEmpate.className = 'btn-option btn-empate';
+        btnEmpate.textContent = 'Empate';
+        btnEmpate.dataset.partido = i;
+        btnEmpate.dataset.eleccion = 'E';
+
+        const btnVisit = document.createElement('button');
+        btnVisit.className = 'btn-option btn-visitante';
+        btnVisit.textContent = `Gana ${p[1]}`;
+        btnVisit.dataset.partido = i;
+        btnVisit.dataset.eleccion = 'V';
+
+        btns.appendChild(btnLocal);
+        btns.appendChild(btnEmpate);
+        btns.appendChild(btnVisit);
+
+        card.appendChild(header);
+        card.appendChild(btns);
+        matchesContainer.appendChild(card);
+      });
+    }
+
+    renderPartidos();
+
+    // --- Manejo de selección (delegación) ---
+    document.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('.btn-option');
+      if (!btn) return;
+      const idx = Number(btn.dataset.partido);
+      const eleccion = btn.dataset.eleccion; // L / E / V
+
+      // quitar selected de ese partido
+      document.querySelectorAll(`.btn-option[data-partido="${idx}"]`).forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      // guardar
+      selecciones[idx] = {
+        local: PARTIDOS[idx][0],
+        visitante: PARTIDOS[idx][1],
+        prediccion: eleccion
+      };
+    });
+
+    // --- Autenticación y datos de usuario ---
     auth.onAuthStateChanged(async (user) => {
       if (!user) {
-        window.location.href = "login.html";
+        // No logueado: redirigir a login para que entre
+        window.location.href = 'login.html';
         return;
       }
 
-      // Nombre de usuario
-      usernameSpan.textContent = user.displayName || user.email;
+      // Show username (displayName o email@parte)
+      const username = user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario');
+      usernameEl.textContent = username;
 
-      // Créditos desde Firestore
+      // Cargar créditos desde users/{uid}
       try {
-        const userDoc = await db.collection("users").doc(user.uid).get();
-        if (userDoc.exists) {
-          creditosSpan.textContent = userDoc.data().creditos || 0;
+        const docUser = await db.collection('users').doc(user.uid).get();
+        if (docUser.exists) {
+          const data = docUser.data();
+          creditosEl.textContent = (data.creditos !== undefined) ? data.creditos : 0;
         } else {
-          creditosSpan.textContent = 0;
+          // Si no hay documento, podemos crearlo con creditos: 0 (opcional)
+          creditosEl.textContent = 0;
+          // opcional: crear doc inicial (descomenta si quieres crear)
+          // await db.collection('users').doc(user.uid).set({ email: user.email, name: username, creditos: 0 });
         }
       } catch (err) {
-        console.error("Error cargando créditos:", err);
+        console.error('Error leyendo usuario:', err);
+        creditosEl.textContent = 0;
+      }
+
+      // Si tenemos grupoId pero sin nombre, solicitarlo
+      if (GRUPO && !GRUPO.nombre) {
+        try {
+          const grupoDoc = await db.collection('grupos').doc(GRUPO.id).get();
+          if (grupoDoc.exists) {
+            const d = grupoDoc.data();
+            GRUPO.nombre = d.nombre || ('Grupo ' + GRUPO.id);
+            grupoNombreEl.textContent = GRUPO.nombre;
+            grupoIdSpan.textContent = `ID: ${GRUPO.id}`;
+            // también actualizar localStorage para futuros accesos
+            localStorage.setItem('grupoSeleccionado', JSON.stringify({ id: GRUPO.id, nombre: GRUPO.nombre }));
+          } else {
+            grupoNombreEl.textContent = 'Grupo no encontrado';
+            grupoIdSpan.textContent = `ID: ${GRUPO.id}`;
+          }
+        } catch (err) {
+          console.error('Error cargando grupo:', err);
+          grupoNombreEl.textContent = 'Error cargando grupo';
+        }
+      } else if (GRUPO && GRUPO.nombre) {
+        grupoNombreEl.textContent = GRUPO.nombre;
+      } else {
+        grupoNombreEl.textContent = 'Ninguno';
       }
     });
 
-    // Lista de partidos
-    const partidos = [
-      ["América", "Chivas"],
-      ["Pumas", "Cruz Azul"],
-      ["Tigres", "Monterrey"],
-      ["Toluca", "León"],
-      ["Santos", "Atlas"],
-      ["Querétaro", "Pachuca"],
-      ["Necaxa", "Tijuana"],
-      ["Juárez", "San Luis"],
-      ["Mazatlán", "Puebla"],
-      ["Morelia", "Dorados"]
-    ];
-
-    const contenedor = document.getElementById("lista-pronosticos");
-    const pronosticos = {};
-
-    partidos.forEach((p, i) => {
-      const card = document.createElement("div");
-      card.className = "pronostico-card";
-      card.innerHTML = `
-        <div class="equipos">Partido ${i+1}: ${p[0]} vs ${p[1]}</div>
-        <div class="opciones">
-          <button class="opcion-btn local" data-partido="${i}" data-eleccion="local">Gana ${p[0]}</button>
-          <button class="opcion-btn empate" data-partido="${i}" data-eleccion="empate">Empate</button>
-          <button class="opcion-btn visitante" data-partido="${i}" data-eleccion="visitante">Gana ${p[1]}</button>
-        </div>
-      `;
-      contenedor.appendChild(card);
-    });
-
-    document.addEventListener("click", (e) => {
-      if (e.target.classList.contains("opcion-btn")) {
-        const partido = e.target.getAttribute("data-partido");
-        const eleccion = e.target.getAttribute("data-eleccion");
-
-        document.querySelectorAll(`.opcion-btn[data-partido="${partido}"]`)
-          .forEach(btn => btn.classList.remove("seleccionado"));
-
-        e.target.classList.add("seleccionado");
-
-        pronosticos[partido] = {
-          partido: partidos[partido],
-          eleccion: eleccion
-        };
+    // --- Guardar pronósticos ---
+    guardarBtn.addEventListener('click', async () => {
+      // Validaciones
+      // 1) Usuario
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Debes iniciar sesión.');
+        return;
       }
-    });
+      // 2) Grupo
+      if (!GRUPO || !GRUPO.id) {
+        alert('No hay grupo seleccionado. Ve a Interfaz y elige un grupo.');
+        return;
+      }
+      // 3) Todas las selecciones hechas
+      const faltantes = selecciones.map((s,i)=> s ? null : i+1).filter(Boolean);
+      if (faltantes.length) {
+        alert('Debes seleccionar todos los partidos. Faltan: ' + faltantes.join(', '));
+        return;
+      }
 
-    document.getElementById("guardarBtn").addEventListener("click", () => {
-      localStorage.setItem("pronosticos", JSON.stringify(pronosticos));
-      localStorage.setItem("grupoSeleccionado", JSON.stringify(grupoSeleccionado));
-      window.location.href = "resultados.html";
+      guardarBtn.disabled = true;
+      guardarBtn.textContent = 'Guardando...';
+
+      try {
+        // Asegurar que el usuario sea miembro del grupo (si no, lo añadimos)
+        const miembroRef = db.collection('grupos').doc(GRUPO.id).collection('miembros').doc(user.uid);
+        const miembroDoc = await miembroRef.get();
+        if (!miembroDoc.exists) {
+          // crear miembro con agregadoPor = user.uid (las reglas permiten esto)
+          await miembroRef.set({
+            nombre: user.displayName || user.email.split('@')[0],
+            agregadoPor: user.uid,
+            fechaIngreso: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+
+        // Guardar pronóstico en la subcolección pronosticos
+        const pronosticosRef = db.collection('grupos').doc(GRUPO.id).collection('pronosticos');
+        await pronosticosRef.add({
+          userId: user.uid,
+          fecha: firebase.firestore.FieldValue.serverTimestamp(),
+          partidos: selecciones
+        });
+
+        // (Opcional) descontar créditos: si quieres descontar 1 crédito por guardar,
+        // descomenta el siguiente bloque. Ten cuidado con reglas/transacciones.
+        /*
+        const userRef = db.collection('users').doc(user.uid);
+        await userRef.update({
+          creditos: firebase.firestore.FieldValue.increment(-1)
+        });
+        */
+
+        // Guardado exitoso: redirigir a resultados con parámetro grupo
+        window.location.href = `resultados.html?grupo=${encodeURIComponent(GRUPO.id)}`;
+      } catch (err) {
+        console.error('Error al guardar pronósticos:', err);
+        alert('Ocurrió un error al guardar pronósticos: ' + (err.message || err));
+      } finally {
+        guardarBtn.disabled = false;
+        guardarBtn.textContent = 'Guardar Pronósticos y Ver Resultados';
+      }
     });
   </script>
-
 </body>
 </html>
