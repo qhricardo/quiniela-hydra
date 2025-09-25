@@ -106,4 +106,28 @@
     // 🔹 Entrar al grupo (ir a index.html con el grupo elegido)
     function entrarAGrupo(grupoId) {
       localStorage.setItem("grupoSeleccionado", grupoId);
-      window.location.hre
+      window.location.href = "index.html";
+    }
+
+    // Exponer funciones globales
+    window.login = login;
+    window.crearGrupo = crearGrupo;
+    window.unirseAGrupo = unirseAGrupo;
+    window.entrarAGrupo = entrarAGrupo;
+  </script>
+</head>
+<body>
+  <h2>Gestión de Grupos - Quiniela360</h2>
+  <button onclick="login()">Iniciar sesión con Google</button>
+  <p id="usuario"></p>
+
+  <div class="card">
+    <h3>Crear Grupo</h3>
+    <input type="text" id="nombreGrupo" placeholder="Nombre del grupo">
+    <button onclick="crearGrupo()">Crear</button>
+  </div>
+
+  <h3>Grupos Disponibles</h3>
+  <div id="listaGrupos"></div>
+</body>
+</html>
