@@ -2,165 +2,108 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiniela 360 - Interfaz de Grupos</title>
+  <title>Quiniela360 | Grupos</title>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background: #f0f4f8;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #006847;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 18px;
-    }
-    .container {
-      max-width: 600px;
-      margin: 30px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #006847;
-      margin-bottom: 15px;
-    }
-    form {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    button {
-      background: #006847;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #004d33;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: #f9f9f9;
-      margin-bottom: 10px;
-      padding: 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    li:hover {
-      background: #e0f2e9;
-    }
+    body { font-family: Arial, sans-serif; background:#f3f3f3; padding:20px; }
+    h2 { color:#333; }
+    .card { background:#fff; padding:15px; margin:10px 0; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    button { background:#006847; color:white; padding:8px 14px; border:none; border-radius:5px; cursor:pointer; }
+    button:hover { background:#004d33; }
+    input { padding:8px; margin:5px 0; width:100%; border:1px solid #ccc; border-radius:5px; }
   </style>
-</head>
-<body>
-  <header>
-    Bienvenido <span id="username"></span>
-  </header>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Importar Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-  <div class="container">
-    <h2>Crear nuevo grupo</h2>
-    <form id="grupoForm">
-      <input type="text" id="nombreGrupo" placeholder="Nombre del grupo" required>
-      <button type="submit">Crear</button>
-    </form>
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_STORAGE_BUCKET",
+      messagingSenderId: "TU_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
 
-    <h2>Mis grupos</h2>
-    <ul id="listaGrupos"></ul>
-  </div>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    let usuarioActual = null;
 
-  <!-- Configuración de Firebase -->
-  <script src="js/firebase-config.js"></script>
+    // 🔹 Iniciar sesión con Google
+    async function login() {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    }
 
-  <script>
-    const db = firebase.firestore();
-    let currentUser = null;
-    let userCredits = 0;
-
-    // 🔹 Manejo de sesión
-    firebase.auth().onAuthStateChanged(async (user) => {
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
+    // 🔹 Escuchar cambios de sesión
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        usuarioActual = user;
+        document.getElementById("usuario").innerText = `Bienvenido, ${user.displayName}`;
+        cargarGrupos();
       }
-      currentUser = user;
-
-      // Datos de usuario
-      const userDoc = await db.collection('users').doc(user.uid).get();
-      if (userDoc.exists) {
-        const userData = userDoc.data();
-        userCredits = userData.creditos ?? 0;
-        document.getElementById('username').textContent =
-          `${userData.name || user.email} | Créditos: ${userCredits}`;
-      } else {
-        document.getElementById('username').textContent = user.email;
-      }
-
-      cargarGrupos();
     });
 
     // 🔹 Crear grupo
-    document.getElementById("grupoForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (!currentUser) {
-        alert("Debes iniciar sesión para crear un grupo.");
-        return;
-      }
+    async function crearGrupo() {
+      const nombre = document.getElementById("nombreGrupo").value;
+      if (!nombre || !usuarioActual) return alert("Debes iniciar sesión y poner nombre");
 
-      const nombre = document.getElementById("nombreGrupo").value.trim();
-      if (!nombre) return;
+      const docRef = await addDoc(collection(db, "grupos"), {
+        nombre: nombre,
+        creadoPor: usuarioActual.uid,
+        creadoEn: new Date()
+      });
 
-      try {
-        await db.collection("grupos").add({
-          nombre,
-          creadoPor: currentUser.uid,
-          fecha: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        document.getElementById("nombreGrupo").value = "";
-        cargarGrupos();
-      } catch (error) {
-        console.error("Error creando grupo:", error);
-        alert("❌ No se pudo crear el grupo. Revisa reglas de Firestore.");
-      }
-    });
+      // Agregar creador como miembro
+      await setDoc(doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid), {
+        nombre: usuarioActual.displayName,
+        agregadoPor: usuarioActual.uid,
+        fechaIngreso: new Date()
+      });
 
-    // 🔹 Cargar grupos
+      alert("Grupo creado con éxito 🚀");
+      document.getElementById("nombreGrupo").value = "";
+      cargarGrupos();
+    }
+
+    // 🔹 Listar grupos
     async function cargarGrupos() {
-      const listaGrupos = document.getElementById("listaGrupos");
-      listaGrupos.innerHTML = "";
+      const contenedor = document.getElementById("listaGrupos");
+      contenedor.innerHTML = "";
 
-      const snapshot = await db.collection("grupos").get();
-      snapshot.forEach((doc) => {
-        const li = document.createElement("li");
-        li.textContent = doc.data().nombre;
-        li.onclick = () => {
-          window.location.href = `index.html?grupo=${doc.id}`;
-        };
-        listaGrupos.appendChild(li);
+      const querySnapshot = await getDocs(collection(db, "grupos"));
+      querySnapshot.forEach((docSnap) => {
+        const grupo = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <strong>${grupo.nombre}</strong><br>
+          <button onclick="unirseAGrupo('${docSnap.id}')">Unirse</button>
+          <button onclick="entrarAGrupo('${docSnap.id}')">Entrar</button>
+        `;
+        contenedor.appendChild(div);
       });
     }
-  </script>
-</body>
-</html>
+
+    // 🔹 Unirse como miembro
+    async function unirseAGrupo(grupoId) {
+      if (!usuarioActual) return;
+
+      await setDoc(doc(db, "grupos", grupoId, "miembros", usuarioActual.uid), {
+        nombre: usuarioActual.displayName,
+        agregadoPor: usuarioActual.uid,
+        fechaIngreso: new Date()
+      });
+
+      alert("Te uniste al grupo 🎉");
+    }
+
+    // 🔹 Entrar al grupo (ir a index.html con el grupo elegido)
+    function entrarAGrupo(grupoId) {
+      localStorage.setItem("grupoSeleccionado", grupoId);
+      window.location.hre
