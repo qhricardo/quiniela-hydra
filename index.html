@@ -21,29 +21,47 @@
       justify-content: space-between;
       align-items: center;
     }
+    header div {
+      margin-right: 20px;
+    }
     .pronostico-card {
       background: #fff;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      padding: 15px;
-      margin-bottom: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
     }
     .equipos {
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      font-size: 18px;
     }
     .opciones {
       display: flex;
       gap: 15px;
     }
-    label {
+    .opcion-btn {
+      flex: 1;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 10px;
+      border: none;
       cursor: pointer;
+      transition: 0.3s;
     }
-    button {
+    .local { background: #28a745; color: #fff; }
+    .empate { background: #ffc107; color: #000; }
+    .visitante { background: #dc3545; color: #fff; }
+    .opcion-btn.seleccionado {
+      box-shadow: 0 0 0 3px #333 inset;
+      transform: scale(1.05);
+    }
+    button#guardarBtn {
       display: block;
       width: 100%;
-      padding: 12px;
-      font-size: 16px;
+      padding: 15px;
+      font-size: 18px;
       font-weight: bold;
       border: none;
       border-radius: 10px;
@@ -52,7 +70,7 @@
       cursor: pointer;
       margin-top: 20px;
     }
-    button:hover {
+    button#guardarBtn:hover {
       background: #004d33;
     }
   </style>
@@ -65,7 +83,7 @@
       Créditos: <span id="creditos">0</span>
     </div>
     <div>
-      Grupo: Liga MX
+      Grupo: <span id="grupoSeleccionado">Ninguno</span>
     </div>
   </header>
 
@@ -76,16 +94,20 @@
   <button id="guardarBtn">Guardar Pronósticos</button>
 
   <script>
-    // Ejemplo de usuario simulado de Firebase
+    // Simulación de usuario de Firebase
     const user = {
       displayName: "Richar",
       email: "richar@correo.com",
       creditos: 120
     };
 
-    // Mostrar datos del usuario
+    // Grupo seleccionado desde localStorage (si existe)
+    const grupo = localStorage.getItem("grupoSeleccionado") || "Liga MX";
+
+    // Mostrar datos del header
     document.getElementById("username").textContent = user.displayName || user.email;
     document.getElementById("creditos").textContent = user.creditos;
+    document.getElementById("grupoSeleccionado").textContent = grupo;
 
     // Lista de 10 partidos ejemplo
     const partidos = [
@@ -103,35 +125,50 @@
 
     const contenedor = document.getElementById("lista-pronosticos");
 
+    // Render de partidos
     partidos.forEach((p, i) => {
       const card = document.createElement("div");
       card.className = "pronostico-card";
       card.innerHTML = `
         <div class="equipos">Partido ${i+1}: ${p[0]} vs ${p[1]}</div>
         <div class="opciones">
-          <label><input type="radio" name="partido${i}" value="local"> Gana ${p[0]}</label>
-          <label><input type="radio" name="partido${i}" value="empate"> Empate</label>
-          <label><input type="radio" name="partido${i}" value="visitante"> Gana ${p[1]}</label>
+          <button class="opcion-btn local" data-partido="${i}" data-eleccion="local">Gana ${p[0]}</button>
+          <button class="opcion-btn empate" data-partido="${i}" data-eleccion="empate">Empate</button>
+          <button class="opcion-btn visitante" data-partido="${i}" data-eleccion="visitante">Gana ${p[1]}</button>
         </div>
       `;
       contenedor.appendChild(card);
     });
 
-    // Botón guardar
-    document.getElementById("guardarBtn").addEventListener("click", () => {
-      let pronosticos = [];
-      for (let i = 0; i < partidos.length; i++) {
-        const seleccion = document.querySelector(`input[name="partido${i}"]:checked`);
-        pronosticos.push({
-          partido: partidos[i],
-          eleccion: seleccion ? seleccion.value : "no seleccionado"
-        });
+    // Manejo de selección
+    const pronosticos = {};
+
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("opcion-btn")) {
+        const partido = e.target.getAttribute("data-partido");
+        const eleccion = e.target.getAttribute("data-eleccion");
+
+        // Desmarcar botones anteriores
+        document.querySelectorAll(`.opcion-btn[data-partido="${partido}"]`)
+          .forEach(btn => btn.classList.remove("seleccionado"));
+
+        // Marcar seleccionado
+        e.target.classList.add("seleccionado");
+
+        // Guardar en objeto
+        pronosticos[partido] = {
+          partido: partidos[partido],
+          eleccion: eleccion
+        };
       }
+    });
 
-      // Guardar en localStorage (para leer después en resultados.html)
+    // Guardar pronósticos
+    document.getElementById("guardarBtn").addEventListener("click", () => {
       localStorage.setItem("pronosticos", JSON.stringify(pronosticos));
+      localStorage.setItem("grupoSeleccionado", grupo);
 
-      // Redirigir a resultados.html
+      // Ir a resultados
       window.location.href = "resultados.html";
     });
   </script>
