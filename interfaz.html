@@ -2,56 +2,102 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Quiniela360 | Grupos</title>
+  <title>Quiniela360 | Interfaz</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f3f3f3; padding:20px; }
-    h2 { color:#333; }
-    .card { background:#fff; padding:15px; margin:10px 0; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    button { background:#006847; color:white; padding:8px 14px; border:none; border-radius:5px; cursor:pointer; }
+    body { font-family: Arial, sans-serif; background:#f2f2f2; margin:0; padding:20px; }
+    header { background:#006847; color:white; padding:15px; border-radius:8px; margin-bottom:20px; }
+    h2 { margin:0; }
+    .info { margin-top:8px; font-size:14px; }
+    .grupo-card {
+      background:white; border-radius:10px; padding:15px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15);
+      margin:10px; display:inline-block; width:220px; vertical-align:top;
+      cursor:pointer; transition:transform 0.2s;
+    }
+    .grupo-card:hover { transform:scale(1.05); }
+    .grupo-card h3 { margin:0 0 10px; color:#006847; }
+    .grupo-card small { color:#555; }
+    #gruposContainer { display:flex; flex-wrap:wrap; justify-content:flex-start; }
+    .card { background:#fff; padding:15px; border-radius:8px; margin-bottom:20px; }
+    input { padding:8px; width:100%; margin:5px 0; border:1px solid #ccc; border-radius:5px; }
+    button { background:#006847; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; }
     button:hover { background:#004d33; }
-    input { padding:8px; margin:5px 0; width:100%; border:1px solid #ccc; border-radius:5px; }
+    /* 🔹 Modal flotante */
+    #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); }
+    #modalContent {
+      background:white; width:400px; margin:10% auto; padding:20px; border-radius:10px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.3);
+    }
+    #closeModal { float:right; cursor:pointer; font-weight:bold; color:#333; }
   </style>
+</head>
+<body>
+  <header>
+    <h2 id="usuario">Cargando...</h2>
+    <div class="info">Créditos: <span id="creditos">0</span></div>
+  </header>
+
+  <div class="card">
+    <h3>Crear Nuevo Grupo</h3>
+    <input type="text" id="nombreGrupo" placeholder="Nombre del grupo">
+    <button onclick="crearGrupo()">Crear</button>
+  </div>
+
+  <h3>Grupos Disponibles</h3>
+  <div id="gruposContainer"></div>
+
+  <!-- 🔹 Modal para detalle de grupo -->
+  <div id="modal">
+    <div id="modalContent">
+      <span id="closeModal">&times;</span>
+      <h3 id="modalTitulo">Detalle del Grupo</h3>
+      <p id="modalInfo"></p>
+      <button id="btnEntrar">Entrar al Grupo</button>
+    </div>
+  </div>
+
   <!-- Firebase SDK -->
   <script type="module">
-    // Importar Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
-      authDomain: "quiniela-hydra.firebaseapp.com",
-      projectId: "quiniela-hydra",
-      storageBucket: "quiniela-hydra.firebasestorage.app",
-      messagingSenderId: "329849216739",
-      appId: "1:329849216739:web:83d23ff1424eb167172fd6"
-    };
+    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
     let usuarioActual = null;
+    let grupoSeleccionado = null;
 
-    // 🔹 Iniciar sesión con Google
+    // 🔹 Iniciar sesión automática (Google)
     async function login() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     }
 
-    // 🔹 Escuchar cambios de sesión
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         usuarioActual = user;
         document.getElementById("usuario").innerText = `Bienvenido, ${user.displayName}`;
+
+        // Cargar créditos del usuario
+        const docUser = await getDoc(doc(db, "users", user.uid));
+        if (docUser.exists()) {
+          document.getElementById("creditos").innerText = docUser.data().creditos || 0;
+        } else {
+          document.getElementById("creditos").innerText = 0;
+        }
+
         cargarGrupos();
+      } else {
+        login();
       }
     });
 
     // 🔹 Crear grupo
     async function crearGrupo() {
       const nombre = document.getElementById("nombreGrupo").value;
-      if (!nombre || !usuarioActual) return alert("Debes iniciar sesión y poner nombre");
+      if (!nombre || !usuarioActual) return alert("Debes poner un nombre y estar logueado");
 
       const docRef = await addDoc(collection(db, "grupos"), {
         nombre: nombre,
@@ -59,83 +105,60 @@
         creadoEn: new Date()
       });
 
-      // Agregar creador como miembro
+      // El creador entra como miembro
       await setDoc(doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid), {
         nombre: usuarioActual.displayName,
         agregadoPor: usuarioActual.uid,
         fechaIngreso: new Date()
       });
 
-      alert("Grupo creado con éxito 🚀");
+      alert("Grupo creado 🚀");
       document.getElementById("nombreGrupo").value = "";
       cargarGrupos();
     }
 
-    // 🔹 Listar grupos
+    // 🔹 Listar grupos en tarjetas
     async function cargarGrupos() {
-      const contenedor = document.getElementById("listaGrupos");
+      const contenedor = document.getElementById("gruposContainer");
       contenedor.innerHTML = "";
 
       const querySnapshot = await getDocs(collection(db, "grupos"));
       querySnapshot.forEach((docSnap) => {
         const grupo = docSnap.data();
         const div = document.createElement("div");
-        div.className = "card";
+        div.className = "grupo-card";
         div.innerHTML = `
-          <strong>${grupo.nombre}</strong><br>
-          <button onclick="unirseAGrupo('${docSnap.id}')">Unirse</button>
-          <button onclick="entrarAGrupo('${docSnap.id}')">Entrar</button>
+          <h3>${grupo.nombre}</h3>
+          <small>ID: ${docSnap.id}</small>
         `;
+        div.onclick = () => abrirModal(docSnap.id, grupo);
         contenedor.appendChild(div);
       });
     }
 
-    // 🔹 Unirse como miembro
-    async function unirseAGrupo(grupoId) {
-      if (!usuarioActual) return;
-
-      await setDoc(doc(db, "grupos", grupoId, "miembros", usuarioActual.uid), {
-        nombre: usuarioActual.displayName,
-        agregadoPor: usuarioActual.uid,
-        fechaIngreso: new Date()
-      });
-
-      alert("Te uniste al grupo 🎉");
+    // 🔹 Modal detalle grupo
+    function abrirModal(grupoId, grupo) {
+      grupoSeleccionado = grupoId;
+      document.getElementById("modalTitulo").innerText = grupo.nombre;
+      document.getElementById("modalInfo").innerText = `Creado por: ${grupo.creadoPor}`;
+      document.getElementById("modal").style.display = "block";
     }
 
-    // 🔹 Entrar al grupo (ir a index.html con el grupo elegido)
-    function entrarAGrupo(grupoId) {
-      localStorage.setItem("grupoSeleccionado", grupoId);
-      window.location.href = "index.html";
-    }
+    // 🔹 Cerrar modal
+    document.getElementById("closeModal").onclick = () => {
+      document.getElementById("modal").style.display = "none";
+    };
+
+    // 🔹 Entrar al grupo → index.html
+    document.getElementById("btnEntrar").onclick = () => {
+      if (grupoSeleccionado) {
+        localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+        window.location.href = "index.html";
+      }
+    };
 
     // Exponer funciones globales
-    window.login = login;
     window.crearGrupo = crearGrupo;
-    window.unirseAGrupo = unirseAGrupo;
-    window.entrarAGrupo = entrarAGrupo;
   </script>
-</head>
-<body>
- <body>
-  <h2>Gestión de Grupos - Quiniela360</h2>
-  <button onclick="login()">Iniciar sesión con Google</button>
-  <p id="usuario"></p>
-
-  <div class="card">
-    <h3>Crear Grupo</h3>
-    <input type="text" id="nombreGrupo" placeholder="Nombre del grupo">
-    <button onclick="crearGrupo()">Crear</button>
-  </div>
-
-  <h3>Grupos Disponibles</h3>
-  <div id="listaGrupos"></div>
 </body>
 </html>
-</body>
-</html>
-
-
-
-
-
