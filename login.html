@@ -3,215 +3,133 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quiniela 360 - Login</title>
+  <title>Login | Quiniela360</title>
   <style>
     body {
-        font-family: 'Arial', sans-serif;
-            background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Cambia esta URL por la tuya */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #006847, #00a86b);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
-      .login-container {
-      background: white;
-      padding: 2rem;
+    .login-box {
+      background: #fff;
+      padding: 30px;
       border-radius: 10px;
-      width: 350px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-    h1 {
-      color: #006847;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      width: 300px;
       text-align: center;
-      margin-bottom: 1.5rem;
     }
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-    }
-    .form-group input {
+    h2 { margin-bottom: 20px; color: #006847; }
+    input {
       width: 100%;
       padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
-    button, #google-login {
+    button {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
+      margin-top: 10px;
       background: #006847;
       color: white;
       border: none;
-      border-radius: 5px;
-      font-size: 16px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.3s;
-      margin-top: 10px;
+      font-weight: bold;
     }
-    button:hover, #google-login:hover {
-      background: #004d33;
+    button:hover { background: #004d36; }
+    .google-btn {
+      background: #db4437;
     }
-    #form-message {
-      margin-top: 1rem;
-      padding: 10px;
-      border-radius: 5px;
-      display: none;
-      text-align: center;
-    }
-    .error {
-      background: #ffebee;
-      color: #c62828;
-    }
-    .register-link {
-      text-align: center;
-      margin-top: 1.5rem;
-    }
-    .register-link a {
-      color: #006847;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .divider {
-      text-align: center;
-      margin: 1.5rem 0;
-      position: relative;
-    }
-    .divider::before,
-    .divider::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      width: 40%;
-      height: 1px;
-      background: #ccc;
-    }
-    .divider::before {
-      left: 0;
-    }
-    .divider::after {
-      right: 0;
+    .google-btn:hover {
+      background: #a33226;
     }
   </style>
 </head>
 <body>
- 
-  <div class="login-container">
-    <h1>Quiniela 360</h1>
+  <div class="login-box">
+    <h2>Quiniela360</h2>
 
-    <!-- Formulario de login por correo -->
-    <form id="login-form">
-      <div class="form-group">
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" required>
-      </div>
-      <button type="submit">Iniciar sesión</button>
-      <div id="form-message" class="error"></div>
-    </form>
+    <input type="email" id="email" placeholder="Correo electrónico" />
+    <input type="password" id="password" placeholder="Contraseña" />
 
-    <!-- División -->
-    <div class="divider">o</div>
-
-    <!-- Botón de login con Google -->
-    <button id="google-login" style="background-color: #4285F4; color: white; font-weight: bold; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; border-radius: 5px;">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png" alt="Google" style="width: 20px; height: 20px;">
-  Entrar con Google
-</button>
-
-    <!-- Enlace de registro -->
-    <div class="register-link">
-      ¿No tienes cuenta? <a href="register.html">Regístrate aquí</a>
-    </div>
+    <button id="login-btn">Iniciar Sesión</button>
+    <button id="register-btn">Registrarse</button>
+    <button id="google-btn" class="google-btn">🔑 Entrar con Google</button>
   </div>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-
-  <!-- Configuración de Firebase -->
   <script src="js/firebase-config.js"></script>
 
-  <!-- Lógica de autenticación -->
   <script>
+    const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Login con correo y contraseña
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("login-btn");
+    const registerBtn = document.getElementById("register-btn");
+    const googleBtn = document.getElementById("google-btn");
 
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const messageDiv = document.getElementById('form-message');
+    // 🔹 Guardar usuario en Firestore
+    async function crearUsuarioFirestore(user, extra = {}) {
+      const ref = db.collection("users").doc(user.uid);
+      const docSnap = await ref.get();
+      if (!docSnap.exists) {
+        await ref.set({
+          username: user.displayName || user.email.split("@")[0],
+          email: user.email,
+          creditos: 100, // créditos iniciales
+          ...extra
+        });
+      }
+    }
 
+    // 🔹 Login con email/contraseña
+    loginBtn.addEventListener("click", async () => {
+      const email = emailInput.value;
+      const password = passwordInput.value;
       try {
-        await firebase.auth().signInWithEmailAndPassword(email, password);
+        await auth.signInWithEmailAndPassword(email, password);
         window.location.href = "interfaz.html";
       } catch (error) {
-        let errorMessage;
-        switch(error.code) {
-          case 'auth/invalid-email':
-            errorMessage = 'Correo electrónico inválido';
-            break;
-          case 'auth/user-not-found':
-            errorMessage = 'Usuario no registrado';
-            break;
-          case 'auth/wrong-password':
-            errorMessage = 'Contraseña incorrecta';
-            break;
-          case 'auth/too-many-requests':
-            errorMessage = 'Demasiados intentos. Intenta más tarde.';
-            break;
-          default:
-            errorMessage = 'Error al iniciar sesión';
-        }
-
-        messageDiv.textContent = errorMessage;
-        messageDiv.style.display = 'block';
+        alert("Error al iniciar sesión: " + error.message);
       }
     });
 
-    // Login con Google y registro automático en Firestore
-    document.getElementById('google-login').addEventListener('click', async () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-
+    // 🔹 Registro con email/contraseña
+    registerBtn.addEventListener("click", async () => {
+      const email = emailInput.value;
+      const password = passwordInput.value;
       try {
-        const result = await firebase.auth().signInWithPopup(provider);
-        const user = result.user;
-
-        // Referencia al documento del usuario
-        const userRef = db.collection('users').doc(user.uid);
-        const doc = await userRef.get();
-
-        if (!doc.exists) {
-          // Guardar datos si es nuevo
-          await userRef.set({
-            uid: user.uid,
-            creditos: 1,
-            name: user.displayName || null,
-            email: user.email,
-            photoURL: user.photoURL || null,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-        }
-
+        const userCred = await auth.createUserWithEmailAndPassword(email, password);
+        await crearUsuarioFirestore(userCred.user);
+        alert("✅ Usuario registrado correctamente");
         window.location.href = "interfaz.html";
       } catch (error) {
-        alert("Error al iniciar sesión con Google: " + error.message);
+        alert("Error al registrarse: " + error.message);
+      }
+    });
+
+    // 🔹 Login con Google
+    googleBtn.addEventListener("click", async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+        await crearUsuarioFirestore(user);
+        window.location.href = "interfaz.html";
+      } catch (error) {
+        alert("Error con Google: " + error.message);
       }
     });
   </script>
 </body>
 </html>
-
