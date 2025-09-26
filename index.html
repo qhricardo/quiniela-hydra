@@ -119,6 +119,31 @@
     let grupoNombre = localStorage.getItem("grupoNombre") || "Ninguno";
     let currentUser = null;
 
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+
+    // Buscar info en users/{uid}
+    const userDoc = await db.collection("users").doc(user.uid).get();
+    if (userDoc.exists) {
+      usernameEl.textContent = userDoc.data().username || user.email;
+      creditosEl.textContent = userDoc.data().creditos || 0;
+    } else {
+      usernameEl.textContent = user.email;
+      creditosEl.textContent = 0;
+    }
+  }
+});
+
+// Mostrar grupo
+grupoSeleccionado = localStorage.getItem("grupoSeleccionado");
+grupoNombre = localStorage.getItem("grupoNombre");
+
+grupoEl.textContent = grupoNombre || "Ninguno";
+nombreGrupoEl.textContent = grupoNombre || "Ninguno";
+
+
+    
     // Mostrar grupo
     grupoEl.textContent = grupoNombre;
     nombreGrupoEl.textContent = grupoNombre;
@@ -180,16 +205,31 @@
       }
     });
 
-    // Guardar pronósticos
-    document.getElementById("guardar-btn").addEventListener("click", async () => {
-      if (!currentUser) {
-        alert("Debes iniciar sesión.");
-        return;
-      }
-      if (!grupoSeleccionado) {
-        alert("Debes seleccionar un grupo.");
-        return;
-      }
+document.getElementById("guardar-btn").addEventListener("click", async () => {
+  if (!currentUser) {
+    alert("Debes iniciar sesión.");
+    return;
+  }
+  if (!grupoSeleccionado) {
+    alert("Debes seleccionar un grupo.");
+    return;
+  }
+
+  await db.collection("grupos")
+    .doc(grupoSeleccionado)
+    .collection("pronosticos")
+    .doc(currentUser.uid) // 👈 así cada user tiene solo un pronóstico
+    .set({
+      userId: currentUser.uid,
+      userName: usernameEl.textContent,
+      fecha: new Date(),
+      pronosticos
+    });
+
+  alert("✅ Pronósticos guardados en " + grupoNombre);
+  window.location.href = "resultados.html?grupo=" + grupoSeleccionado;
+});
+
 
       await db.collection("grupos").doc(grupoSeleccionado)
         .collection("pronosticos").add({
@@ -205,4 +245,5 @@
   </script>
 </body>
 </html>
+
 
