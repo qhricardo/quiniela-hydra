@@ -3,182 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiniela - Pronósticos</title>
+  <title>Quiniela 360 | Pronósticos</title>
   <style>
+    :root {
+      --verde: #006847;
+      --rojo: #ce1126;
+      --azul: #0038a8;
+      --gris: #f5f5f5;
+    }
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--gris);
       margin: 0;
-      padding: 20px;
-      background: #f5f5f5;
+      padding: 0;
     }
     header {
-      background: #006847;
-      color: #fff;
+      background-color: var(--verde);
       padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
+      color: #fff;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    header div {
-      margin-right: 20px;
-    }
-    .pronostico-card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .equipos {
-      font-weight: bold;
-      margin-bottom: 15px;
-      font-size: 18px;
-    }
-    .opciones {
-      display: flex;
-      gap: 15px;
-    }
-    .opcion-btn {
-      flex: 1;
-      padding: 15px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .local { background: #28a745; color: #fff; }
-    .empate { background: #ffc107; color: #000; }
-    .visitante { background: #dc3545; color: #fff; }
-    .opcion-btn.seleccionado {
-      box-shadow: 0 0 0 3px #333 inset;
-      transform: scale(1.05);
-    }
-    button#guardarBtn {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      font-size: 18px;
-      font-weight: bold;
-      border: none;
-      border-radius: 10px;
-      background: #006847;
-      color: #fff;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-    button#guardarBtn:hover {
-      background: #004d33;
-    }
+    .user-info { display: flex; gap: 15px; align-items: center; }
+    #creditos { font-weight: bold; background: #fff; color: var(--verde); padding: 5px 10px; border-radius: 6px; }
+    .partido { background: #fff; padding: 15px; margin: 15px 0; border-radius: 6px; }
+    .equipos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .opciones { display: flex; justify-content: center; gap: 10px; }
+    .opcion { padding: 8px 15px; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; }
+    .opcion.selected { background: var(--verde); color: #fff; border-color: var(--verde); }
+    .actions { text-align: center; margin-top: 20px; }
+    #guardar-btn { padding: 12px 25px; font-size: 16px; background: var(--verde); color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    #guardar-btn:disabled { background: #aaa; cursor: not-allowed; }
+    .loading { text-align: center; color: var(--verde); display: none; }
   </style>
 </head>
 <body>
 
   <header>
-    <div>
-      Usuario: <span id="username">Cargando...</span><br>
-      Créditos: <span id="creditos">0</span>
-    </div>
-    <div>
-      Grupo: <span id="grupoSeleccionado">Ninguno</span>
+    <h2>Quiniela360</h2>
+    <div class="user-info">
+      <span id="username">Usuario</span>
+      <span id="creditos">Créditos: 3</span>
+      <button id="logout-btn">Cerrar Sesión</button>
     </div>
   </header>
 
-   <div style="text-align: center; margin-top: 30px;">
-    <button onclick="window.location.href='interfaz.html'" style="padding: 10px 20px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-        ⬅️ Regresar a Grupos
-    </button>
-  </div>
-  <main id="lista-pronosticos">
-    <!-- Aquí van los 10 partidos generados -->
+  <main class="container">
+    <h1>Jornada 6</h1>
+
+    <!-- Partido ejemplo -->
+    <div class="partido" data-id="1">
+      <div class="equipos">
+        <div>Querétaro</div><div>VS</div><div>San Luis</div>
+      </div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Gana Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Gana Visitante</div>
+      </div>
+    </div>
+
+    <div class="partido" data-id="2">
+      <div class="equipos">
+        <div>Juárez</div><div>VS</div><div>Santos</div>
+      </div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Gana Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Gana Visitante</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="guardar-btn">Guardar Pronósticos</button>
+    </div>
+    <div id="loading" class="loading">Guardando tus pronósticos...</div>
   </main>
 
-  <button id="guardarBtn">Guardar Pronósticos</button>
-
   <script>
-    // Simulación de usuario de Firebase
-    const user = {
-      displayName: "Richar",
-      email: "richar@correo.com",
-      creditos: 120
-    };
+    // Créditos iniciales del usuario (ejemplo, luego puedes cargar desde Firebase)
+    let creditos = 3; 
 
-    // Grupo seleccionado desde localStorage (si existe)
-    const grupo = localStorage.getItem("grupoSeleccionado") || "Liga MX";
+    // Actualizar texto en pantalla
+    function actualizarCreditos() {
+      document.getElementById("creditos").innerText = "Créditos: " + creditos;
+    }
 
-    // Mostrar datos del header
-    document.getElementById("username").textContent = user.displayName || user.email;
-    document.getElementById("creditos").textContent = user.creditos;
-    document.getElementById("grupoSeleccionado").textContent = grupo;
-
-    // Lista de 10 partidos ejemplo
-    const partidos = [
-      ["América", "Chivas"],
-      ["Pumas", "Cruz Azul"],
-      ["Tigres", "Monterrey"],
-      ["Toluca", "León"],
-      ["Santos", "Atlas"],
-      ["Querétaro", "Pachuca"],
-      ["Necaxa", "Tijuana"],
-      ["Juárez", "San Luis"],
-      ["Mazatlán", "Puebla"],
-      ["Morelia", "Dorados"]
-    ];
-
-    const contenedor = document.getElementById("lista-pronosticos");
-
-    // Render de partidos
-    partidos.forEach((p, i) => {
-      const card = document.createElement("div");
-      card.className = "pronostico-card";
-      card.innerHTML = `
-        <div class="equipos">Partido ${i+1}: ${p[0]} vs ${p[1]}</div>
-        <div class="opciones">
-          <button class="opcion-btn local" data-partido="${i}" data-eleccion="local">Gana ${p[0]}</button>
-          <button class="opcion-btn empate" data-partido="${i}" data-eleccion="empate">Empate</button>
-          <button class="opcion-btn visitante" data-partido="${i}" data-eleccion="visitante">Gana ${p[1]}</button>
-        </div>
-      `;
-      contenedor.appendChild(card);
-    });
-
-    // Manejo de selección
-    const pronosticos = {};
-
-    document.addEventListener("click", (e) => {
-      if (e.target.classList.contains("opcion-btn")) {
-        const partido = e.target.getAttribute("data-partido");
-        const eleccion = e.target.getAttribute("data-eleccion");
-
-        // Desmarcar botones anteriores
-        document.querySelectorAll(`.opcion-btn[data-partido="${partido}"]`)
-          .forEach(btn => btn.classList.remove("seleccionado"));
-
-        // Marcar seleccionado
-        e.target.classList.add("seleccionado");
-
-        // Guardar en objeto
-        pronosticos[partido] = {
-          partido: partidos[partido],
-          eleccion: eleccion
-        };
-      }
+    // Selección de pronósticos
+    document.querySelectorAll(".opcion").forEach(opcion => {
+      opcion.addEventListener("click", () => {
+        opcion.parentNode.querySelectorAll(".opcion").forEach(o => o.classList.remove("selected"));
+        opcion.classList.add("selected");
+      });
     });
 
     // Guardar pronósticos
-    document.getElementById("guardarBtn").addEventListener("click", () => {
-      localStorage.setItem("pronosticos", JSON.stringify(pronosticos));
-      localStorage.setItem("grupoSeleccionado", grupo);
+    document.getElementById("guardar-btn").addEventListener("click", () => {
+      if (creditos <= 0) {
+        alert("⚠️ No tienes créditos disponibles. Compra créditos para seguir participando.");
+        return;
+      }
 
-      // Ir a resultados
-      window.location.href = "resultados.html";
+      // Tomar pronósticos seleccionados
+      let pronosticos = {};
+      document.querySelectorAll(".partido").forEach(partido => {
+        let seleccionado = partido.querySelector(".opcion.selected");
+        pronosticos[partido.dataset.id] = seleccionado ? seleccionado.dataset.result : null;
+      });
+
+      console.log("Pronósticos guardados:", pronosticos);
+
+      // Simulación de guardar en DB
+      document.getElementById("loading").style.display = "block";
+      setTimeout(() => {
+        document.getElementById("loading").style.display = "none";
+        alert("✅ Pronósticos guardados correctamente.");
+        
+        // Descontar crédito
+        creditos--;
+        actualizarCreditos();
+      }, 1500);
     });
-  </script>
 
+    actualizarCreditos();
+  </script>
 </body>
 </html>
-
-
