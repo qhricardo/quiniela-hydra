@@ -151,6 +151,12 @@
       });
     }
 
+function seleccionarGrupo(id, nombre) {
+  localStorage.setItem("grupoSeleccionado", id);
+  localStorage.setItem("grupoNombre", nombre);
+  window.location.href = "index.html";
+}
+    
     // 🔹 Modal detalle grupo
     function abrirModal(grupoId, grupo) {
       grupoSeleccionado = grupoId;
@@ -177,6 +183,7 @@
   </script>
 </body>
 </html>
+
 
 
 
