@@ -3,209 +3,199 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiniela 360 | Pronósticos</title>
+  <title>Pronósticos - Quiniela360</title>
   <style>
-    :root {
-      --verde: #006847;
-      --gris: #f5f5f5;
-    }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--gris);
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
       margin: 0;
       padding: 0;
     }
     header {
-      background-color: var(--verde);
+      background: #006847;
+      color: white;
       padding: 15px;
-      color: #fff;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
     }
-    .user-info { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-    #creditos { font-weight: bold; background: #fff; color: var(--verde); padding: 5px 10px; border-radius: 6px; }
-    #grupoSeleccionado { background: #fff; color: var(--verde); padding: 5px 10px; border-radius: 6px; font-weight: bold; }
-    main { padding: 20px; }
-    .partido { background: #fff; padding: 15px; margin: 15px 0; border-radius: 6px; }
-    .equipos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
-    .opciones { display: flex; justify-content: center; gap: 15px; }
-    .opcion {
-      padding: 12px 20px;
-      border: 2px solid var(--verde);
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
+    .user-info {
+      font-size: 14px;
     }
-    .opcion.selected { background: var(--verde); color: #fff; }
-    .actions { text-align: center; margin-top: 20px; }
-    #guardar-btn {
-      padding: 14px 28px;
-      font-size: 18px;
-      background: var(--verde);
-      color: #fff;
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #006847;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    .btn {
+      padding: 10px 15px;
+      margin: 5px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
     }
-    #guardar-btn:disabled { background: #aaa; cursor: not-allowed; }
-    .loading { text-align: center; color: var(--verde); display: none; }
+    .btn:hover { opacity: 0.9; }
+    .win { background: #28a745; color: white; }
+    .draw { background: #ffc107; color: black; }
+    .lose { background: #dc3545; color: white; }
+    .selected { outline: 3px solid black; }
+    #guardar-btn {
+      display: block;
+      margin: 30px auto 10px;
+      padding: 15px 30px;
+      background: #006847;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+    }
   </style>
 </head>
 <body>
-
   <header>
-    <h2>Quiniela360</h2>
+    <div class="logo"><h1>⚽ Quiniela360</h1></div>
     <div class="user-info">
-      <span id="username">Usuario: Cargando...</span>
-      <span id="creditos">Créditos: 3</span>
-      <span id="grupoSeleccionado">Grupo: Ninguno</span>
-      <button id="logout-btn">Cerrar Sesión</button>
+      Usuario: <span id="username">Cargando...</span> | 
+      Créditos: <span id="creditos">0</span> | 
+      Grupo: <span id="grupoActual">Ninguno</span>
     </div>
   </header>
 
-  <main>
-    <h1>Jornada 6</h1>
+  <div class="container">
+    <h2>Pronósticos - <span id="nombreGrupo">Selecciona un grupo</span></h2>
+    <table id="tablaPartidos">
+      <!-- Se llenan dinámicamente los 10 partidos -->
+    </table>
+    <button id="guardar-btn">💾 Guardar Pronósticos</button>
+  </div>
 
-    <!-- 10 partidos -->
-    <div class="partido" data-id="1">
-      <div class="equipos"><div>Querétaro</div><div>VS</div><div>San Luis</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="partido" data-id="2">
-      <div class="equipos"><div>Juárez</div><div>VS</div><div>Santos</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="partido" data-id="3">
-      <div class="equipos"><div>América</div><div>VS</div><div>Pumas</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="partido" data-id="4">
-      <div class="equipos"><div>Cruz Azul</div><div>VS</div><div>León</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="partido" data-id="5">
-      <div class="equipos"><div>Tigres</div><div>VS</div><div>Monterrey</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="partido" data-id="6">
-      <div class="equipos"><div>Atlas</div><div>VS</div><div>Tijuana</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="partido" data-id="7">
-      <div class="equipos"><div>Pachuca</div><div>VS</div><div>Necaxa</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="partido" data-id="8">
-      <div class="equipos"><div>Chivas</div><div>VS</div><div>Mazatlán</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="partido" data-id="9">
-      <div class="equipos"><div>Puebla</div><div>VS</div><div>Toluca</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="partido" data-id="10">
-      <div class="equipos"><div>Morelia</div><div>VS</div><div>Celaya</div></div>
-      <div class="opciones">
-        <div class="opcion" data-result="L">Local</div>
-        <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Visitante</div>
-      </div>
-    </div>
-
-    <div class="actions">
-      <button id="guardar-btn">Guardar Pronósticos</button>
-    </div>
-    <div id="loading" class="loading">Guardando tus pronósticos...</div>
-  </main>
-
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script>
-    // Simulación de datos desde Firebase
-    let usuario = { nombre: "Richar", creditos: 3 };
-    let grupo = { nombre: "Amigos del Barrio" };
+    // Configuración Firebase (reemplaza con tu config)
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // Mostrar datos en header
-    document.getElementById("username").innerText = "Usuario: " + usuario.nombre;
-    document.getElementById("creditos").innerText = "Créditos: " + usuario.creditos;
-    document.getElementById("grupoSeleccionado").innerText = "Grupo: " + grupo.nombre;
+    const usernameEl = document.getElementById("username");
+    const creditosEl = document.getElementById("creditos");
+    const grupoEl = document.getElementById("grupoActual");
+    const nombreGrupoEl = document.getElementById("nombreGrupo");
+    const tablaPartidos = document.getElementById("tablaPartidos");
 
-    // Manejar selección
-    document.querySelectorAll(".opcion").forEach(opcion => {
-      opcion.addEventListener("click", () => {
-        opcion.parentNode.querySelectorAll(".opcion").forEach(o => o.classList.remove("selected"));
-        opcion.classList.add("selected");
+    let grupoSeleccionado = localStorage.getItem("grupoSeleccionado") || null;
+    let grupoNombre = localStorage.getItem("grupoNombre") || "Ninguno";
+    let currentUser = null;
+
+    // Mostrar grupo
+    grupoEl.textContent = grupoNombre;
+    nombreGrupoEl.textContent = grupoNombre;
+
+    // Partidos de ejemplo
+    const partidos = [
+      ["América", "Chivas"],
+      ["Pumas", "Cruz Azul"],
+      ["Tigres", "Monterrey"],
+      ["Toluca", "Santos"],
+      ["León", "Pachuca"],
+      ["Atlas", "Querétaro"],
+      ["Tijuana", "Necaxa"],
+      ["Mazatlán", "Juárez"],
+      ["San Luis", "León"],
+      ["Santos", "América"]
+    ];
+
+    // Render partidos
+    partidos.forEach((p, i) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${p[0]} vs ${p[1]}</td>
+        <td>
+          <button class="btn win" data-match="${i}" data-result="gana1">${p[0]} Gana</button>
+          <button class="btn draw" data-match="${i}" data-result="empate">Empate</button>
+          <button class="btn lose" data-match="${i}" data-result="gana2">${p[1]} Gana</button>
+        </td>
+      `;
+      tablaPartidos.appendChild(row);
+    });
+
+    const pronosticos = {};
+
+    // Selección
+    document.querySelectorAll(".btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const match = btn.dataset.match;
+        const result = btn.dataset.result;
+
+        pronosticos[match] = result;
+
+        document.querySelectorAll(`[data-match="${match}"]`).forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
       });
     });
 
+    // Escuchar usuario
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        usernameEl.textContent = user.displayName || user.email;
+
+        // Leer créditos
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        if (userDoc.exists) {
+          creditosEl.textContent = userDoc.data().creditos || 0;
+        }
+      }
+    });
+
     // Guardar pronósticos
-    document.getElementById("guardar-btn").addEventListener("click", () => {
-      if (usuario.creditos <= 0) {
-        alert("⚠️ No tienes créditos disponibles.");
+    document.getElementById("guardar-btn").addEventListener("click", async () => {
+      if (!currentUser) {
+        alert("Debes iniciar sesión.");
+        return;
+      }
+      if (!grupoSeleccionado) {
+        alert("Debes seleccionar un grupo.");
         return;
       }
 
-      let pronosticos = {};
-      document.querySelectorAll(".partido").forEach(partido => {
-        let seleccionado = partido.querySelector(".opcion.selected");
-        pronosticos[partido.dataset.id] = seleccionado ? seleccionado.dataset.result : null;
-      });
+      await db.collection("grupos").doc(grupoSeleccionado)
+        .collection("pronosticos").add({
+          userId: currentUser.uid,
+          userName: currentUser.displayName || currentUser.email,
+          fecha: new Date(),
+          pronosticos
+        });
 
-      console.log("Pronósticos guardados:", pronosticos);
-
-      document.getElementById("loading").style.display = "block";
-      setTimeout(() => {
-        usuario.creditos--;
-        document.getElementById("creditos").innerText = "Créditos: " + usuario.creditos;
-        document.getElementById("loading").style.display = "none";
-        alert("✅ Pronósticos guardados correctamente.");
-        window.location.href = "resultados.html?grupo=" + grupo.nombre;
-      }, 1500);
+      alert("✅ Pronósticos guardados");
+      window.location.href = "resultados.html?grupo=" + grupoSeleccionado;
     });
   </script>
 </body>
