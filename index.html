@@ -1,258 +1,211 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiniela 360 | Pronósticos</title>
-<style>
-:root {
-    --verde: #006847;
-    --rojo: #ce1126;
-    --azul: #0038a8;
-    --gris: #f5f5f5;
-}
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-image: url('https://img.freepik.com/vector-gratis/campo-futbol-verde_225004-1137.jpg?semt=ais_hybrid&w=740');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: var(--gris);
-    margin: 0;
-    padding: 0;
-}
-header {
-     background-color: #FFFFFF;
-            background-image: url('https://www.shutterstock.com/image-photo/soccer-ball-on-green-grass-260nw-1663239277.jpg');
-            background-size: cover;
-            background-position: center;
-            padding: 15px 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-}
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-.user-info span { font-weight: 500; }
-button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
-#logout-btn { background-color: var(--rojo); color: white; }
-#logout-btn:hover { background-color: #a00d20; }
-.container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
-h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
-.partido { background-color: white; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-.equipos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.equipo { width: 40%; text-align: center; font-weight: 500; }
-.vs { width: 20%; text-align: center; color: var(--rojo); font-weight: bold; }
-.opciones { display: flex; justify-content: center; gap: 10px; }
-.opcion { padding: 8px 20px; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; transition: all 0.3s; }
-.opcion:hover { background-color: #f0f0f0; }
-.opcion.selected { background-color: var(--verde); color: white; border-color: var(--verde); }
-.local { background-color: #e8f5e9; }
-.empate { background-color: #fff8e1; }
-.visitante { background-color: #ffebee; }
-.actions { display: flex; justify-content: center; margin-top: 30px; }
-#guardar-btn { background-color: var(--verde); color: white; padding: 12px 25px; font-size: 16px; }
-#guardar-btn:disabled { background-color: #cccccc; color: #666666; cursor: not-allowed; }
-#guardar-btn:hover { background-color: #004d33; }
-.loading { display: none; text-align: center; margin-top: 20px; color: var(--verde); }
-#countdown { font-family: Arial, sans-serif; font-size: 1.25rem; color: #006847; background: #f5f5f5; padding: 0.5rem 1rem; border-radius: 0.5rem; display: inline-block; }
-#countdown span { font-weight: bold; }
-#recuadro-derecho { float: right; width: 300px; margin: -300px 10px; }
-#recuadro-derecho img { display: block; width: 100%; height: auto; border-radius: 5px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiniela360 | Pronósticos Avanzado</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+    .partido { background: #fff; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+    .equipo { font-weight: bold; }
+    .opciones button { margin: 0 5px; padding: 5px 10px; cursor: pointer; }
+    .opcion.selected { background: #4CAF50; color: #fff; }
+    #guardar-btn { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-top: 20px; }
+    #contador { font-weight: bold; margin-bottom: 20px; }
+    .pronosticos-anteriores { margin-top: 30px; background: #fff; padding: 10px; border-radius: 5px; }
+    .pronostico-item { border-bottom: 1px solid #ccc; padding: 5px 0; }
+  </style>
 </head>
 <body>
-<header>
-    <h2><img src="https://i.postimg.cc/Sx6wL6gR/504667444-122141205488674048-8857650743605451691-n.jpg" width="75">.com</h2>
-    <div class="user-info">
-        <span id="username"></span>
-        <button id="logout-btn">Cerrar Sesión</button>
-    </div>
-    <button onclick="window.location.href='resultados.html'" style="padding: 10px 20px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-        ⬅ Ir a Resultados
-    </button><br/>
-      <button onclick="window.location.href='interfaz.html'" style="padding: 10px 20px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-        ⬅ Ir a Grupos
-    </button>
-</header>
 
-<div style="display: flex; flex-wrap: wrap; align-items: flex-start;">
-    <div style="flex: 1 1 250px; max-width: 300px; background-color: #fff; border: 2px solid #006847; border-radius: 10px; padding: 15px; margin: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-        <h3 style="color: #006847; text-align: center;">📢 Avisos</h3>
-        <ul id="avisos-lista" style="list-style-type: none; padding-left: 0; font-size: 14px;">
-            <li>🎯 Cierre de Pronósticos</li>
-            <li>
-                <div id="countdown">
-                    <span id="days">00</span> días
-                    <span id="hours">00</span>:
-                    <span id="minutes">00</span>:
-                    <span id="seconds">00</span>
-                </div>
-            </li>
-            <li>💰 Compra créditos costo 2X$50.00 mxn.</li>
-            <li>🏆 Próxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
-        </ul>
-        <div style="text-align: center; margin-top: 15px;">
-            <a href="https://m.me/439939209212181?text=Un,%20credito%20para%20la%20quiniela%20porfavor" 
-               target="_blank" 
-               style="display: inline-block; padding: 10px 15px; background-color: #25D366; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                💬 Créditos
-            </a>
-        </div>
-    </div>
+<h1>Quiniela360 | Pronósticos</h1>
+<div id="contador">Cargando...</div>
 
-    <div style="flex: 3 1 600px; padding: 10px;" class="container">
-        <h1>Liga-MX Jornada 6</h1>
-
-        <!-- Partidos -->
-        <div class="partido">
-            <h3>Viernes, 22/08/2025 19:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/222.png" width="75"></h2>
-                <div class="equipo">Queretaro</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Atletico San Luis</div>
-                <h2><img src="https://upload.wikimedia.org/wikipedia/en/thumb/2/28/Atl%C3%A9tico_San_Luis_Logo_Proper.svg/1200px-Atl%C3%A9tico_San_Luis_Logo_Proper.svg.png" width="75"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
-
-        <!-- Agrega aquí los demás partidos igual -->
-
-        <div class="actions">
-            <button id="guardar-btn">Guardar Pronósticos</button>
-        </div>
-        <div id="loading" class="loading">Guardando tus pronósticos...</div>
-    </div>
+<div id="partidos-container">
+  <!-- Partidos se cargarán aquí -->
 </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
+<button id="guardar-btn">Guardar Pronósticos</button>
+
+<h2>Pronósticos Anteriores</h2>
+<div class="pronosticos-anteriores" id="pronosticos-anterior-container">
+  Cargando...
+</div>
 
 <script>
-const db = firebase.firestore();
-let currentUser = null;
-let userCredits = 0;
+  // ─── Configuración Firebase ─────────────────────
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_AUTH_DOMAIN",
+    projectId: "TU_PROJECT_ID",
+    storageBucket: "TU_STORAGE_BUCKET",
+    messagingSenderId: "TU_MSG_SENDER_ID",
+    appId: "TU_APP_ID"
+  };
 
-const targetDate = new Date('2025-08-22T19:00:00');
-function updateCountdown() {
-    const now = new Date();
-    const diffMs = targetDate - now;
-    if (diffMs <= 0) {
-        clearInterval(countdownInterval);
-        ['days','hours','minutes','seconds'].forEach(id => document.getElementById(id).textContent = '00');
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  const grupoId = "ID_DEL_GRUPO"; // Cambiar por el grupo real
+  let currentUser = null;
+  let cierreTimestamp = new Date().getTime() + 60 * 60 * 1000; // ejemplo: 1 hora para cierre
+
+  // ─── Autenticación ─────────────────────────────
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      console.log("Usuario autenticado:", user.uid);
+      cargarPartidos();
+      iniciarContador();
+      cargarPronosticosAnteriores();
+    } else {
+      alert('Debes iniciar sesión para participar');
+      window.location.href = 'login.html';
+    }
+  });
+
+  // ─── Cargar partidos ───────────────────────────
+  function cargarPartidos() {
+    const partidos = [
+      { local: "Querétaro", visitante: "Atlético San Luis" },
+      { local: "América", visitante: "Chivas" },
+      { local: "Toluca", visitante: "Pumas" }
+    ];
+
+    const container = document.getElementById('partidos-container');
+    container.innerHTML = '';
+
+    partidos.forEach((p, i) => {
+      const div = document.createElement('div');
+      div.className = 'partido';
+      div.innerHTML = `
+        <span class="equipo">${p.local}</span>
+        <div class="opciones">
+          <button class="opcion" data-result="L">L</button>
+          <button class="opcion" data-result="E">E</button>
+          <button class="opcion" data-result="V">V</button>
+        </div>
+        <span class="equipo">${p.visitante}</span>
+      `;
+      container.appendChild(div);
+    });
+
+    // Eventos de selección
+    document.querySelectorAll('.opcion').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const opciones = btn.parentNode.querySelectorAll('.opcion');
+        opciones.forEach(o => o.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+    });
+  }
+
+  // ─── Contador regresivo ─────────────────────────
+  function iniciarContador() {
+    const contadorEl = document.getElementById('contador');
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = cierreTimestamp - now;
+
+      if (distance <= 0) {
+        clearInterval(interval);
+        contadorEl.textContent = "Cierre de pronósticos";
         document.getElementById('guardar-btn').disabled = true;
         return;
-    }
-    const totalSeconds = Math.floor(diffMs / 1000);
-    const days = Math.floor(totalSeconds / (3600 * 24));
-    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    document.getElementById('days').textContent = String(days).padStart(2,'0');
-    document.getElementById('hours').textContent = String(hours).padStart(2,'0');
-    document.getElementById('minutes').textContent = String(minutes).padStart(2,'0');
-    document.getElementById('seconds').textContent = String(seconds).padStart(2,'0');
-}
-document.addEventListener('DOMContentLoaded', () => {
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
-});
+      }
 
-// Autenticación Firebase
-firebase.auth().onAuthStateChanged(async (user) => {
-    if (!user) { window.location.href = 'login.html'; return; }
-    currentUser = user;
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    if (userDoc.exists) {
-        const userData = userDoc.data();
-        userCredits = userData.creditos ?? 0;
-        document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
-    } else { document.getElementById('username').textContent = user.email; }
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000*60*60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000*60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    const pronosticosSnapshot = await db.collection('pronosticos')
-        .where('userId','==',user.uid)
-        .orderBy('fecha','desc')
-        .limit(1)
-        .get();
-    if (!pronosticosSnapshot.empty) {
-        const pronosticos = pronosticosSnapshot.docs[0].data();
-        pronosticos.partidos.forEach((partido,index) => {
-            const opcion = document.querySelector(`.partido:nth-of-type(${index+1}) .opcion[data-result="${partido.prediccion}"]`);
-            if (opcion) opcion.classList.add('selected');
-        });
-    }
-});
+      contadorEl.textContent = `Tiempo restante: ${hours}h ${minutes}m ${seconds}s`;
+    }, 1000);
+  }
 
-// Selección de resultados
-document.querySelectorAll('.opcion').forEach(opcion => {
-    opcion.addEventListener('click', function() {
-        this.closest('.partido').querySelectorAll('.opcion').forEach(el => el.classList.remove('selected'));
-        this.classList.add('selected');
-    });
-});
+  // ─── Guardar pronósticos ────────────────────────
+  document.getElementById('guardar-btn').addEventListener('click', async () => {
+    if (!currentUser) return alert('Usuario no autenticado');
 
-// Guardar pronósticos
-document.getElementById('guardar-btn').addEventListener('click', async () => {
-    if (userCredits <= 0) { alert('No tienes créditos suficientes'); return; }
     const partidos = [];
     let completo = true;
-    document.querySelectorAll('.partido').forEach(partidoEl => {
-        const opcion = partidoEl.querySelector('.opcion.selected');
-        if (!opcion) { completo = false; partidoEl.style.border='1px solid red'; setTimeout(()=>partidoEl.style.border='none',1000); return; }
-        const equipos = partidoEl.querySelectorAll('.equipo');
-        partidos.push({ local:equipos[0].textContent, visitante:equipos[1].textContent, prediccion: opcion.getAttribute('data-result') });
-    });
-    if (!completo) { alert('Debes seleccionar un resultado para todos los partidos'); return; }
 
-    document.getElementById('loading').style.display='block';
-    document.getElementById('guardar-btn').disabled=true;
+    document.querySelectorAll('.partido').forEach(partidoEl => {
+      const opcion = partidoEl.querySelector('.opcion.selected');
+      if (!opcion) {
+        completo = false;
+        partidoEl.style.border = '1px solid red';
+        setTimeout(() => partidoEl.style.border = 'none', 1000);
+        return;
+      }
+      const equipos = partidoEl.querySelectorAll('.equipo');
+      partidos.push({
+        local: equipos[0].textContent,
+        visitante: equipos[1].textContent,
+        prediccion: opcion.getAttribute('data-result')
+      });
+    });
+
+    if (!completo) {
+      alert('¡Debes seleccionar un resultado para todos los partidos!');
+      return;
+    }
 
     try {
-        await db.runTransaction(async transaction => {
-            const userRef = db.collection('users').doc(currentUser.uid);
-            const userDoc = await transaction.get(userRef);
-            if (!userDoc.exists || (userDoc.data().creditos??0)<=0) throw new Error("Créditos insuficientes");
-            transaction.update(userRef,{ creditos: firebase.firestore.FieldValue.increment(-1) });
-            const pronosticoRef = db.collection('pronosticos').doc();
-            transaction.set(pronosticoRef, { userId: currentUser.uid, fecha: firebase.firestore.FieldValue.serverTimestamp(), partidos });
+      const nuevoDoc = await db.collection('grupos')
+        .doc(grupoId)
+        .collection('pronosticos')
+        .add({
+          userId: currentUser.uid,
+          fecha: firebase.firestore.FieldValue.serverTimestamp(),
+          partidos: partidos
         });
-        userCredits-=1;
-        document.getElementById('username').textContent = `${currentUser.email} | Créditos: ${userCredits}`;
-        window.location.href='resultados.html';
-    } catch(error){ alert('Error: '+error.message); console.error(error); }
-    finally{ document.getElementById('loading').style.display='none'; document.getElementById('guardar-btn').disabled=false; }
-});
 
-// Logout
-document.getElementById('logout-btn').addEventListener('click',()=>firebase.auth().signOut());
+      alert('Pronósticos guardados correctamente!');
+      cargarPronosticosAnteriores();
+    } catch (error) {
+      console.error(error);
+      alert('Error al guardar pronósticos: ' + error.message);
+    }
+  });
+
+  // ─── Cargar pronósticos anteriores ─────────────
+  async function cargarPronosticosAnteriores() {
+    const container = document.getElementById('pronosticos-anterior-container');
+    container.innerHTML = 'Cargando...';
+
+    try {
+      const snapshot = await db.collection('grupos')
+        .doc(grupoId)
+        .collection('pronosticos')
+        .where('userId', '==', currentUser.uid)
+        .orderBy('fecha', 'desc')
+        .get();
+
+      if (snapshot.empty) {
+        container.innerHTML = 'No tienes pronósticos guardados aún.';
+        return;
+      }
+
+      container.innerHTML = '';
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement('div');
+        div.className = 'pronostico-item';
+        const fecha = data.fecha ? data.fecha.toDate().toLocaleString() : '';
+        const predicciones = data.partidos.map(p => `${p.local} vs ${p.visitante}: ${p.prediccion}`).join(' | ');
+        div.textContent = `${fecha} → ${predicciones}`;
+        container.appendChild(div);
+      });
+    } catch (error) {
+      console.error(error);
+      container.innerHTML = 'Error al cargar pronósticos anteriores';
+    }
+  }
 </script>
 
-<footer style="background-color: #1a1a1a; color: white; padding: 40px 20px; font-family: Arial, sans-serif;">
-<div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
-<div style="flex: 1 1 200px; margin-bottom: 20px;">
-<h2 style="margin:0; color:#00d084;">Quiniela360</h2>
-<p style="font-size:14px;color:#ccc;">Plataforma de pronósticos deportivos en línea.</p>
-<p style="font-size:14px;color:#ccc;">© 2025 Quiniela360.com - Todos los derechos reservados.</p>
-<p style="font-size:10px;color:#ccc;">q.h.ricardoarturo@gmail.com</p>
-</div>
-</div>
-</footer>
 </body>
 </html>
-
-
-
-
