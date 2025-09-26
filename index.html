@@ -7,8 +7,6 @@
   <style>
     :root {
       --verde: #006847;
-      --rojo: #ce1126;
-      --azul: #0038a8;
       --gris: #f5f5f5;
     }
     body {
@@ -24,16 +22,33 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
     }
-    .user-info { display: flex; gap: 15px; align-items: center; }
+    .user-info { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
     #creditos { font-weight: bold; background: #fff; color: var(--verde); padding: 5px 10px; border-radius: 6px; }
+    #grupoSeleccionado { background: #fff; color: var(--verde); padding: 5px 10px; border-radius: 6px; font-weight: bold; }
+    main { padding: 20px; }
     .partido { background: #fff; padding: 15px; margin: 15px 0; border-radius: 6px; }
-    .equipos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .opciones { display: flex; justify-content: center; gap: 10px; }
-    .opcion { padding: 8px 15px; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; }
-    .opcion.selected { background: var(--verde); color: #fff; border-color: var(--verde); }
+    .equipos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
+    .opciones { display: flex; justify-content: center; gap: 15px; }
+    .opcion {
+      padding: 12px 20px;
+      border: 2px solid var(--verde);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .opcion.selected { background: var(--verde); color: #fff; }
     .actions { text-align: center; margin-top: 20px; }
-    #guardar-btn { padding: 12px 25px; font-size: 16px; background: var(--verde); color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    #guardar-btn {
+      padding: 14px 28px;
+      font-size: 18px;
+      background: var(--verde);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
     #guardar-btn:disabled { background: #aaa; cursor: not-allowed; }
     .loading { text-align: center; color: var(--verde); display: none; }
   </style>
@@ -43,35 +58,104 @@
   <header>
     <h2>Quiniela360</h2>
     <div class="user-info">
-      <span id="username">Usuario</span>
+      <span id="username">Usuario: Cargando...</span>
       <span id="creditos">Créditos: 3</span>
+      <span id="grupoSeleccionado">Grupo: Ninguno</span>
       <button id="logout-btn">Cerrar Sesión</button>
     </div>
   </header>
 
-  <main class="container">
+  <main>
     <h1>Jornada 6</h1>
 
-    <!-- Partido ejemplo -->
+    <!-- 10 partidos -->
     <div class="partido" data-id="1">
-      <div class="equipos">
-        <div>Querétaro</div><div>VS</div><div>San Luis</div>
-      </div>
+      <div class="equipos"><div>Querétaro</div><div>VS</div><div>San Luis</div></div>
       <div class="opciones">
-        <div class="opcion" data-result="L">Gana Local</div>
+        <div class="opcion" data-result="L">Local</div>
         <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Gana Visitante</div>
+        <div class="opcion" data-result="V">Visitante</div>
       </div>
     </div>
 
     <div class="partido" data-id="2">
-      <div class="equipos">
-        <div>Juárez</div><div>VS</div><div>Santos</div>
-      </div>
+      <div class="equipos"><div>Juárez</div><div>VS</div><div>Santos</div></div>
       <div class="opciones">
-        <div class="opcion" data-result="L">Gana Local</div>
+        <div class="opcion" data-result="L">Local</div>
         <div class="opcion" data-result="E">Empate</div>
-        <div class="opcion" data-result="V">Gana Visitante</div>
+        <div class="opcion" data-result="V">Visitante</div>
+      </div>
+    </div>
+
+    <div class="partido" data-id="3">
+      <div class="equipos"><div>América</div><div>VS</div><div>Pumas</div></div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Visitante</div>
+      </div>
+    </div>
+
+    <div class="partido" data-id="4">
+      <div class="equipos"><div>Cruz Azul</div><div>VS</div><div>León</div></div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Visitante</div>
+      </div>
+    </div>
+
+    <div class="partido" data-id="5">
+      <div class="equipos"><div>Tigres</div><div>VS</div><div>Monterrey</div></div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Visitante</div>
+      </div>
+    </div>
+
+    <div class="partido" data-id="6">
+      <div class="equipos"><div>Atlas</div><div>VS</div><div>Tijuana</div></div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Visitante</div>
+      </div>
+    </div>
+
+    <div class="partido" data-id="7">
+      <div class="equipos"><div>Pachuca</div><div>VS</div><div>Necaxa</div></div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Visitante</div>
+      </div>
+    </div>
+
+    <div class="partido" data-id="8">
+      <div class="equipos"><div>Chivas</div><div>VS</div><div>Mazatlán</div></div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Visitante</div>
+      </div>
+    </div>
+
+    <div class="partido" data-id="9">
+      <div class="equipos"><div>Puebla</div><div>VS</div><div>Toluca</div></div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Visitante</div>
+      </div>
+    </div>
+
+    <div class="partido" data-id="10">
+      <div class="equipos"><div>Morelia</div><div>VS</div><div>Celaya</div></div>
+      <div class="opciones">
+        <div class="opcion" data-result="L">Local</div>
+        <div class="opcion" data-result="E">Empate</div>
+        <div class="opcion" data-result="V">Visitante</div>
       </div>
     </div>
 
@@ -82,15 +166,16 @@
   </main>
 
   <script>
-    // Créditos iniciales del usuario (ejemplo, luego puedes cargar desde Firebase)
-    let creditos = 3; 
+    // Simulación de datos desde Firebase
+    let usuario = { nombre: "Richar", creditos: 3 };
+    let grupo = { nombre: "Amigos del Barrio" };
 
-    // Actualizar texto en pantalla
-    function actualizarCreditos() {
-      document.getElementById("creditos").innerText = "Créditos: " + creditos;
-    }
+    // Mostrar datos en header
+    document.getElementById("username").innerText = "Usuario: " + usuario.nombre;
+    document.getElementById("creditos").innerText = "Créditos: " + usuario.creditos;
+    document.getElementById("grupoSeleccionado").innerText = "Grupo: " + grupo.nombre;
 
-    // Selección de pronósticos
+    // Manejar selección
     document.querySelectorAll(".opcion").forEach(opcion => {
       opcion.addEventListener("click", () => {
         opcion.parentNode.querySelectorAll(".opcion").forEach(o => o.classList.remove("selected"));
@@ -100,12 +185,11 @@
 
     // Guardar pronósticos
     document.getElementById("guardar-btn").addEventListener("click", () => {
-      if (creditos <= 0) {
-        alert("⚠️ No tienes créditos disponibles. Compra créditos para seguir participando.");
+      if (usuario.creditos <= 0) {
+        alert("⚠️ No tienes créditos disponibles.");
         return;
       }
 
-      // Tomar pronósticos seleccionados
       let pronosticos = {};
       document.querySelectorAll(".partido").forEach(partido => {
         let seleccionado = partido.querySelector(".opcion.selected");
@@ -114,19 +198,15 @@
 
       console.log("Pronósticos guardados:", pronosticos);
 
-      // Simulación de guardar en DB
       document.getElementById("loading").style.display = "block";
       setTimeout(() => {
+        usuario.creditos--;
+        document.getElementById("creditos").innerText = "Créditos: " + usuario.creditos;
         document.getElementById("loading").style.display = "none";
         alert("✅ Pronósticos guardados correctamente.");
-        
-        // Descontar crédito
-        creditos--;
-        actualizarCreditos();
+        window.location.href = "resultados.html?grupo=" + grupo.nombre;
       }, 1500);
     });
-
-    actualizarCreditos();
   </script>
 </body>
 </html>
