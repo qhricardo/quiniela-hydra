@@ -7,28 +7,13 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-        background-image: url('https://images.unsplash.com/photo-1607414721186-5309963d7b52?q=80&w=1472&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+      background-image: url('https://images.unsplash.com/photo-1607414721186-5309963d7b52?q=80&w=1472&auto=format&fit=crop');
       margin: 0;
       padding: 20px;
     }
-    h1 {
+    h1, h2 {
       text-align: center;
       color: #006847;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: white;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background-color: #006847;
-      color: white;
     }
     .header {
       display: flex;
@@ -46,125 +31,68 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    #logout-btn:hover {
-      background-color: #a00d1c;
+    #logout-btn:hover { background-color: #a00d1c; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
     }
-    .highlight {
-      background-color: yellow !important;
-    }
-    .partidos-cuadro {
-      background-color: #ffffff;
+    th, td {
       border: 1px solid #ccc;
-      padding: 10px;
-      margin: 15px auto;
-      width: 90%;
-      max-width: 600px;
-      font-size: 14px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      border-radius: 8px;
-    }
-    .partidos-cuadro h3 {
-      margin-top: 0;
-      text-align: center;
-      color: #006847;
-    }
-    .partidos-cuadro ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .partidos-cuadro li {
-      padding: 2px 0;
-      border-bottom: 1px solid #eee;
-      text-align: center;
-    }
-    #tablaGanadores td, #tablaGanadores th {
-      text-align: center;
       padding: 8px;
-      border: 1px solid #ccc;
+      text-align: center;
     }
-
-    #tablaGanadores tr.primer-lugar {
-      background-color: #ffe08a;
-      font-weight: bold;
-    }
-
-    #tablaGanadores tr.segundo-lugar {
-      background-color: #cfe2f3;
-    }
-
-   #tablaGanadores {
-  margin: 15px auto;
-  border-collapse: collapse;
-  width: 350px;
-}
-    }
+    th { background-color: #006847; color: white; }
+    .highlight { background-color: yellow !important; }
+    #tablaGanadores { margin: 20px auto; border-collapse: collapse; width: 350px; }
+    #tablaGanadores td, #tablaGanadores th { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    #tablaGanadores tr.primer-lugar { background-color: #ffe08a; font-weight: bold; }
+    #tablaGanadores tr.segundo-lugar { background-color: #cfe2f3; }
   </style>
 </head>
 <body>
-
   <div class="header">
-    <h2>Resultados de Todos los Usuarios</h2>
+    <h2>Resultados del Grupo: <span id="grupoNombre">Cargando...</span></h2>
     <button id="logout-btn">Cerrar Sesión</button>
   </div>
 
-  <div style="text-align: center; margin-top: 30px;">
-    <button onclick="window.location.href='index.html'" style="padding: 10px 20px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-        ⬅️ Regresar a Pronósticos
+  <div style="text-align:center; margin-top:20px;">
+    <button onclick="window.location.href='index.html'" style="padding:10px 20px; background:#006847; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">
+      ⬅️ Regresar a Pronósticos
     </button>
   </div>
 
-  <div id="premio-box" style="margin: 20px auto; width: 90%; max-width: 600px; background: #fff; border: 2px solid #006847; padding: 15px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); text-align: center;">
-    <h3 style="color: #006847; margin: 0;">🏆 Premio Acumulado</h3>
-    <p style="font-size: 24px; color: #FFD700; text-align: center;">1er Lugar</p>
-    <p id="premio-total" style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0;">$0.00 MXN </p>
-    <p style="font-size: 24px; color: #C0C0C0; text-align: center;">2do Lugar 1 Credito GRATIS</p>
-    <p>En caso de empate en total de puntos el premio se divide entre los ganadores</p>
+  <div id="premio-box" style="margin:20px auto; width:90%; max-width:600px; background:#fff; border:2px solid #006847; padding:15px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); text-align:center;">
+    <h3 style="color:#006847;">🏆 Premio Acumulado</h3>
+    <p style="font-size:20px; color:#FFD700;">1er Lugar</p>
+    <p id="premio-total" style="font-size:24px; font-weight:bold;">$0.00 MXN</p>
+    <p style="font-size:18px; color:#C0C0C0;">2do Lugar: 1 Crédito GRATIS</p>
+    <p style="font-size:14px;">En caso de empate, el premio se divide entre los ganadores.</p>
   </div>
 
- <h2 style="color: #FFD700; text-align: center;">🏆Ganadores</h2>
+  <h2 style="color:#FFD700;">🏆 Ganadores</h2>
   <table id="tablaGanadores">
     <thead>
-      <tr>
-        <th>Lugar</th>
-        <th>Usuario</th>
-        <th>Total</th>
-      </tr>
+      <tr><th>Lugar</th><th>Usuario</th><th>Total</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <div id="partidos-info" class="partidos-cuadro">
-    <h3>Partidos Programados</h3>
-    <ul id="lista-partidos"></ul>
-  </div>
-
-    <div><h3 style="color: #FFD700; margin: 0;">🏆 Ingrese en los recuadros P1, P2 ... "L" si gano local "E" si empataron y "V" si gano visita para mostar ganadores. </h3>
-
+  <h2>Resultados Oficiales</h2>
   <table>
     <thead>
       <tr>
-        <th colspan="3">Resultados Oficiales</th>
+        <th colspan="3">Ingresar Resultados</th>
         <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
         <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th>
       </tr>
       <tr id="input-resultados">
-        <td colspan="3">Ingresar Resultados</td>
-        <td><input type="text" maxlength="1" size="1" id="res-1" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-2" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-3" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-4" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-5" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-6" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-7" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-8" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-9" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-10" /></td>
+        <td colspan="3"></td>
+        ${[...Array(10)].map((_,i)=>`<td><input type="text" maxlength="1" size="1" id="res-${i+1}"/></td>`).join("")}
       </tr>
       <tr>
-        <th>Usuario</th>
-        <th>Fecha</th>
-        <th>Hora</th>
+        <th>Usuario</th><th>Fecha</th><th>Hora</th>
         <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
         <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th>
         <th>Total</th>
@@ -173,166 +101,120 @@
     <tbody id="resultados-body"></tbody>
   </table>
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
-  <script src="js/partidos-data.js"></script>
 
   <script>
     const db = firebase.firestore();
-    const tbody = document.querySelector("#resultados-body");
+    const params = new URLSearchParams(window.location.search);
+    const grupoId = params.get("grupo") || localStorage.getItem("grupoSeleccionado");
+    document.getElementById("grupoNombre").textContent = grupoId || "Sin grupo";
 
     async function cargarResultados() {
-      const snapshot = await db.collection('pronosticos').orderBy('fecha', 'desc').get();
-      const totalPronosticos = snapshot.size;
-      const montoTotal = totalPronosticos * 250;
+      if (!grupoId) return;
+      const snap = await db.collection("grupos").doc(grupoId).collection("pronosticos").get();
+
+      const totalPronosticos = snap.size;
+      const montoTotal = totalPronosticos * 250; // cada entrada vale 250
       const premioFinal = montoTotal * 0.8;
-      document.getElementById('premio-total').textContent = `$${premioFinal.toFixed(2)} MXN`;
+      document.getElementById("premio-total").textContent = `$${premioFinal.toFixed(2)} MXN`;
 
       const resultadosOficiales = {};
-      for (let i = 1; i <= 10; i++) {
+      for (let i=1;i<=10;i++) {
         const val = document.getElementById(`res-${i}`).value.toUpperCase();
-        if (["L","E","V"].includes(val)) resultadosOficiales[i] = val;
+        if (["L","E","V"].includes(val)) resultadosOficiales[i]=val;
       }
 
-      tbody.innerHTML = '';
-      for (const doc of snapshot.docs) {
+      const tbody = document.getElementById("resultados-body");
+      tbody.innerHTML = "";
+
+      for (const doc of snap.docs) {
         const data = doc.data();
-        const partidos = data.partidos || [];
-        let nombre = 'Desconocido';
+        const pronosticos = data.pronosticos || {};
+        let nombre = data.userId;
 
+        // traer nombre del usuario
         try {
-          const userRef = db.collection('users').doc(data.userId);
-          const userDoc = await userRef.get();
-          if (userDoc.exists) {
-            const userData = userDoc.data();
-            nombre = userData.name || userData.email || 'Sin nombre';
-          } else {
-            nombre = data.userId || 'Sin ID';
+          const userSnap = await db.collection("users").doc(data.userId).get();
+          if (userSnap.exists) {
+            nombre = userSnap.data().username || userSnap.data().email || nombre;
           }
-        } catch (e) {
-          console.error('Error buscando usuario:', e);
+        } catch(e){ console.error(e); }
+
+        let fecha="", hora="";
+        if (data.fecha && data.fecha.toDate) {
+          const f = data.fecha.toDate();
+          fecha=f.toLocaleDateString();
+          hora=f.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
         }
 
-        let fechaTexto = '', horaTexto = '';
-        if (data.fecha && typeof data.fecha.toDate === 'function') {
-          const fechaObj = data.fecha.toDate();
-          fechaTexto = fechaObj.toLocaleDateString();
-          horaTexto = fechaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
-        let total = 0;
-        const tds = partidos.map((p, i) => {
-          const res = p.prediccion;
-          const coincide = resultadosOficiales[i+1] && resultadosOficiales[i+1] === res;
+        let total=0;
+        const celdas=[...Array(10)].map((_,i)=>{
+          const pred = pronosticos[i] || "-";
+          const coincide = resultadosOficiales[i+1] && resultadosOficiales[i+1]===pred;
           if (coincide) total++;
-          return `<td class="${coincide ? 'highlight' : ''}">${res}</td>`;
+          return `<td class="${coincide?'highlight':''}">${pred}</td>`;
         });
 
-        const fila = document.createElement('tr');
-        fila.innerHTML = `
+        const fila=document.createElement("tr");
+        fila.innerHTML=`
           <td>${nombre}</td>
-          <td>${fechaTexto}</td>
-          <td>${horaTexto}</td>
-          ${tds.join('')}
-          <td>${total}</td>
-        `;
+          <td>${fecha}</td>
+          <td>${hora}</td>
+          ${celdas.join("")}
+          <td>${total}</td>`;
         tbody.appendChild(fila);
       }
-
       actualizarGanadores();
     }
 
     function actualizarGanadores() {
-      const filas = document.querySelectorAll("#resultados-body tr");
-      const datos = [];
-
-      filas.forEach(fila => {
-        const columnas = fila.querySelectorAll("td");
-        const usuario = columnas[0].innerText;
-        const total = parseInt(columnas[columnas.length - 1].innerText);
-        datos.push({ usuario, total });
+      const filas=document.querySelectorAll("#resultados-body tr");
+      const datos=[];
+      filas.forEach(f=>{
+        const c=f.querySelectorAll("td");
+        const usuario=c[0].innerText;
+        const total=parseInt(c[c.length-1].innerText)||0;
+        datos.push({usuario,total});
       });
+      datos.sort((a,b)=>b.total-a.total);
+      const tabla=document.querySelector("#tablaGanadores tbody");
+      tabla.innerHTML="";
+      if (datos.length===0) return;
 
-      datos.sort((a, b) => b.total - a.total);
-      const tablaGanadores = document.querySelector("#tablaGanadores tbody");
-      tablaGanadores.innerHTML = "";
-      if (datos.length === 0) return;
+      const max=datos[0].total;
+      const segundo=datos.find(d=>d.total<max)?.total;
 
-      const primerLugarPuntaje = datos[0].total;
-      const segundoLugarPuntaje = datos.find(u => u.total < primerLugarPuntaje)?.total;
-
-      datos.filter(u => u.total === primerLugarPuntaje).forEach(u => {
-        tablaGanadores.innerHTML += `
-          <tr class="primer-lugar">
-            <td>🥇 1er Lugar</td>
-            <td>${u.usuario}</td>
-            <td>${u.total}</td>
-          </tr>
-        `;
+      datos.filter(d=>d.total===max).forEach(d=>{
+        tabla.innerHTML+=`<tr class="primer-lugar"><td>🥇 1er Lugar</td><td>${d.usuario}</td><td>${d.total}</td></tr>`;
       });
-
-      if (segundoLugarPuntaje !== undefined) {
-        datos.filter(u => u.total === segundoLugarPuntaje).forEach(u => {
-          tablaGanadores.innerHTML += `
-            <tr class="segundo-lugar">
-              <td>🥈 2do Lugar</td>
-              <td>${u.usuario}</td>
-              <td>${u.total}</td>
-            </tr>
-          `;
+      if (segundo!==undefined) {
+        datos.filter(d=>d.total===segundo).forEach(d=>{
+          tabla.innerHTML+=`<tr class="segundo-lugar"><td>🥈 2do Lugar</td><td>${d.usuario}</td><td>${d.total}</td></tr>`;
         });
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener("DOMContentLoaded", ()=>{
       cargarResultados();
-
-      for (let i = 1; i <= 10; i++) {
-        document.getElementById(`res-${i}`).addEventListener('input', cargarResultados);
-      }
-
-      const lista = document.getElementById('lista-partidos');
-      if (window.partidosProgramados && lista) {
-        lista.innerHTML = '';
-        window.partidosProgramados.forEach(p => {
-          const li = document.createElement('li');
-          li.textContent = p;
-          lista.appendChild(li);
-        });
+      for (let i=1;i<=10;i++) {
+        document.getElementById(`res-${i}`).addEventListener("input",cargarResultados);
       }
     });
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      firebase.auth().signOut().then(() => {
-        window.location.href = 'login.html';
-      });
+    document.getElementById("logout-btn").addEventListener("click",()=>{
+      firebase.auth().signOut().then(()=>window.location.href="login.html");
     });
   </script>
+
+  <footer style="background:#1a1a1a; color:white; padding:30px; margin-top:30px; text-align:center;">
+    <h2 style="color:#00d084;">Quiniela360</h2>
+    <p>Plataforma de pronósticos deportivos en línea.</p>
+    <p>© 2025 Quiniela360.com - Todos los derechos reservados.</p>
+    <p style="font-size:12px;">q.h.ricardoarturo@gmail.com</p>
+  </footer>
 </body>
 </html>
-
-  <footer style="background-color: #1a1a1a; color: white; padding: 40px 20px; font-family: 'Arial', sans-serif;">
-  <div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
-
-    <!-- Sección Logo o Nombre -->
-      <div style="flex: 1 1 200px; margin-bottom: 20px;">
-      <h2 style="margin: 0; color: #00d084;">Quiniela360</h2>
-      <p style="font-size: 14px; color: #ccc;">
-        Plataforma de pronósticos deportivos en línea.
-      </p>
-        <p style="font-size: 14px; color: #ccc;">
-        © 2025 Quiniela360.com - Todos los derechos reservados.
-        <p style="font-size: 10px; color: #ccc;">  q.h.ricardoarturo@gmail.com </p>
-      </p>
-     </div>
-</footer>
-</body>
-</html>
-
-
-
-
-
-
