@@ -1,69 +1,202 @@
-<?php
-session_start();
-
-// Verificar si hay usuario logueado
-if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-// Variables de sesión
-$usuario   = $_SESSION['usuario'] ?? "Invitado";
-$creditos  = $_SESSION['creditos'] ?? 0;
-?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Quiniela 360 - Inicio</title>
-    <style>
-        body { margin:0; font-family: Arial, sans-serif; background:#f9f9f9; }
-        header { background:#006847; color:#fff; padding:15px; display:flex; justify-content:space-between; align-items:center; }
-        header h1 { margin:0; font-size:20px; }
-        .user-info { text-align:right; }
-        .user-info p { margin:3px 0; }
-        nav { background:#eee; padding:10px; }
-        nav a { margin-right:15px; text-decoration:none; color:#333; font-weight:bold; }
-        .container { padding:20px; }
-        .grupo { background:#fff; border:1px solid #ddd; border-radius:5px; padding:15px; margin-bottom:15px; }
-        .grupo h3 { margin-top:0; }
-        .btn { display:inline-block; padding:8px 12px; background:#006847; color:#fff; text-decoration:none; border-radius:4px; }
-        .btn:hover { background:#004f34; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pronósticos - Quiniela360</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #006847;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .user-info {
+      font-size: 14px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #006847;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    .btn {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .win { background: #28a745; color: white; }
+    .draw { background: #ffc107; color: black; }
+    .lose { background: #dc3545; color: white; }
+    .selected { outline: 3px solid black; }
+    #guardar-btn {
+      display: block;
+      margin: 30px auto 10px;
+      padding: 15px 30px;
+      background: #006847;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>⚽ Quiniela360</h1>
-        <div class="user-info">
-            <p><strong>Usuario:</strong> <?= htmlspecialchars($usuario) ?></p>
-            <p><strong>Créditos:</strong> <?= intval($creditos) ?></p>
-            <a href="logout.php" class="btn">Cerrar Sesión</a>
-        </div>
-    </header>
-
-    <nav>
-        <a href="index.php">Inicio</a>
-        <a href="grupos.php">Grupos</a>
-        <a href="resultados.php">Resultados</a>
-        <a href="mi_perfil.php">Mi Perfil</a>
-    </nav>
-
-    <div class="container">
-        <h2>Bienvenido <?= htmlspecialchars($usuario) ?> 👋</h2>
-        <p>Aquí puedes ver tus grupos y participar en la quiniela.</p>
-
-        <!-- Ejemplo de grupos -->
-        <div class="grupo">
-            <h3>Grupo Liga MX</h3>
-            <p>Participa en la quiniela de la Liga MX.</p>
-            <a href="jugar.php?grupo=ligamx" class="btn">Entrar</a>
-        </div>
-
-        <div class="grupo">
-            <h3>Grupo Champions League</h3>
-            <p>Compite en la quiniela de Champions.</p>
-            <a href="jugar.php?grupo=champions" class="btn">Entrar</a>
-        </div>
+  <header>
+    <div class="logo"><h1>⚽ Quiniela360</h1></div>
+    <div class="user-info">
+      Usuario: <span id="username">Cargando...</span> | 
+      Créditos: <span id="creditos">0</span> | 
+      Grupo: <span id="grupoActual">Ninguno</span>
     </div>
+  </header>
+
+  <div class="container">
+    <h2>Pronósticos - <span id="nombreGrupo">Selecciona un grupo</span></h2>
+    <table id="tablaPartidos">
+      <!-- Se llenan dinámicamente los 10 partidos -->
+    </table>
+    <button id="guardar-btn">💾 Guardar Pronósticos</button>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script>
+    // Configuración Firebase (reemplaza con tu config)
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const usernameEl = document.getElementById("username");
+    const creditosEl = document.getElementById("creditos");
+    const grupoEl = document.getElementById("grupoActual");
+    const nombreGrupoEl = document.getElementById("nombreGrupo");
+    const tablaPartidos = document.getElementById("tablaPartidos");
+
+    let grupoSeleccionado = localStorage.getItem("grupoSeleccionado") || null;
+    let grupoNombre = localStorage.getItem("grupoNombre") || "Ninguno";
+    let currentUser = null;
+
+    // Mostrar grupo
+    grupoEl.textContent = grupoNombre;
+    nombreGrupoEl.textContent = grupoNombre;
+
+    // Partidos de ejemplo
+    const partidos = [
+      ["América", "Chivas"],
+      ["Pumas", "Cruz Azul"],
+      ["Tigres", "Monterrey"],
+      ["Toluca", "Santos"],
+      ["León", "Pachuca"],
+      ["Atlas", "Querétaro"],
+      ["Tijuana", "Necaxa"],
+      ["Mazatlán", "Juárez"],
+      ["San Luis", "León"],
+      ["Santos", "América"]
+    ];
+
+    // Render partidos
+    partidos.forEach((p, i) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${p[0]} vs ${p[1]}</td>
+        <td>
+          <button class="btn win" data-match="${i}" data-result="gana1">${p[0]} Gana</button>
+          <button class="btn draw" data-match="${i}" data-result="empate">Empate</button>
+          <button class="btn lose" data-match="${i}" data-result="gana2">${p[1]} Gana</button>
+        </td>
+      `;
+      tablaPartidos.appendChild(row);
+    });
+
+    const pronosticos = {};
+
+    // Selección
+    document.querySelectorAll(".btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const match = btn.dataset.match;
+        const result = btn.dataset.result;
+
+        pronosticos[match] = result;
+
+        document.querySelectorAll(`[data-match="${match}"]`).forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+
+    // Escuchar usuario
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        usernameEl.textContent = user.displayName || user.email;
+
+        // Leer créditos
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        if (userDoc.exists) {
+          creditosEl.textContent = userDoc.data().creditos || 0;
+        }
+      }
+    });
+
+    // Guardar pronósticos
+    document.getElementById("guardar-btn").addEventListener("click", async () => {
+      if (!currentUser) {
+        alert("Debes iniciar sesión.");
+        return;
+      }
+      if (!grupoSeleccionado) {
+        alert("Debes seleccionar un grupo.");
+        return;
+      }
+
+      await db.collection("grupos").doc(grupoSeleccionado)
+        .collection("pronosticos").add({
+          userId: currentUser.uid,
+          userName: currentUser.displayName || currentUser.email,
+          fecha: new Date(),
+          pronosticos
+        });
+
+      alert("✅ Pronósticos guardados");
+      window.location.href = "resultados.html?grupo=" + grupoSeleccionado;
+    });
+  </script>
 </body>
 </html>
