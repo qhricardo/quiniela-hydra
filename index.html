@@ -336,7 +336,7 @@ firebase.auth().onAuthStateChanged(async(user)=>{
     }
 
     // Obtener grupo actual
-    const grupoActual = localStorage.getItem('grupoSeleccionado');
+    const grupoActual = localStorage.getItem('grupoSeleccionadoid');
     if(!grupoActual){ alert("Debes seleccionar un grupo"); return; }
     document.getElementById('grupoActual').textContent = `Grupo: ${grupoActual}`;
 
@@ -455,6 +455,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
