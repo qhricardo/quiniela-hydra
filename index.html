@@ -336,7 +336,7 @@ firebase.auth().onAuthStateChanged(async(user)=>{
     }
 
     // Obtener grupo actual
-    const grupoActual = localStorage.getItem('grupoSeleccionadoid');
+    const grupoActual = localStorage.getItem('grupoSeleccionadoId');
     if(!grupoActual){ alert("Debes seleccionar un grupo"); return; }
     document.getElementById('grupoActual').textContent = `Grupo: ${grupoActual}`;
 
@@ -369,7 +369,7 @@ document.querySelectorAll('.opcion').forEach(el=>{
 document.getElementById('guardar-btn').addEventListener('click', async()=>{
     if(userCredits<=0){ alert('No tienes créditos suficientes'); return; }
 
-    const grupoActual = localStorage.getItem('grupoSeleccionado');
+    const grupoActual = localStorage.getItem('grupoSeleccionadoId');
     if(!grupoActual){ alert('Debes seleccionar un grupo'); return; }
  
     const partidos = [];
@@ -455,6 +455,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
