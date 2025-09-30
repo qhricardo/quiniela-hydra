@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -65,13 +64,13 @@
 
     const firebaseConfig = {
       apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
-  authDomain: "quiniela-hydra.firebaseapp.com",
-  databaseURL: "https://quieniela-hydra-default-rtdb.firebaseio.com",
-  projectId: "quiniela-hydra",
-  storageBucket: "quiniela-hydra.firebasestorage.app",
-  messagingSenderId: "329849216739",
-  appId: "1:329849216739:web:83d23ff1424eb167172fd6",
-  measurementId: "G-FWDDQ5HQYV"
+      authDomain: "quiniela-hydra.firebaseapp.com",
+      databaseURL: "https://quieniela-hydra-default-rtdb.firebaseio.com",
+      projectId: "quiniela-hydra",
+      storageBucket: "quiniela-hydra.firebasestorage.app",
+      messagingSenderId: "329849216739",
+      appId: "1:329849216739:web:83d23ff1424eb167172fd6",
+      measurementId: "G-FWDDQ5HQYV"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -88,42 +87,39 @@
     }
 
     onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    usuarioActual = user;
+      if (user) {
+        usuarioActual = user;
+        const nombreUsuario = user.displayName || user.email.split("@")[0];
+        document.getElementById("usuario").innerText = `Bienvenido, ${nombreUsuario}`;
 
-    // Si no tiene displayName, tomamos el email como fallback
-    const nombreUsuario = user.displayName || user.email.split("@")[0];
+        // Créditos desde Firestore
+        const docUser = await getDoc(doc(db, "users", user.uid));
+        if (docUser.exists()) {
+          document.getElementById("creditos").innerText = docUser.data().creditos || 0;
+        }
 
-    document.getElementById("usuario").innerText = `Bienvenido, ${nombreUsuario}`;
-
-    // Créditos desde Firestore
-    const docUser = await getDoc(doc(db, "users", user.uid));
-    if (docUser.exists()) {
-      document.getElementById("creditos").innerText = docUser.data().creditos || 0;
-    } else {
-      document.getElementById("creditos").innerText = 0;
-    }
-
-    cargarGrupos();
-  } else {
-    login();
-  }
-});
+        cargarGrupos();
+      } else {
+        login();
+      }
+    });
 
     // 🔹 Crear grupo
     async function crearGrupo() {
       const nombre = document.getElementById("nombreGrupo").value;
       if (!nombre || !usuarioActual) return alert("Debes poner un nombre y estar logueado");
 
+      const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0]; // ✅ guardar nombre
       const docRef = await addDoc(collection(db, "grupos"), {
         nombre: nombre,
-        creadoPor: usuarioActual.uid,
+        creadoPor: usuarioActual.uid,   // UID
+        creadorNombre: nombreCreador,  // ✅ Nombre legible
         creadoEn: new Date()
       });
 
       // El creador entra como miembro
       await setDoc(doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid), {
-        nombre: usuarioActual.displayName,
+        nombre: nombreCreador,
         agregadoPor: usuarioActual.uid,
         fechaIngreso: new Date()
       });
@@ -133,7 +129,7 @@
       cargarGrupos();
     }
 
-    // 🔹 Listar grupos en tarjetas
+    // 🔹 Listar grupos
     async function cargarGrupos() {
       const contenedor = document.getElementById("gruposContainer");
       contenedor.innerHTML = "";
@@ -145,6 +141,7 @@
         div.className = "grupo-card";
         div.innerHTML = `
           <h3>${grupo.nombre}</h3>
+          <small>Creado por: ${grupo.creadorNombre || "Desconocido"}</small> <br>
           <small>ID: ${docSnap.id}</small>
         `;
         div.onclick = () => abrirModal(docSnap.id, grupo);
@@ -152,17 +149,12 @@
       });
     }
 
-function seleccionarGrupo(id, nombre) {
-  localStorage.setItem("grupoSeleccionado", id);
-  localStorage.setItem("grupoNombre", nombre);
-  window.location.href = "index.html";
-}
-    
     // 🔹 Modal detalle grupo
     function abrirModal(grupoId, grupo) {
       grupoSeleccionado = grupoId;
       document.getElementById("modalTitulo").innerText = grupo.nombre;
-      document.getElementById("modalInfo").innerText = `Creado por: ${grupo.creadoPor}`;
+      document.getElementById("modalInfo").innerText = 
+        `Creado por: ${grupo.creadorNombre || "Desconocido"} (ID: ${grupo.creadoPor})`;
       document.getElementById("modal").style.display = "block";
     }
 
@@ -171,7 +163,7 @@ function seleccionarGrupo(id, nombre) {
       document.getElementById("modal").style.display = "none";
     };
 
-    // 🔹 Entrar al grupo → index.html
+    // 🔹 Entrar al grupo
     document.getElementById("btnEntrar").onclick = () => {
       if (grupoSeleccionado) {
         localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
@@ -179,12 +171,7 @@ function seleccionarGrupo(id, nombre) {
       }
     };
 
-    // Exponer funciones globales
     window.crearGrupo = crearGrupo;
   </script>
 </body>
 </html>
-
-
-
-
