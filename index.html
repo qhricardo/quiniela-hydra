@@ -358,54 +358,34 @@ document.querySelectorAll('.opcion').forEach(opcion => {
 });
 
 // Guardar pronósticos
-document.getElementById('guardar-btn').addEventListener('click', async () => {
-    if (userCredits <= 0) { alert('No tienes créditos suficientes'); return; }
-    const partidos = [];
-    let completo = true;
-    document.querySelectorAll('.partido').forEach(partidoEl => {
-        const opcion = partidoEl.querySelector('.opcion.selected');
-        if (!opcion) { completo = false; partidoEl.style.border='1px solid red'; setTimeout(()=>partidoEl.style.border='none',1000); return; }
-        const equipos = partidoEl.querySelectorAll('.equipo');
-        partidos.push({ local:equipos[0].textContent, visitante:equipos[1].textContent, prediccion: opcion.getAttribute('data-result') });
+document.getElementById('guardar-btn').addEventListener('click', async()=>{
+    if(userCredits<=0){ alert('No tienes créditos suficientes'); return; }
+    const partidos=[];
+    let completo=true;
+    document.querySelectorAll('.partido').forEach(el=>{
+        const opcion=el.querySelector('.opcion.selected');
+        if(!opcion){ completo=false; el.style.border='1px solid red'; setTimeout(()=>el.style.border='none',1000); return;}
+        const equipos=el.querySelectorAll('.equipo');
+        partidos.push({local:equipos[0].textContent, visitante:equipos[1].textContent, prediccion:opcion.dataset.result});
     });
-    if (!completo) { alert('Debes seleccionar un resultado para todos los partidos'); return; }
+    if(!completo){ alert('Selecciona todos los partidos'); return; }
 
     document.getElementById('loading').style.display='block';
     document.getElementById('guardar-btn').disabled=true;
-
-    try {
-        await db.runTransaction(async transaction => {
-            const userRef = db.collection('users').doc(currentUser.uid);
-            const userDoc = await transaction.get(userRef);
-            if (!userDoc.exists || (userDoc.data().creditos??0)<=0) throw new Error("Créditos insuficientes");
-            transaction.update(userRef,{ creditos: firebase.firestore.FieldValue.increment(-1) });
-            const pronosticoRef = db.collection('pronosticos').doc();
-            transaction.set(pronosticoRef, { userId: currentUser.uid, fecha: firebase.firestore.FieldValue.serverTimestamp(), partidos });
+    try{
+        await db.runTransaction(async tx=>{
+            const userRef=db.collection('users').doc(currentUser.uid);
+            const uDoc=await tx.get(userRef);
+            if(!uDoc.exists||(uDoc.data().creditos??0)<=0) throw new Error("Créditos insuficientes");
+            tx.update(userRef,{creditos:firebase.firestore.FieldValue.increment(-1)});
+            const pronRef=db.collection('pronosticos').doc();
+            tx.set(pronRef,{userId:currentUser.uid,fecha:firebase.firestore.FieldValue.serverTimestamp(),partidos});
         });
-        userCredits-=1;
-        document.getElementById('username').textContent = `${currentUser.email} | Créditos: ${userCredits}`;
+        userCredits--;
+        document.getElementById('username').textContent=`${currentUser.email} | Créditos: ${userCredits}`;
         window.location.href='resultados.html';
-    } catch(error){ alert('Error: '+error.message); console.error(error); }
+    }catch(err){ alert("Error: "+err.message); }
     finally{ document.getElementById('loading').style.display='none'; document.getElementById('guardar-btn').disabled=false; }
-});
-    document.addEventListener("DOMContentLoaded", async () => {
-    const grupoId = localStorage.getItem("grupoSeleccionado");
-    if (grupoId) {
-        try {
-            const grupoDoc = await db.collection("grupos").doc(grupoId).get();
-            if (grupoDoc.exists) {
-                const grupoData = grupoDoc.data();
-                document.getElementById("grupoActual").textContent = ` | Grupo: ${grupoData.nombre}`;
-            } else {
-                document.getElementById("grupoActual").textContent = " | Grupo: (no encontrado)";
-            }
-        } catch (err) {
-            console.error("Error cargando grupo:", err);
-            document.getElementById("grupoActual").textContent = " | Grupo: error";
-        }
-    } else {
-        document.getElementById("grupoActual").textContent = " | Sin grupo";
-    }
 });
 
 // Logout
@@ -424,6 +404,7 @@ document.getElementById('logout-btn').addEventListener('click',()=>firebase.auth
 </footer>
 </body>
 </html>
+
 
 
 
