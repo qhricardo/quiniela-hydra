@@ -418,7 +418,7 @@ document.getElementById('guardar-btn').addEventListener('click', async()=>{
 
 // 🔹 Mostrar grupo actual en el header
 document.addEventListener("DOMContentLoaded", async () => {
-    const grupoId = localStorage.getItem("grupoSeleccionadoid");
+    const grupoId = localStorage.getItem("grupoSeleccionadoId");
     if (grupoId) {
         try {
             const grupoDoc = await db.collection("grupos").doc(grupoId).get();
@@ -455,6 +455,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
