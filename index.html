@@ -369,9 +369,7 @@ document.querySelectorAll('.opcion').forEach(el=>{
 document.getElementById('guardar-btn').addEventListener('click', async()=>{
     if(userCredits<=0){ alert('No tienes créditos suficientes'); return; }
 
-    const grupoActualId = localStorage.getItem('grupoSeleccionadoId');
-    if(!grupoActualId){ alert('Debes seleccionar un grupo'); return; }
-
+ 
     const partidos = [];
     let completo = true;
     document.querySelectorAll('.partido').forEach(el=>{
@@ -455,6 +453,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
