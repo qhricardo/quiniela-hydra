@@ -40,6 +40,7 @@
   <div class="card">
     <h3>Crear Nuevo Grupo</h3>
     <input type="text" id="nombreGrupo" placeholder="Nombre del grupo">
+    <input type="password" id="passwordGrupo" placeholder="Contraseña (opcional)">
     <button onclick="crearGrupo()">Crear</button>
   </div>
 
@@ -52,6 +53,9 @@
       <span id="closeModal">&times;</span>
       <h3 id="modalTitulo">Detalle del Grupo</h3>
       <p id="modalInfo"></p>
+      <div id="passwordDiv" style="display:none;">
+        <input type="password" id="passwordInput" placeholder="Ingresa la contraseña">
+      </div>
       <button id="btnEntrar">Entrar al Grupo</button>
     </div>
   </div>
@@ -60,7 +64,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, getCountFromServer } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
@@ -79,6 +83,7 @@
 
     let usuarioActual = null;
     let grupoSeleccionado = null;
+    let grupoPassword = null;
 
     // 🔹 Iniciar sesión automática (Google)
     async function login() {
@@ -107,13 +112,15 @@
     // 🔹 Crear grupo
     async function crearGrupo() {
       const nombre = document.getElementById("nombreGrupo").value;
+      const pass = document.getElementById("passwordGrupo").value || null;
       if (!nombre || !usuarioActual) return alert("Debes poner un nombre y estar logueado");
 
-      const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0]; // ✅ guardar nombre
+      const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0];
       const docRef = await addDoc(collection(db, "grupos"), {
         nombre: nombre,
-        creadoPor: usuarioActual.uid,   // UID
-        creadorNombre: nombreCreador,  // ✅ Nombre legible
+        creadoPor: usuarioActual.uid,
+        creadorNombre: nombreCreador,
+        password: pass, // ✅ se guarda contraseña si existe
         creadoEn: new Date()
       });
 
@@ -126,6 +133,7 @@
 
       alert("Grupo creado 🚀");
       document.getElementById("nombreGrupo").value = "";
+      document.getElementById("passwordGrupo").value = "";
       cargarGrupos();
     }
 
@@ -135,26 +143,36 @@
       contenedor.innerHTML = "";
 
       const querySnapshot = await getDocs(collection(db, "grupos"));
-      querySnapshot.forEach((docSnap) => {
+      for (const docSnap of querySnapshot.docs) {
         const grupo = docSnap.data();
+
+        // contar participantes
+        const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
+        const countSnap = await getCountFromServer(miembrosRef);
+        const numParticipantes = countSnap.data().count;
+
         const div = document.createElement("div");
         div.className = "grupo-card";
         div.innerHTML = `
           <h3>${grupo.nombre}</h3>
-          <small>Creado por: ${grupo.creadorNombre || "Desconocido"}</small> <br>
-          <small>ID: ${docSnap.id}</small>
+          <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
+          <small>Participantes: ${numParticipantes}</small>
         `;
         div.onclick = () => abrirModal(docSnap.id, grupo);
         contenedor.appendChild(div);
-      });
+      }
     }
 
     // 🔹 Modal detalle grupo
     function abrirModal(grupoId, grupo) {
       grupoSeleccionado = grupoId;
+      grupoPassword = grupo.password || null;
+
       document.getElementById("modalTitulo").innerText = grupo.nombre;
-      document.getElementById("modalInfo").innerText = 
-        `Creado por: ${grupo.creadorNombre || "Desconocido"} (ID: ${grupo.creadoPor})`;
+      document.getElementById("modalInfo").innerText =
+        `Creado por: ${grupo.creadorNombre || "Sin nombre"}`;
+
+      document.getElementById("passwordDiv").style.display = grupoPassword ? "block" : "none";
       document.getElementById("modal").style.display = "block";
     }
 
@@ -164,8 +182,15 @@
     };
 
     // 🔹 Entrar al grupo
-    document.getElementById("btnEntrar").onclick = () => {
+    document.getElementById("btnEntrar").onclick = async () => {
       if (grupoSeleccionado) {
+        if (grupoPassword) {
+          const passIngresada = document.getElementById("passwordInput").value;
+          if (passIngresada !== grupoPassword) {
+            alert("Contraseña incorrecta ❌");
+            return;
+          }
+        }
         localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
         window.location.href = "index.html";
       }
