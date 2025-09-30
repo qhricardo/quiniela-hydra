@@ -336,13 +336,13 @@ firebase.auth().onAuthStateChanged(async(user)=>{
     }
 
     // Obtener grupo actual
-    const grupoActualId = localStorage.getItem('grupoSeleccionadoId');
-    if(!grupoActualId){ alert("Debes seleccionar un grupo"); return; }
-    document.getElementById('grupoActual').textContent = `Grupo: ${grupoActualId}`;
+    const grupoActual = localStorage.getItem('grupoSeleccionado');
+    if(!grupoActual){ alert("Debes seleccionar un grupo"); return; }
+    document.getElementById('grupoActual').textContent = `Grupo: ${grupoActual}`;
 
     // Cargar pronósticos previos si existen
     const pronSnapshot = await db.collection('grupos')
-        .doc(grupoActualId)
+        .doc(grupoActual)
         .collection('pronosticos')
         .where('userId','==',user.uid)
         .orderBy('fecha','desc')
@@ -369,8 +369,8 @@ document.querySelectorAll('.opcion').forEach(el=>{
 document.getElementById('guardar-btn').addEventListener('click', async()=>{
     if(userCredits<=0){ alert('No tienes créditos suficientes'); return; }
 
-    const grupoActualId = localStorage.getItem('grupoSeleccionadoId');
-    if(!grupoActualId){ alert('Debes seleccionar un grupo'); return; }
+    const grupoActual = localStorage.getItem('grupoSeleccionado');
+    if(!grupoActual){ alert('Debes seleccionar un grupo'); return; }
  
     const partidos = [];
     let completo = true;
@@ -393,7 +393,7 @@ document.getElementById('guardar-btn').addEventListener('click', async()=>{
             tx.update(userRef,{creditos:firebase.firestore.FieldValue.increment(-1)});
 
             const pronRef = db.collection('grupos')
-                .doc(grupoActualId)
+                .doc(grupoActual)
                 .collection('pronosticos')
                 .doc();
 
@@ -455,6 +455,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
