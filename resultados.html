@@ -53,7 +53,7 @@
 </head>
 <body>
   <div class="header">
-    <h2>Resultados del Grupo: <span id="grupoNombre">Cargando...</span></h2>
+    <h2>Resultados del Grupo: <span id="grupoActual">Cargando...</span></h2>
     <button id="logout-btn">Cerrar Sesión</button>
   </div>
 
@@ -111,7 +111,7 @@
     const db = firebase.firestore();
     const params = new URLSearchParams(window.location.search);
     const grupoId = params.get("grupo") || localStorage.getItem("grupoSeleccionado");
-    document.getElementById("grupoNombre").textContent = grupoId || "Sin grupo";
+    document.getElementById("grupoActual").textContent = grupoId || "Sin grupo";
 
     async function cargarResultados() {
       if (!grupoId) return;
@@ -218,3 +218,4 @@
   </footer>
 </body>
 </html>
+
