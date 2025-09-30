@@ -71,6 +71,7 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     <h2><img src="https://i.postimg.cc/Sx6wL6gR/504667444-122141205488674048-8857650743605451691-n.jpg" width="75">.com</h2>
     <div class="user-info">
         <span id="username"></span>
+        <span id="grupoActual" style="font-weight:bold; color: #ffd700;"></span> <!-- 🔹 Nombre del grupo -->
         <button id="logout-btn">Cerrar Sesión</button>
     </div>
     <button onclick="window.location.href='resultados.html'" style="padding: 10px 20px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
@@ -235,6 +236,25 @@ document.getElementById('guardar-btn').addEventListener('click', async () => {
     } catch(error){ alert('Error: '+error.message); console.error(error); }
     finally{ document.getElementById('loading').style.display='none'; document.getElementById('guardar-btn').disabled=false; }
 });
+    document.addEventListener("DOMContentLoaded", async () => {
+    const grupoId = localStorage.getItem("grupoSeleccionado");
+    if (grupoId) {
+        try {
+            const grupoDoc = await db.collection("grupos").doc(grupoId).get();
+            if (grupoDoc.exists) {
+                const grupoData = grupoDoc.data();
+                document.getElementById("grupoActual").textContent = ` | Grupo: ${grupoData.nombre}`;
+            } else {
+                document.getElementById("grupoActual").textContent = " | Grupo: (no encontrado)";
+            }
+        } catch (err) {
+            console.error("Error cargando grupo:", err);
+            document.getElementById("grupoActual").textContent = " | Grupo: error";
+        }
+    } else {
+        document.getElementById("grupoActual").textContent = " | Sin grupo";
+    }
+});
 
 // Logout
 document.getElementById('logout-btn').addEventListener('click',()=>firebase.auth().signOut());
@@ -252,6 +272,7 @@ document.getElementById('logout-btn').addEventListener('click',()=>firebase.auth
 </footer>
 </body>
 </html>
+
 
 
 
