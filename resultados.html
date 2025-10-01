@@ -184,7 +184,32 @@
     const tbody = document.querySelector("#resultados-body");
 
     async function cargarResultados() {
-      const snapshot = await db.collection('pronosticos').orderBy('fecha', 'desc').get();
+      const grupoActual = localStorage.getItem("grupoSeleccionado");
+if (!grupoActual) {
+  alert("No se seleccionó un grupo. Regresa e ingresa a un grupo primero.");
+  return;
+}
+
+// Mostrar el nombre del grupo en el encabezado
+try {
+  const grupoDoc = await db.collection("grupos").doc(grupoActual).get();
+  if (grupoDoc.exists) {
+    document.querySelector(".header h2").textContent = 
+      `Resultados del Grupo: ${grupoDoc.data().nombre}`;
+  } else {
+    document.querySelector(".header h2").textContent = 
+      `Resultados del Grupo: ${grupoActual}`;
+  }
+} catch (err) {
+  console.error("Error obteniendo grupo:", err);
+}
+
+const snapshot = await db.collection("grupos")
+  .doc(grupoActual)
+  .collection("pronosticos")
+  .orderBy("fecha", "desc")
+  .get();
+
       const totalPronosticos = snapshot.size;
       const montoTotal = totalPronosticos * 250;
       const premioFinal = montoTotal * 0.8;
@@ -330,6 +355,7 @@
 </footer>
 </body>
 </html>
+
 
 
 
