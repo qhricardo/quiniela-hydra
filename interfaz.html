@@ -197,31 +197,6 @@ document.getElementById("btnEntrar").onclick = async () => {
       }
     }
 
-    try {
-      // 👤 Registrar al usuario como miembro del grupo (merge:true para no sobrescribir)
-      const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
-      await setDoc(
-        doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
-        {
-          nombre: nombreUsuario,
-          agregadoPor: usuarioActual.uid,
-          fechaIngreso: new Date()
-        },
-        { merge: true }
-      );
-
-      // ✅ Guardar selección local
-      localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
-
-      // ✅ Redirigir SOLO cuando ya terminó de guardarse
-      window.location.href = "index.html";
-    } catch (e) {
-      console.error("Error al entrar al grupo:", e);
-      alert("Hubo un error al entrar al grupo. Intenta de nuevo.");
-    }
-  }
-};
-
     // 👤 Registrar al usuario como miembro del grupo
     const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
     await setDoc(doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid), {
@@ -240,4 +215,3 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
-
