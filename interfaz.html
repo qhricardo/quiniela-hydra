@@ -219,14 +219,27 @@ document.getElementById("btnEntrar").onclick = async () => {
       console.error("Error al entrar al grupo:", e);
       alert("Hubo un error al entrar al grupo. Intenta de nuevo.");
     }
+    // 👤 Registrar al usuario como miembro del grupo
+    const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
+    await setDoc(doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid), {
+      nombre: nombreUsuario,
+      agregadoPor: usuarioActual.uid,
+      fechaIngreso: new Date()
+    });
+
+    // Guardar selección local
+    localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+    window.location.href = "index.html";
   }
 };
+
 
 
     window.crearGrupo = crearGrupo;
   </script>
 </body>
 </html>
+
 
 
 
