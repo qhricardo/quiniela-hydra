@@ -439,13 +439,12 @@ document.getElementById('guardar-btn').addEventListener('click', async()=>{
             });
         });
 
-        alert('✅ Pronósticos guardados con éxito');
-    } catch(err){
-        console.error(err);
-        alert('❌ Error al guardar pronósticos: ' + err.message);
-    } finally {
-        document.getElementById('loading').style.display='none';
+         window.location.href = 'resultados.html';
+
+    } catch (e) {
+        alert('❌ Error al guardar: ' + e.message);
         document.getElementById('guardar-btn').disabled=false;
+        document.getElementById('loading').style.display='none';
     }
 });
 
@@ -489,6 +488,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
