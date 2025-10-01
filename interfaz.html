@@ -22,7 +22,7 @@
     input { padding:8px; width:100%; margin:5px 0; border:1px solid #ccc; border-radius:5px; }
     button { background:#006847; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; }
     button:hover { background:#004d33; }
-    /* 🔹 Modal flotante */
+    /* Modal flotante */
     #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); }
     #modalContent {
       background:white; width:400px; margin:10% auto; padding:20px; border-radius:10px;
@@ -47,7 +47,7 @@
   <h3>Grupos Disponibles</h3>
   <div id="gruposContainer"></div>
 
-  <!-- 🔹 Modal para detalle de grupo -->
+  <!-- Modal detalle de grupo -->
   <div id="modal">
     <div id="modalContent">
       <span id="closeModal">&times;</span>
@@ -85,7 +85,6 @@
     let grupoSeleccionado = null;
     let grupoPassword = null;
 
-    // 🔹 Iniciar sesión automática (Google)
     async function login() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -109,122 +108,120 @@
       }
     });
 
-    // 🔹 Crear grupo
     async function crearGrupo() {
-      const nombre = document.getElementById("nombreGrupo").value;
+      const nombre = document.getElementById("nombreGrupo").value.trim();
       const pass = document.getElementById("passwordGrupo").value || null;
       if (!nombre || !usuarioActual) return alert("Debes poner un nombre y estar logueado");
 
-      const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0];
-      const docRef = await addDoc(collection(db, "grupos"), {
-        nombre: nombre,
-        creadoPor: usuarioActual.uid,
-        creadorNombre: nombreCreador,
-        password: pass, // ✅ se guarda contraseña si existe
-        creadoEn: new Date()
-      });
+      try {
+        const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0];
+        const docRef = await addDoc(collection(db, "grupos"), {
+          nombre: nombre,
+          creadoPor: usuarioActual.uid,
+          creadorNombre: nombreCreador,
+          password: pass,
+          creadoEn: new Date()
+        });
 
-      // El creador entra como miembro
-      await setDoc(doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid), {
-        nombre: nombreCreador,
-        agregadoPor: usuarioActual.uid,
-        fechaIngreso: new Date()
-      });
+        // Agregar al creador como miembro
+        await setDoc(doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid), {
+          nombre: nombreCreador,
+          agregadoPor: usuarioActual.uid,
+          fechaIngreso: new Date()
+        });
 
-      alert("Grupo creado 🚀");
-      document.getElementById("nombreGrupo").value = "";
-      document.getElementById("passwordGrupo").value = "";
-      cargarGrupos();
+        alert("Grupo creado 🚀");
+        document.getElementById("nombreGrupo").value = "";
+        document.getElementById("passwordGrupo").value = "";
+        cargarGrupos();
+      } catch (e) {
+        console.error("Error al crear grupo:", e);
+        alert("Hubo un error al crear el grupo. Revisa la consola.");
+      }
     }
 
-    // 🔹 Listar grupos
     async function cargarGrupos() {
       const contenedor = document.getElementById("gruposContainer");
       contenedor.innerHTML = "";
 
-      const querySnapshot = await getDocs(collection(db, "grupos"));
-      for (const docSnap of querySnapshot.docs) {
-        const grupo = docSnap.data();
+      try {
+        const querySnapshot = await getDocs(collection(db, "grupos"));
+        for (const docSnap of querySnapshot.docs) {
+          const grupo = docSnap.data();
 
-        // contar participantes
-        const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
-        const countSnap = await getCountFromServer(miembrosRef);
-        const numParticipantes = countSnap.data().count;
+          const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
+          const countSnap = await getCountFromServer(miembrosRef);
+          const numParticipantes = countSnap.data().count;
 
-        const div = document.createElement("div");
-        div.className = "grupo-card";
-        div.innerHTML = `
-          <h3>${grupo.nombre}</h3>
-          <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
-          <small>Participantes: ${numParticipantes}</small>
-        `;
-        div.onclick = () => abrirModal(docSnap.id, grupo);
-        contenedor.appendChild(div);
+          const div = document.createElement("div");
+          div.className = "grupo-card";
+          div.innerHTML = `
+            <h3>${grupo.nombre}</h3>
+            <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
+            <small>Participantes: ${numParticipantes}</small>
+          `;
+          div.onclick = () => abrirModal(docSnap.id, grupo);
+          contenedor.appendChild(div);
+        }
+      } catch (e) {
+        console.error("Error al cargar grupos:", e);
       }
     }
 
-    // 🔹 Modal detalle grupo
     function abrirModal(grupoId, grupo) {
       grupoSeleccionado = grupoId;
       grupoPassword = grupo.password || null;
 
       document.getElementById("modalTitulo").innerText = grupo.nombre;
-      document.getElementById("modalInfo").innerText =
-        `Creado por: ${grupo.creadorNombre || "Sin nombre"}`;
-
+      document.getElementById("modalInfo").innerText = `Creado por: ${grupo.creadorNombre || "Sin nombre"}`;
+      document.getElementById("passwordInput").value = "";
       document.getElementById("passwordDiv").style.display = grupoPassword ? "block" : "none";
       document.getElementById("modal").style.display = "block";
     }
 
-    // 🔹 Cerrar modal
     document.getElementById("closeModal").onclick = () => {
       document.getElementById("modal").style.display = "none";
     };
 
-// 🔹 Entrar al grupo
-document.getElementById("btnEntrar").onclick = async () => {
-  if (!usuarioActual) {
-    alert("Debes iniciar sesión primero.");
-    return;
-  }
-
-  if (grupoSeleccionado) {
-    if (grupoPassword) {
-      const passIngresada = document.getElementById("passwordInput").value;
-      if (passIngresada !== grupoPassword) {
-        alert("Contraseña incorrecta ❌");
+    document.getElementById("btnEntrar").onclick = async () => {
+      if (!usuarioActual) {
+        alert("Debes iniciar sesión primero.");
         return;
       }
-    }
+      if (!grupoSeleccionado) return;
 
-    try {
-      // 👤 Registrar al usuario como miembro del grupo (merge:true para no sobrescribir)
-      const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
-      await setDoc(
-        doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
-        {
-          nombre: nombreUsuario,
-          agregadoPor: usuarioActual.uid,
-          fechaIngreso: new Date()
-        },
-        { merge: true }
-      );
+      // Validar contraseña solo si existe
+      if (grupoPassword) {
+        const passIngresada = document.getElementById("passwordInput").value;
+        if (passIngresada !== grupoPassword) {
+          alert("Contraseña incorrecta ❌");
+          return;
+        }
+      }
 
-      // ✅ Guardar selección local
-      localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+      try {
+        const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
+        await setDoc(
+          doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
+          {
+            nombre: nombreUsuario,
+            agregadoPor: usuarioActual.uid,
+            fechaIngreso: new Date()
+          },
+          { merge: true }
+        );
 
-      // ✅ Redirigir SOLO cuando ya terminó de guardarse
-      window.location.href = "index.html";
-    } catch (e) {
-      console.error("Error al entrar al grupo:", e);
-      alert("Hubo un error al entrar al grupo. Intenta de nuevo.");
-    }
-  }
-};
+        localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+        alert(`Entraste al grupo: ${grupoSeleccionado} ✅`);
+        document.getElementById("modal").style.display = "none";
+        // window.location.href = "index.html"; // Solo si quieres redirigir
+      } catch (e) {
+        console.error("Error al entrar al grupo:", e);
+        alert("Hubo un error al entrar al grupo. Revisa la consola.");
+      }
+    };
 
-window.crearGrupo = crearGrupo;
-
+    window.crearGrupo = crearGrupo;
   </script>
 </body>
 </html>
-
