@@ -366,55 +366,81 @@ document.querySelectorAll('.opcion').forEach(el=>{
 });
 
 // Guardar pronósticos
+// Guardar pronósticos
 document.getElementById('guardar-btn').addEventListener('click', async()=>{
-    if(userCredits<=0){ alert('No tienes créditos suficientes'); return; }
+    if(userCredits <= 0){ 
+        alert('No tienes créditos suficientes'); 
+        return; 
+    }
 
     const grupoActual = localStorage.getItem('grupoSeleccionado');
-    if(!grupoActual){ alert('Debes seleccionar un grupo'); return; }
- 
+    if(!grupoActual){ 
+        alert('Debes seleccionar un grupo'); 
+        return; 
+    }
+
     const partidos = [];
     let completo = true;
     document.querySelectorAll('.partido').forEach(el=>{
         const opcion = el.querySelector('.opcion.selected');
-        if(!opcion){ completo=false; el.style.border='1px solid red'; setTimeout(()=>el.style.border='none',1000); return;}
+        if(!opcion){ 
+            completo = false; 
+            el.style.border='2px solid red'; 
+            setTimeout(()=>el.style.border='none',1000); 
+            return;
+        }
         const equipos = el.querySelectorAll('.equipo');
-        partidos.push({local:equipos[0].textContent, visitante:equipos[1].textContent, prediccion:opcion.dataset.result});
+        partidos.push({
+            local: equipos[0].textContent.trim(),
+            visitante: equipos[1].textContent.trim(),
+            prediccion: opcion.dataset.result
+        });
     });
-    if(!completo){ alert('Selecciona todos los partidos'); return; }
+    if(!completo){ 
+        alert('Selecciona todos los partidos'); 
+        return; 
+    }
 
     document.getElementById('loading').style.display='block';
     document.getElementById('guardar-btn').disabled=true;
 
-    try{
+    try {
         await db.runTransaction(async tx=>{
             const userRef = db.collection('users').doc(currentUser.uid);
             const uDoc = await tx.get(userRef);
-            if(!uDoc.exists || (uDoc.data().creditos??0)<=0) throw new Error("Créditos insuficientes");
-            tx.update(userRef,{creditos:firebase.firestore.FieldValue.increment(-1)});
 
+            if(!uDoc.exists || (uDoc.data().creditos ?? 0) <= 0){
+                throw new Error("Créditos insuficientes");
+            }
+
+            // Descuenta 1 crédito
+            tx.update(userRef, {
+                creditos: firebase.firestore.FieldValue.increment(-1)
+            });
+
+            // Guarda los pronósticos en el grupo
             const pronRef = db.collection('grupos')
                 .doc(grupoActual)
                 .collection('pronosticos')
                 .doc();
 
-            tx.set(pronRef,{
+            tx.set(pronRef, {
                 userId: currentUser.uid,
                 fecha: firebase.firestore.FieldValue.serverTimestamp(),
-                partidos
+                partidos: partidos
             });
         });
 
-        userCredits--;
-        document.getElementById('username').textContent=`${currentUser.email} | Créditos: ${userCredits}`;
-        alert("Pronósticos guardados correctamente");
-        window.location.href='resultados.html';
+        alert('✅ Pronósticos guardados con éxito');
     } catch(err){
-        alert("Error: "+err.message);
-    } finally{
+        console.error(err);
+        alert('❌ Error al guardar pronósticos: ' + err.message);
+    } finally {
         document.getElementById('loading').style.display='none';
         document.getElementById('guardar-btn').disabled=false;
     }
 });
+
 
 // 🔹 Mostrar grupo actual en el header
 document.addEventListener("DOMContentLoaded", async () => {
@@ -455,6 +481,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
