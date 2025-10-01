@@ -365,7 +365,7 @@ document.querySelectorAll('.opcion').forEach(el=>{
     });
 });
 
-// Guardar pronósticos
+
 // Guardar pronósticos
 document.getElementById('guardar-btn').addEventListener('click', async()=>{
     if(userCredits <= 0){ 
@@ -413,19 +413,27 @@ document.getElementById('guardar-btn').addEventListener('click', async()=>{
                 throw new Error("Créditos insuficientes");
             }
 
+            // 🔹 Traemos el nombre del grupo
+            const grupoRef = db.collection('grupos').doc(grupoActual);
+            const grupoDoc = await tx.get(grupoRef);
+
+            if (!grupoDoc.exists) {
+                throw new Error("El grupo no existe");
+            }
+            const grupoNombre = grupoDoc.data().nombre || "Sin nombre";
+
             // Descuenta 1 crédito
             tx.update(userRef, {
                 creditos: firebase.firestore.FieldValue.increment(-1)
             });
 
             // Guarda los pronósticos en el grupo
-            const pronRef = db.collection('grupos')
-                .doc(grupoActual)
-                .collection('pronosticos')
-                .doc();
+            const pronRef = grupoRef.collection('pronosticos').doc();
 
             tx.set(pronRef, {
                 userId: currentUser.uid,
+                grupoId: grupoActual,      // 👈 guardamos el ID
+                grupoNombre: grupoNombre,  // 👈 guardamos el nombre
                 fecha: firebase.firestore.FieldValue.serverTimestamp(),
                 partidos: partidos
             });
@@ -481,6 +489,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
