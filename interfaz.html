@@ -181,22 +181,38 @@
       document.getElementById("modal").style.display = "none";
     };
 
-    // 🔹 Entrar al grupo
-    document.getElementById("btnEntrar").onclick = async () => {
-      if (grupoSeleccionado) {
-        if (grupoPassword) {
-          const passIngresada = document.getElementById("passwordInput").value;
-          if (passIngresada !== grupoPassword) {
-            alert("Contraseña incorrecta ❌");
-            return;
-          }
-        }
-        localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
-        window.location.href = "index.html";
+// 🔹 Entrar al grupo
+document.getElementById("btnEntrar").onclick = async () => {
+  if (!usuarioActual) {
+    alert("Debes iniciar sesión primero.");
+    return;
+  }
+
+  if (grupoSeleccionado) {
+    if (grupoPassword) {
+      const passIngresada = document.getElementById("passwordInput").value;
+      if (passIngresada !== grupoPassword) {
+        alert("Contraseña incorrecta ❌");
+        return;
       }
-    };
+    }
+
+    // 👤 Registrar al usuario como miembro del grupo
+    const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
+    await setDoc(doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid), {
+      nombre: nombreUsuario,
+      agregadoPor: usuarioActual.uid,
+      fechaIngreso: new Date()
+    });
+
+    // Guardar selección local
+    localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+    window.location.href = "index.html";
+  }
+};
 
     window.crearGrupo = crearGrupo;
   </script>
 </body>
 </html>
+
