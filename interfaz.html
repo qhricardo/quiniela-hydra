@@ -125,11 +125,15 @@
       });
 
       // El creador entra como miembro
-      await setDoc(doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid), {
-        nombre: nombreCreador,
-        agregadoPor: usuarioActual.uid,
-        fechaIngreso: new Date()
-      });
+  await setDoc(
+  doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
+  {
+    nombre: nombreUsuario,
+    agregadoPor: usuarioActual.uid,
+    fechaIngreso: new Date()
+  },
+  { merge: true }
+);
 
       alert("Grupo creado 🚀");
       document.getElementById("nombreGrupo").value = "";
@@ -199,14 +203,15 @@ document.getElementById("btnEntrar").onclick = async () => {
     // // 👤 Registrar al usuario como miembro del grupo
     const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
     try {
-      await setDoc(
-        doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
-        {
-          nombre: nombreUsuario,
-          agregadoPor: usuarioActual.uid,
-          fechaIngreso: new Date()
-        }
-      );
+     await setDoc(
+  doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
+  {
+    nombre: nombreUsuario,
+    agregadoPor: usuarioActual.uid,
+    fechaIngreso: new Date()
+  },
+  { merge: true }
+);
 
       localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
       window.location.href = "index.html";
@@ -220,6 +225,7 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
 
