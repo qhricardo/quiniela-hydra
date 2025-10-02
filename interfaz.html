@@ -137,32 +137,31 @@
       cargarGrupos();
     }
 
-   // 🔹 Listar grupos
-async function cargarGrupos() {
-  const contenedor = document.getElementById("gruposContainer");
-  contenedor.innerHTML = "";
+    // 🔹 Listar grupos
+   async function cargarGrupos() {
+     const contenedor = document.getElementById("gruposContainer");
+     contenedor.innerHTML = "";
 
-  const querySnapshot = await getDocs(collection(db, "grupos"));
-  querySnapshot.forEach(async (docSnap) => {
-    const grupo = docSnap.data();
+     const querySnapshot = await getDocs(collection(db, "grupos"));
+     querySnapshot.forEach(async (docSnap) => {
+       const grupo = docSnap.data();
 
-        // contar participantes
-        const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
-        const countSnap = await getCountFromServer(miembrosRef);
-        const numParticipantes = countSnap.data().count;
+       // contar participantes
+       const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
+       const countSnap = await getCountFromServer(miembrosRef);
+       const numParticipantes = countSnap.data().count;
 
-        const div = document.createElement("div");
-        div.className = "grupo-card";
-        div.innerHTML = `
-          <h3>${grupo.nombre}</h3>
-          <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
-          <small>Participantes: ${numParticipantes}</small>
-        `;
-        div.onclick = () => abrirModal(docSnap.id, grupo);
-        contenedor.appendChild(div);
-      }
-    }
-
+       const div = document.createElement("div");
+       div.className = "grupo-card";
+       div.innerHTML = `
+         <h3>${grupo.nombre}</h3>
+         <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
+         <small>Participantes: ${numParticipantes}</small>
+       `;
+       div.onclick = () => abrirModal(docSnap.id, grupo);
+       contenedor.appendChild(div);
+     }); // 🔹 aquí cierro bien el forEach
+   }
     // 🔹 Modal detalle grupo
     function abrirModal(grupoId, grupo) {
       grupoSeleccionado = grupoId;
@@ -221,6 +220,7 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
 
