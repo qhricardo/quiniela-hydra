@@ -211,10 +211,7 @@ document.getElementById("btnEntrar").onclick = async () => {
 
   localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
   window.location.href = "index.html";
-} catch (error) {
-  console.error("Error al entrar al grupo:", error);
-  alert("No se pudo entrar al grupo. Revisa permisos o conexión.");
-}
+} 
 
     // Guardar selección local
     localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
@@ -226,4 +223,5 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
 
