@@ -136,13 +136,9 @@
   ); 
 
         alert("Grupo creado 🚀");
-        document.getElementById("nombreGrupo").value = "";
-        document.getElementById("passwordGrupo").value = "";
-        cargarGrupos();
-      } catch (e) {
-        console.error("Error al crear grupo:", e);
-        alert("Hubo un error al crear el grupo. Revisa la consola.");
-      }
+      document.getElementById("nombreGrupo").value = "";
+      document.getElementById("passwordGrupo").value = "";
+      cargarGrupos();
     }
 
     // 🔹 Listar grupos
@@ -229,6 +225,7 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
 
