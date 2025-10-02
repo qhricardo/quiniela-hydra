@@ -47,6 +47,23 @@
   <h3>Grupos Disponibles</h3>
   <div id="gruposContainer"></div>
 
+  <div id="modalExito" style="
+  display:none;
+  position:fixed;
+  top:20%;
+  left:50%;
+  transform:translateX(-50%);
+  background:#006847;
+  color:white;
+  padding:20px 30px;
+  border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  font-size:16px;
+  z-index:1000;
+">
+  ✅ Grupo creado con éxito
+</div>
+
   <!-- 🔹 Modal para detalle de grupo -->
   <div id="modal">
     <div id="modalContent">
@@ -111,36 +128,51 @@
 
     // 🔹 Crear grupo
     async function crearGrupo() {
-      const nombre = document.getElementById("nombreGrupo").value;
-      const pass = document.getElementById("passwordGrupo").value || null;
-      if (!nombre || !usuarioActual) return alert("Debes poner un nombre y estar logueado");
+  const nombre = document.getElementById("nombreGrupo").value;
+  const pass = document.getElementById("passwordGrupo").value || null;
+  if (!nombre || !usuarioActual) return alert("Debes poner un nombre y estar logueado");
 
-      const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0];
-      const docRef = await addDoc(collection(db, "grupos"), {
-        nombre: nombre,
-        creadoPor: usuarioActual.uid,
-        creadorNombre: nombreCreador,
-        password: pass, // ✅ se guarda contraseña si existe
-        creadoEn: new Date()
-      });
+  const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0];
 
-      // El creador entra como miembro
-  await setDoc(
-  doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
-  {
-    nombre: nombreUsuario,
-    agregadoPor: usuarioActual.uid,
-    fechaIngreso: new Date()
-  },
-  { merge: true }
-  ); 
+  try {
+    // Crear el grupo
+    const docRef = await addDoc(collection(db, "grupos"), {
+      nombre: nombre,
+      creadoPor: usuarioActual.uid,
+      creadorNombre: nombreCreador,
+      password: pass,
+      creadoEn: new Date()
+    });
 
-      alert("Grupo creado 🚀");
+    // Entrar automáticamente como miembro
+    await setDoc(
+      doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid),
+      {
+        nombre: nombreCreador,
+        agregadoPor: usuarioActual.uid,
+        fechaIngreso: new Date()
+      },
+      { merge: true }
+    );
+
+    // Limpiar inputs
+    document.getElementById("nombreGrupo").value = "";
+    document.getElementById("passwordGrupo").value = "";
+
+    // Mostrar modal flotante
+    const modalExito = document.getElementById("modalExito");
+    modalExito.style.display = "block";
+
+    setTimeout(() => {
+      modalExito.style.display = "none";
       location.reload();
-      document.getElementById("nombreGrupo").value = "";
-      document.getElementById("passwordGrupo").value = "";
-      cargarGrupos();
-    }
+    }, 1500);
+
+  } catch (e) {
+    console.error("Error al crear grupo:", e);
+    alert("❌ Error al crear el grupo: " + e.message);
+  }
+}
 
     // 🔹 Listar grupos
    async function cargarGrupos() {
@@ -226,6 +258,7 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
 
