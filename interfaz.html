@@ -142,9 +142,9 @@
       const contenedor = document.getElementById("gruposContainer");
       contenedor.innerHTML = "";
 
-      const querySnapshot = await getDocs(collection(db, "grupos"));
-      for (const docSnap of querySnapshot.docs) {
-        const grupo = docSnap.data();
+     const querySnapshot = await getDocs(collection(db, "grupos"));
+      querySnapshot.forEach(async (docSnap) => {
+      const grupo = docSnap.data();
 
         // contar participantes
         const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
@@ -191,15 +191,15 @@ document.getElementById("btnEntrar").onclick = async () => {
   if (grupoSeleccionado) {
     if (grupoPassword) {
       const passIngresada = document.getElementById("passwordInput").value;
-      if (passIngresada !== grupoPassword) {
-        alert("Contraseña incorrecta ❌");
-        return;
-      }
+    if ((passIngresada || "").trim() !== (grupoPassword || "").trim()) {
+  alert("Contraseña incorrecta ❌");
+  return;
+}
     }
 
     // 👤 Registrar al usuario como miembro del grupo
     const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
-    try {
+try {
   await setDoc(
     doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
     {
@@ -211,7 +211,10 @@ document.getElementById("btnEntrar").onclick = async () => {
 
   localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
   window.location.href = "index.html";
-} 
+} catch (error) {
+  console.error("Error al entrar al grupo:", error);
+  alert("No se pudo entrar al grupo. Revisa permisos de Firestore.");
+}
 
 };
 
@@ -219,6 +222,7 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
 
