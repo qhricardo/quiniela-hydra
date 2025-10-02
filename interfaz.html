@@ -22,6 +22,24 @@
     input { padding:8px; width:100%; margin:5px 0; border:1px solid #ccc; border-radius:5px; }
     button { background:#006847; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; }
     button:hover { background:#004d33; }
+
+    <div id="modalExito" style="
+  display:none;
+  position:fixed;
+  top:20%;
+  left:50%;
+  transform:translateX(-50%);
+  background:#006847;
+  color:white;
+  padding:20px 30px;
+  border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  font-size:16px;
+  z-index:1000;
+">
+  ✅ Grupo creado con éxito
+</div>
+    
     /* 🔹 Modal flotante */
     #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); }
     #modalContent {
@@ -235,6 +253,7 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
 
