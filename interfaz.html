@@ -137,14 +137,14 @@
       cargarGrupos();
     }
 
-    // 🔹 Listar grupos
-    async function cargarGrupos() {
-      const contenedor = document.getElementById("gruposContainer");
-      contenedor.innerHTML = "";
+   // 🔹 Listar grupos
+async function cargarGrupos() {
+  const contenedor = document.getElementById("gruposContainer");
+  contenedor.innerHTML = "";
 
-     const querySnapshot = await getDocs(collection(db, "grupos"));
-      querySnapshot.forEach(async (docSnap) => {
-      const grupo = docSnap.data();
+  const querySnapshot = await getDocs(collection(db, "grupos"));
+  querySnapshot.forEach(async (docSnap) => {
+    const grupo = docSnap.data();
 
         // contar participantes
         const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
@@ -181,6 +181,7 @@
       document.getElementById("modal").style.display = "none";
     };
 
+
 // 🔹 Entrar al grupo
 document.getElementById("btnEntrar").onclick = async () => {
   if (!usuarioActual) {
@@ -191,37 +192,36 @@ document.getElementById("btnEntrar").onclick = async () => {
   if (grupoSeleccionado) {
     if (grupoPassword) {
       const passIngresada = document.getElementById("passwordInput").value;
-    if ((passIngresada || "").trim() !== (grupoPassword || "").trim()) {
-  alert("Contraseña incorrecta ❌");
-  return;
-}
+      if ((passIngresada || "").trim() !== (grupoPassword || "").trim()) {
+        alert("Contraseña incorrecta ❌");
+        return;
+      }
     }
-
-    // 👤 Registrar al usuario como miembro del grupo
+    // // 👤 Registrar al usuario como miembro del grupo
     const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
-try {
-  await setDoc(
-    doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
-    {
-      nombre: nombreUsuario,
-      agregadoPor: usuarioActual.uid,
-      fechaIngreso: new Date()
+    try {
+      await setDoc(
+        doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
+        {
+          nombre: nombreUsuario,
+          agregadoPor: usuarioActual.uid,
+          fechaIngreso: new Date()
+        }
+      );
+
+      localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+      window.location.href = "index.html";
+    } catch (error) {
+      console.error("Error al entrar al grupo:", error);
+      alert("No se pudo entrar al grupo. Revisa permisos en Firestore.");
     }
-  );
-
-  localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
-  window.location.href = "index.html";
-} catch (error) {
-  console.error("Error al entrar al grupo:", error);
-  alert("No se pudo entrar al grupo. Revisa permisos de Firestore.");
-}
-
+  }
 };
-
     window.crearGrupo = crearGrupo;
   </script>
 </body>
 </html>
+
 
 
 
