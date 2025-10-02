@@ -135,11 +135,21 @@
   { merge: true }
   ); 
 
-        alert("Grupo creado 🚀");
-      document.getElementById("nombreGrupo").value = "";
-      document.getElementById("passwordGrupo").value = "";
-      cargarGrupos();
-    }
+     // Mostrar modal flotante
+    const modalExito = document.getElementById("modalExito");
+    modalExito.style.display = "block";
+
+    // Ocultar modal y recargar después de 1.5 segundos
+    setTimeout(() => {
+      modalExito.style.display = "none";
+      location.reload();
+    }, 1500);
+
+  } catch (e) {
+    console.error("Error al crear grupo:", e);
+    alert("❌ Error al crear el grupo: " + e.message);
+  }
+}
 
     // 🔹 Listar grupos
    async function cargarGrupos() {
@@ -225,6 +235,7 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
 
