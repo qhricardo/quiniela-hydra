@@ -450,26 +450,65 @@ document.getElementById('guardar-btn').addEventListener('click', async()=>{
 
 
 // 🔹 Mostrar grupo actual en el header
-document.addEventListener("DOMContentLoaded", async () => {
+async function mostrarGrupoActual() {
     const grupoId = localStorage.getItem("grupoSeleccionado");
-    if (grupoId) {
-        try {
-            const grupoDoc = await db.collection("grupos").doc(grupoId).get();
-            if (grupoDoc.exists) {
-                const grupoData = grupoDoc.data();
-                document.getElementById("grupoActual").textContent = ` | Grupo: ${grupoData.nombre}`;
-            } else {
-                document.getElementById("grupoActual").textContent = " | Grupo: (no encontrado)";
-            }
-        } catch (err) {
-            console.error("Error cargando grupo:", err);
-            document.getElementById("grupoActual").textContent = " | Grupo: error";
+    const grupoSpan = document.getElementById("grupoActual");
+
+    if (!grupoId) {
+        grupoSpan.textContent = " | Sin grupo";
+        return;
+    }
+
+    try {
+        const grupoDoc = await db.collection("grupos").doc(grupoId).get();
+        if (grupoDoc.exists) {
+            const grupoData = grupoDoc.data();
+            grupoSpan.textContent = ` | Grupo: ${grupoData.nombre}`;
+        } else {
+            grupoSpan.textContent = " | Grupo: (no encontrado)";
         }
-    } else {
-        document.getElementById("grupoActual").textContent = " | Sin grupo";
+    } catch (err) {
+        console.error("Error cargando grupo:", err);
+        grupoSpan.textContent = " | Grupo: error";
+    }
+}
+
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) { window.location.href = 'login.html'; return; }
+    currentUser = user;
+
+    // Mostrar usuario
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    if (userDoc.exists) {
+        const userData = userDoc.data();
+        userCredits = userData.creditos ?? 0;
+        document.getElementById('username').textContent = `${userData.name||user.email} | Créditos: ${userCredits}`;
+    }
+
+    // Mostrar grupo
+    await mostrarGrupoActual();
+
+    // Cargar pronósticos previos
+    const grupoId = localStorage.getItem("grupoSeleccionado");
+    if (!grupoId) { alert("Debes seleccionar un grupo"); return; }
+
+    const pronSnapshot = await db.collection('grupos')
+        .doc(grupoId)
+        .collection('pronosticos')
+        .where('userId','==',user.uid)
+        .orderBy('fecha','desc')
+        .limit(1)
+        .get();
+    
+    if (!pronSnapshot.empty) {
+        const pron = pronSnapshot.docs[0].data();
+        pron.partidos.forEach((p,index)=>{
+            const opcion = document.querySelector(`.partido:nth-of-type(${index+1}) .opcion[data-result="${p.prediccion}"]`);
+            if (opcion) opcion.classList.add('selected');
+        });
     }
 });
-    
+
 // Logout
 document.getElementById('logout-btn').addEventListener('click', ()=>firebase.auth().signOut());
 </script>
@@ -488,6 +527,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
