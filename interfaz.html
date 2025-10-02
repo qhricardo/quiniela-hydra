@@ -199,11 +199,22 @@ document.getElementById("btnEntrar").onclick = async () => {
 
     // 👤 Registrar al usuario como miembro del grupo
     const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
-    await setDoc(doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid), {
+    try {
+  await setDoc(
+    doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
+    {
       nombre: nombreUsuario,
       agregadoPor: usuarioActual.uid,
       fechaIngreso: new Date()
-    });
+    }
+  );
+
+  localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+  window.location.href = "index.html";
+} catch (error) {
+  console.error("Error al entrar al grupo:", error);
+  alert("No se pudo entrar al grupo. Revisa permisos o conexión.");
+}
 
     // Guardar selección local
     localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
@@ -215,3 +226,4 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
