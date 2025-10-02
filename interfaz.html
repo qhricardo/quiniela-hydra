@@ -135,8 +135,12 @@
   { merge: true }
   ); 
 
-   alert("Grupo creado con éxito 🚀");
-    location.reload();
+      alert("Grupo creado 🚀");
+      location.reload();
+      document.getElementById("nombreGrupo").value = "";
+      document.getElementById("passwordGrupo").value = "";
+      cargarGrupos();
+    }
 
     // 🔹 Listar grupos
    async function cargarGrupos() {
@@ -222,6 +226,7 @@ document.getElementById("btnEntrar").onclick = async () => {
   </script>
 </body>
 </html>
+
 
 
 
