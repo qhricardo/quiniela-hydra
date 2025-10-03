@@ -98,29 +98,44 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
             <li>💰 Compra créditos costo 2X$50.00 mxn.</li>
             <li>🏆 Próxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
         </ul>
-        <div id="comprar-creditos">
-  <button id="comprar50">Comprar 50 Créditos</button>
-  <button id="comprar100">Comprar 120 Créditos</button>
-  <button id="comprar200">Comprar 260 Créditos</button>
-</div>
-
+   
+        <!-- Stripe JS -->
 <script src="https://js.stripe.com/v3/"></script>
-<script type="module">
-  import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+<script>
+  const stripe = Stripe("pk_test_TU_PUBLISHABLE_KEY"); // Reemplaza con tu clave pública
 
-  const functions = getFunctions();
-  const stripe = Stripe("pk_test_xxx"); // 🔹 tu public key
+  async function comprarCreditos(cantidad) {
+      // Llamada a tu endpoint backend
+      const response = await fetch('/api/crear-pago', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cantidad: cantidad })
+      });
+      const data = await response.json();
 
-  async function comprar(paquete) {
-    const crearSesion = httpsCallable(functions, "createCheckoutSession");
-    const res = await crearSesion({ paquete });
-    await stripe.redirectToCheckout({ sessionId: res.data.id });
+      // Confirmar el pago con Stripe
+      const result = await stripe.confirmCardPayment(data.client_secret, {
+          payment_method: {
+              card: {
+                  // Aquí usarías un elemento de Stripe.js (CardElement) si quieres pagar con tarjeta
+              }
+          }
+      });
+
+      if (result.error) {
+          alert("Error en el pago: " + result.error.message);
+      } else if (result.paymentIntent.status === 'succeeded') {
+          alert("Pago exitoso! Créditos agregados.");
+          location.reload(); // Refresca para actualizar créditos en pantalla
+      }
   }
 
-  document.getElementById("comprar50").addEventListener("click", ()=>comprar("50"));
-  document.getElementById("comprar100").addEventListener("click", ()=>comprar("100"));
-  document.getElementById("comprar200").addEventListener("click", ()=>comprar("200"));
+  // Ejemplo de botón
+  document.getElementById("btn-comprar").addEventListener("click", () => {
+      comprarCreditos(1); // 1 crédito por ejemplo
+  });
 </script>
+
      </div>
 
     <div style="flex: 3 1 600px; padding: 10px;" class="container">
@@ -545,6 +560,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
