@@ -98,14 +98,30 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
             <li>💰 Compra créditos costo 2X$50.00 mxn.</li>
             <li>🏆 Próxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
         </ul>
-        <div style="text-align: center; margin-top: 15px;">
-            <a href="https://m.me/439939209212181?text=Un,%20credito%20para%20la%20quiniela%20porfavor" 
-               target="_blank" 
-               style="display: inline-block; padding: 10px 15px; background-color: #25D366; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                💬 Créditos
-            </a>
-        </div>
-    </div>
+        
+       <h2>Comprar Créditos</h2>
+<button id="comprar2">Comprar 2 Créditos ($50)</button>
+<button id="comprar5">Comprar 5 Créditos ($100)</button>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  const stripe = Stripe("pk_test_51SEAcuAxnIQ0x6oTPZlNFKIXlhTTIsw9m1J30ODSz6K02ntSWVzP9GLMxpCnZPHTlK0G86yjU27G3Dy7srUm0T2800Y8jY6Xtk"); // tu Public Key
+
+  async function comprarCreditos(paquete) {
+    const res = await fetch("crear-sesion-pago.php", { // 🔹 llama a backend PHP
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paquete })
+    });
+    const data = await res.json();
+    stripe.redirectToCheckout({ sessionId: data.id });
+  }
+
+  document.getElementById("comprar2").onclick = () => comprarCreditos("50");
+  document.getElementById("comprar5").onclick = () => comprarCreditos("100");
+</script>
+        
+ </div>
 
     <div style="flex: 3 1 600px; padding: 10px;" class="container">
         <h1>Liga-MX Jornada 6</h1>
@@ -527,6 +543,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
