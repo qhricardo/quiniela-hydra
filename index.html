@@ -516,7 +516,7 @@ document.getElementById("comprar50").onclick = async () => {
   const createSession = httpsCallable(functions, "createCheckoutSession");
   const result = await createSession({ paquete: "50" });
   const sessionId = result.data.id;
-  const stripePublicKey = "pk_test_TU_PUBLIC_KEY";
+  const stripePublicKey = "pk_test_51SEAcuAxnIQ0x6oTPZlNFKIXlhTTIsw9m1J30ODSz6K02ntSWVzP9GLMxpCnZPHTlK0G86yjU27G3Dy7srUm0T2800Y8jY6Xtk";
   const stripe = Stripe(stripePublicKey);
   await stripe.redirectToCheckout({ sessionId });
 };
@@ -525,7 +525,7 @@ document.getElementById("comprar100").onclick = async () => {
   const createSession = httpsCallable(functions, "createCheckoutSession");
   const result = await createSession({ paquete: "100" });
   const sessionId = result.data.id;
-  const stripePublicKey = "pk_test_TU_PUBLIC_KEY";
+  const stripePublicKey = "pk_test_51SEAcuAxnIQ0x6oTPZlNFKIXlhTTIsw9m1J30ODSz6K02ntSWVzP9GLMxpCnZPHTlK0G86yjU27G3Dy7srUm0T2800Y8jY6Xtk";
   const stripe = Stripe(stripePublicKey);
   await stripe.redirectToCheckout({ sessionId });
 };
@@ -549,6 +549,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
