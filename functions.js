@@ -1,6 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const stripe = require("stripe")("TU_SECRET_KEY"); // 🔑 clave privada (solo aquí)
+const stripe = require("stripe")("sk_test_51SEAcuAxnIQ0x6oT66VzBiYVN8ipgDaqXJRgkaDy5INHRTFcnccvlsNuNdZQsaSwqXsMJvdsUNrLZhYbIhVX2JBJ00AS2tQowI"); // 🔑 clave privada (solo aquí)
 
 admin.initializeApp();
 
