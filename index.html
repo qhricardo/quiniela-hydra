@@ -107,24 +107,19 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
 <script src="https://js.stripe.com/v3/"></script>
 <script type="module">
   import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+
   const functions = getFunctions();
+  const stripe = Stripe("pk_test_xxx"); // 🔹 tu public key
 
   async function comprar(paquete) {
-    try {
-      const crearSesion = httpsCallable(functions, "createCheckoutSession");
-      const resultado = await crearSesion({ paquete });
-      const sessionId = resultado.data.id;
-      const stripe = Stripe("pk_test_tu_public_key");
-      await stripe.redirectToCheckout({ sessionId });
-    } catch (err) {
-      console.error("Error al crear sesión:", err);
-      alert("No se pudo iniciar pago. Inténtalo de nuevo.");
-    }
+    const crearSesion = httpsCallable(functions, "createCheckoutSession");
+    const res = await crearSesion({ paquete });
+    await stripe.redirectToCheckout({ sessionId: res.data.id });
   }
 
-  document.getElementById("comprar50").onclick = () => comprar("50");
-  document.getElementById("comprar100").onclick = () => comprar("100");
-  document.getElementById("comprar200").onclick = () => comprar("200");
+  document.getElementById("comprar50").addEventListener("click", ()=>comprar("50"));
+  document.getElementById("comprar100").addEventListener("click", ()=>comprar("100"));
+  document.getElementById("comprar200").addEventListener("click", ()=>comprar("200"));
 </script>
      </div>
 
@@ -550,6 +545,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
