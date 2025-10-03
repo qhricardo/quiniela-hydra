@@ -508,6 +508,29 @@ firebase.auth().onAuthStateChanged(async (user) => {
     }
 });
 
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js";
+
+const functions = getFunctions();
+
+document.getElementById("comprar50").onclick = async () => {
+  const createSession = httpsCallable(functions, "createCheckoutSession");
+  const result = await createSession({ paquete: "50" });
+  const sessionId = result.data.id;
+  const stripePublicKey = "pk_test_TU_PUBLIC_KEY";
+  const stripe = Stripe(stripePublicKey);
+  await stripe.redirectToCheckout({ sessionId });
+};
+
+document.getElementById("comprar100").onclick = async () => {
+  const createSession = httpsCallable(functions, "createCheckoutSession");
+  const result = await createSession({ paquete: "100" });
+  const sessionId = result.data.id;
+  const stripePublicKey = "pk_test_TU_PUBLIC_KEY";
+  const stripe = Stripe(stripePublicKey);
+  await stripe.redirectToCheckout({ sessionId });
+};
+
+
 // Logout
 document.getElementById('logout-btn').addEventListener('click', ()=>firebase.auth().signOut());
 </script>
@@ -526,6 +549,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
