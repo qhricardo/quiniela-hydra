@@ -99,42 +99,15 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
             <li>🏆 Próxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
         </ul>
    
-        <!-- Stripe JS -->
-<script src="https://js.stripe.com/v3/"></script>
-<script>
-  const stripe = Stripe("pk_test_TU_PUBLISHABLE_KEY"); // Reemplaza con tu clave pública
-
-  async function comprarCreditos(cantidad) {
-      // Llamada a tu endpoint backend
-      const response = await fetch('/api/crear-pago', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cantidad: cantidad })
-      });
-      const data = await response.json();
-
-      // Confirmar el pago con Stripe
-      const result = await stripe.confirmCardPayment(data.client_secret, {
-          payment_method: {
-              card: {
-                  // Aquí usarías un elemento de Stripe.js (CardElement) si quieres pagar con tarjeta
-              }
-          }
-      });
-
-      if (result.error) {
-          alert("Error en el pago: " + result.error.message);
-      } else if (result.paymentIntent.status === 'succeeded') {
-          alert("Pago exitoso! Créditos agregados.");
-          location.reload(); // Refresca para actualizar créditos en pantalla
-      }
-  }
-
-  // Ejemplo de botón
-  document.getElementById("btn-comprar").addEventListener("click", () => {
-      comprarCreditos(1); // 1 crédito por ejemplo
-  });
+       <script async
+  src="https://js.stripe.com/v3/buy-button.js">
 </script>
+
+<stripe-buy-button
+  buy-button-id="buy_btn_1SEE8ZAxnIQ0x6oTvwDiRILN"
+  publishable-key="pk_test_51SEAcuAxnIQ0x6oTPZlNFKIXlhTTIsw9m1J30ODSz6K02ntSWVzP9GLMxpCnZPHTlK0G86yjU27G3Dy7srUm0T2800Y8jY6Xtk"
+>
+</stripe-buy-button>
 
      </div>
 
@@ -560,6 +533,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
