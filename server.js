@@ -6,7 +6,6 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
-import fs from "fs";
 import admin from "firebase-admin";
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 
@@ -17,11 +16,15 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // ────────────────────────────────
-// 🔹 Inicializar Firebase Admin
+// 🔹 Inicializar Firebase Admin con variable de entorno
 // ────────────────────────────────
 let db;
 try {
-  const serviceAccount = JSON.parse(fs.readFileSync("./serviceAccountKey.json", "utf-8"));
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT no configurada");
+  }
+
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
