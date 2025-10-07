@@ -1,13 +1,12 @@
 import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
-import fs from "fs";
 
 const app = express();
 app.use(bodyParser.json());
 
-// 🔹 Inicializa Firebase Admin
-const serviceAccount = JSON.parse(fs.readFileSync("./serviceAccountKey.json", "utf8"));
+// 🔹 Inicializa Firebase desde variable de entorno
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -15,16 +14,17 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-// 🔹 Endpoint Webhook Mercado Pago
+// 🔹 Webhook de Mercado Pago
 app.post("/webhook-mercadopago", async (req, res) => {
   try {
     const evento = req.body;
 
-    // Asegura que sea pago aprobado
-    if (evento.action === "payment.updated" && evento.data?.status === "approved") {
+    // Verifica si el pago fue aprobado
+    if (evento.action === "payment.updated" && evento.data.status === "approved") {
       const userId = evento.data.metadata.userId;
-
       const userRef = db.collection("users").doc(userId);
+
+      // Sumar 4 créditos al usuario
       await userRef.update({
         creditos: admin.firestore.FieldValue.increment(4)
       });
@@ -39,6 +39,4 @@ app.post("/webhook-mercadopago", async (req, res) => {
   }
 });
 
-// 🔹 Puerto
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor escuchando en puerto ${PORT}`));
+app.listen(3000, () => console.log("Servidor escuchando en puerto 3000"));
