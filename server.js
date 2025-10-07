@@ -1,36 +1,69 @@
+// ────────────────────────────────────────────────
+// 🔹 server.js | Quiniela360 - Integración MercadoPago + Créditos Firebase
+// ────────────────────────────────────────────────
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import mercadopago from "mercadopago";
 import dotenv from "dotenv";
+import admin from "firebase-admin";
 
-dotenv.config(); // Cargar variables de entorno
+dotenv.config();
 
+// ────────────────────────────────────────────────
+// 🔹 Inicializar Express
+// ────────────────────────────────────────────────
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// 🔹 Configurar MercadoPago con el token de producción
+// ────────────────────────────────────────────────
+// 🔹 Inicializar Firebase Admin (usa tu serviceAccountKey.json)
+// ────────────────────────────────────────────────
+try {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+
+  console.log("✅ Firebase inicializado correctamente");
+} catch (error) {
+  console.error("❌ Error inicializando Firebase:", error.message);
+}
+
+// Referencia a Firestore
+const db = admin.firestore();
+
+// ────────────────────────────────────────────────
+// 🔹 Configurar MercadoPago con credenciales de producción
+// ────────────────────────────────────────────────
 mercadopago.configure({
   access_token: process.env.MP_ACCESS_TOKEN
 });
 
-// 🔹 Ruta para crear la preferencia de pago
+// ────────────────────────────────────────────────
+// 🔹 Crear preferencia de pago (usuario solicita agregar créditos)
+// ────────────────────────────────────────────────
 app.post("/crear-preferencia", async (req, res) => {
   try {
-    const { usuario, monto, descripcion } = req.body;
+    const { uid, nombre, monto } = req.body;
+
+    if (!uid || !monto) {
+      return res.status(400).json({ error: "Faltan datos: uid o monto" });
+    }
 
     const preference = {
       items: [
         {
-          title: descripcion || "Bono Quiniela360",
+          title: "Recarga de créditos Quiniela360",
           quantity: 1,
           currency_id: "MXN",
           unit_price: parseFloat(monto)
-        },
+        }
       ],
       payer: {
-        name: usuario || "Usuario no identificado"
+        name: nombre || "Usuario"
       },
       back_urls: {
         success: "https://quiniela360.com/pago-exitoso",
@@ -38,19 +71,22 @@ app.post("/crear-preferencia", async (req, res) => {
         pending: "https://quiniela360.com/pago-pendiente"
       },
       auto_return: "approved",
-      notification_url: "https://quiniela-hydra.onrender.com/webhook" // 🔔 Aquí llega la notificación
+      notification_url: "https://quiniela-hydra.onrender.com/webhook"
     };
 
     const response = await mercadopago.preferences.create(preference);
-    res.json({ init_point: response.body.init_point });
+    console.log(`🧾 Preferencia creada para ${nombre} (${uid}) - Monto: ${monto}`);
 
+    res.json({ init_point: response.body.init_point });
   } catch (error) {
-    console.error("Error al crear preferencia:", error);
+    console.error("❌ Error al crear preferencia:", error);
     res.status(500).json({ error: "Error al crear la preferencia de pago" });
   }
 });
 
-// 🔹 Webhook para recibir notificaciones de pago
+// ────────────────────────────────────────────────
+// 🔹 Webhook (MercadoPago notifica pagos)
+// ────────────────────────────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const data = req.body;
@@ -59,29 +95,49 @@ app.post("/webhook", async (req, res) => {
     if (data.type === "payment") {
       const payment = await mercadopago.payment.findById(data.data.id);
       const estado = payment.body.status;
-      const id_pago = payment.body.id;
+      const monto = payment.body.transaction_amount;
       const email = payment.body.payer.email;
 
-      console.log(`💰 Pago recibido: ${id_pago} | Estado: ${estado} | Usuario: ${email}`);
+      console.log(`💰 Pago recibido | Estado: ${estado} | Monto: ${monto} | Email: ${email}`);
 
-      // Aquí puedes actualizar tu base de datos
-      // Ejemplo:
-      // await db.collection("bonos").doc(email).update({ estado: estado });
+      // Solo procesar pagos aprobados
+      if (estado === "approved") {
+        // Buscar usuario en Firestore por correo
+        const usuariosRef = db.collection("usuarios");
+        const snapshot = await usuariosRef.where("email", "==", email).get();
 
+        if (snapshot.empty) {
+          console.warn("⚠️ No se encontró usuario con el correo:", email);
+        } else {
+          snapshot.forEach(async (doc) => {
+            const usuarioData = doc.data();
+            const creditosActuales = usuarioData.creditos || 0;
+            const nuevosCreditos = creditosActuales + monto;
+
+            await doc.ref.update({ creditos: nuevosCreditos });
+
+            console.log(`✅ Créditos actualizados para ${email}: ${creditosActuales} ➜ ${nuevosCreditos}`);
+          });
+        }
+      }
     }
 
     res.status(200).send("OK");
   } catch (error) {
-    console.error("Error en webhook:", error);
-    res.status(500).send("Error interno");
+    console.error("❌ Error en webhook:", error);
+    res.status(500).send("Error interno del servidor");
   }
 });
 
-// 🔹 Ruta de prueba
+// ────────────────────────────────────────────────
+// 🔹 Ruta de prueba básica
+// ────────────────────────────────────────────────
 app.get("/", (req, res) => {
-  res.send("Servidor activo y escuchando notificaciones de MercadoPago");
+  res.send("Servidor Quiniela360 activo con MercadoPago + Firebase ✅");
 });
 
+// ────────────────────────────────────────────────
 // 🔹 Iniciar servidor
+// ────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Servidor corriendo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
