@@ -1,6 +1,8 @@
 // ────────────────────────────────────────────────
-// 🔹 server.js | Quiniela360 - Integración MercadoPago + Créditos Firebase
+// 🔹 Quiniela360 | Integración MercadoPago + Firebase Créditos
+// 🔹 Optimizado para Render
 // ────────────────────────────────────────────────
+
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -8,42 +10,47 @@ import mercadopago from "mercadopago";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
 
+// ────────────────────────────────────────────────
+// 🔹 Configuración inicial
+// ────────────────────────────────────────────────
 dotenv.config();
-
-// ────────────────────────────────────────────────
-// 🔹 Inicializar Express
-// ────────────────────────────────────────────────
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
 // ────────────────────────────────────────────────
-// 🔹 Inicializar Firebase Admin (usa tu serviceAccountKey.json)
+// 🔹 Inicializar Firebase Admin
 // ────────────────────────────────────────────────
+let db;
 try {
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    throw new Error("Variable FIREBASE_SERVICE_ACCOUNT no configurada.");
+  }
+
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
 
+  db = admin.firestore();
   console.log("✅ Firebase inicializado correctamente");
 } catch (error) {
   console.error("❌ Error inicializando Firebase:", error.message);
 }
 
-// Referencia a Firestore
-const db = admin.firestore();
-
 // ────────────────────────────────────────────────
-// 🔹 Configurar MercadoPago con credenciales de producción
+// 🔹 Configurar MercadoPago (producción)
 // ────────────────────────────────────────────────
+if (!process.env.MP_ACCESS_TOKEN) {
+  console.error("⚠️ Falta MP_ACCESS_TOKEN en las variables de entorno.");
+}
 mercadopago.configure({
-  access_token: process.env.MP_ACCESS_TOKEN
+  access_token: process.env.MP_ACCESS_TOKEN || ""
 });
 
 // ────────────────────────────────────────────────
-// 🔹 Crear preferencia de pago (usuario solicita agregar créditos)
+// 🔹 Crear preferencia de pago (recarga de créditos)
 // ────────────────────────────────────────────────
 app.post("/crear-preferencia", async (req, res) => {
   try {
@@ -80,19 +87,19 @@ app.post("/crear-preferencia", async (req, res) => {
     res.json({ init_point: response.body.init_point });
   } catch (error) {
     console.error("❌ Error al crear preferencia:", error);
-    res.status(500).json({ error: "Error al crear la preferencia de pago" });
+    res.status(500).json({ error: "Error al crear preferencia de pago" });
   }
 });
 
 // ────────────────────────────────────────────────
-// 🔹 Webhook (MercadoPago notifica pagos)
+// 🔹 Webhook (notificaciones de pago MercadoPago)
 // ────────────────────────────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const data = req.body;
     console.log("📩 Notificación recibida:", JSON.stringify(data, null, 2));
 
-    if (data.type === "payment") {
+    if (data.type === "payment" && data.data && data.data.id) {
       const payment = await mercadopago.payment.findById(data.data.id);
       const estado = payment.body.status;
       const monto = payment.body.transaction_amount;
@@ -100,24 +107,21 @@ app.post("/webhook", async (req, res) => {
 
       console.log(`💰 Pago recibido | Estado: ${estado} | Monto: ${monto} | Email: ${email}`);
 
-      // Solo procesar pagos aprobados
-      if (estado === "approved") {
-        // Buscar usuario en Firestore por correo
+      if (estado === "approved" && email && db) {
         const usuariosRef = db.collection("usuarios");
         const snapshot = await usuariosRef.where("email", "==", email).get();
 
         if (snapshot.empty) {
-          console.warn("⚠️ No se encontró usuario con el correo:", email);
+          console.warn("⚠️ No se encontró usuario con correo:", email);
         } else {
-          snapshot.forEach(async (doc) => {
+          for (const doc of snapshot.docs) {
             const usuarioData = doc.data();
             const creditosActuales = usuarioData.creditos || 0;
             const nuevosCreditos = creditosActuales + monto;
 
             await doc.ref.update({ creditos: nuevosCreditos });
-
             console.log(`✅ Créditos actualizados para ${email}: ${creditosActuales} ➜ ${nuevosCreditos}`);
-          });
+          }
         }
       }
     }
@@ -130,14 +134,16 @@ app.post("/webhook", async (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-// 🔹 Ruta de prueba básica
+// 🔹 Ruta de prueba (verificar que el servidor corre)
 // ────────────────────────────────────────────────
 app.get("/", (req, res) => {
-  res.send("Servidor Quiniela360 activo con MercadoPago + Firebase ✅");
+  res.send("✅ Servidor Quiniela360 activo con MercadoPago + Firebase");
 });
 
 // ────────────────────────────────────────────────
-// 🔹 Iniciar servidor
+// 🔹 Inicializar servidor
 // ────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+});
