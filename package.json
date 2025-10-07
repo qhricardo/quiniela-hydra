@@ -1,0 +1,14 @@
+{
+  "name": "quiniela360-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2",
+    "firebase-admin": "^12.0.0"
+  }
+}
