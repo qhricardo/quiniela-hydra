@@ -99,10 +99,15 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     <li>🏆 Proxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
      <li>💰 Suscripcion 5 creditos x $50.</li>
   </ul>
- <button id="comprarCreditos">Comprar 100 Créditos</button>
+<button id="comprarCreditos">Comprar 100 Créditos</button>
 
 <script>
-  // Detecta clic en el botón "Comprar Créditos"
+  // Supongamos que guardaste el usuario logeado en localStorage al iniciar sesión:
+  // localStorage.setItem("user", JSON.stringify({ id: "ABC123", name: "Richar" }));
+
+  // Recuperamos los datos del usuario logeado
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+
   document.getElementById("comprarCreditos").addEventListener("click", async () => {
     try {
       // Verifica que haya un usuario logeado
@@ -563,6 +568,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
