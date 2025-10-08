@@ -99,13 +99,29 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     <li>🏆 Proxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
      <li>💰 Suscripcion 5 creditos x $50.</li>
   </ul>
-  <div style="text-align: center; margin-top: 15px;">
-    <a href="https://www.mercadopago.com.mx/subscriptions/checkout?preapproval_plan_id=a9686bf7ae9045f1b7d1141d5250947e" 
-       target="_blank" 
-       style="display: inline-block; padding: 10px 15px; background-color: #25D366; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-      💬 Suscribete
-    </a>
-  </div>
+ <button id="comprarCreditos">Comprar 100 Créditos</button>
+
+<script>
+document.getElementById("comprarCreditos").addEventListener("click", async () => {
+  const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId: "ID_DEL_USUARIO_FIRESTORE",
+      amount: 100,
+      name: "Richar",
+    }),
+  });
+
+  const data = await res.json();
+  if (data.init_point) {
+    window.location.href = data.init_point; // checkout real de Mercado Pago
+  } else {
+    alert("No se pudo generar la preferencia");
+  }
+});
+</script>
+
      </div>
 
     <div style="flex: 3 1 600px; padding: 10px;" class="container">
@@ -530,6 +546,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
