@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────
-// 🔹 Quiniela360 | Backend Producción MercadoPago + Firebase
+// 🔹 Quiniela360 | Backend MercadoPago + Firebase
 // ────────────────────────────────────────────────
 
 import express from "express";
@@ -16,7 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // ────────────────────────────────
-// 🔹 Inicializar Firebase
+// 🔹 Inicializar Firebase Admin con variable de entorno
 // ────────────────────────────────
 let db;
 try {
@@ -37,18 +37,18 @@ try {
 }
 
 // ────────────────────────────────
-// 🔹 Inicializar MercadoPago PRODUCCIÓN
+// 🔹 Inicializar MercadoPago v2
 // ────────────────────────────────
 if (!process.env.MP_ACCESS_TOKEN) {
-  console.warn("⚠️ MP_ACCESS_TOKEN no configurado");
+  console.warn("⚠️ MP_ACCESS_TOKEN no configurado en variables de entorno");
 }
 
 const mpClient = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN,
+  accessToken: process.env.MP_ACCESS_TOKEN || "",
 });
 
 // ────────────────────────────────
-// 🔹 Crear preferencia de pago REAL
+// 🔹 Endpoint: crear preferencia de pago
 // ────────────────────────────────
 app.post("/create-preference", async (req, res) => {
   try {
@@ -81,8 +81,13 @@ app.post("/create-preference", async (req, res) => {
       },
     });
 
+    // 🔹 Guardar relación preferenceId ↔ userId en Firestore
+    if (db) {
+      await db.collection("preferences").doc(preference.id).set({ userId });
+    }
+
     console.log(`🧾 Preferencia creada para ${name || userId}: ${amount} MXN`);
-    res.json({ id: preference.id, init_point: preference.init_point }); // <-- Pago real
+    res.json({ id: preference.id, init_point: preference.init_point });
   } catch (error) {
     console.error("❌ Error creando preferencia:", error);
     res.status(500).json({ error: "Error creando preferencia de pago" });
@@ -90,7 +95,7 @@ app.post("/create-preference", async (req, res) => {
 });
 
 // ────────────────────────────────
-// 🔹 Webhook PRODUCCIÓN
+// 🔹 Endpoint: webhook MercadoPago
 // ────────────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
@@ -103,7 +108,15 @@ app.post("/webhook", async (req, res) => {
 
       const estado = payment.status;
       const monto = payment.transaction_amount;
-      const userId = payment.metadata?.userId;
+
+      // 🔹 Obtener userId desde metadata o Firestore
+      let userId = payment.metadata?.userId;
+
+      if (!userId && db) {
+        const prefRef = db.collection("preferences").doc(payment.preference_id);
+        const prefSnap = await prefRef.get();
+        if (prefSnap.exists) userId = prefSnap.data().userId;
+      }
 
       console.log(`💰 Pago recibido | Estado: ${estado} | Monto: ${monto} | Usuario: ${userId}`);
 
@@ -134,7 +147,7 @@ app.post("/webhook", async (req, res) => {
 // 🔹 Ruta de prueba
 // ────────────────────────────────
 app.get("/", (req, res) => {
-  res.send("✅ Quiniela360 | Backend en modo PRODUCCIÓN con MercadoPago");
+  res.send("✅ Servidor Quiniela360 activo con MercadoPago + Firebase");
 });
 
 // ────────────────────────────────
