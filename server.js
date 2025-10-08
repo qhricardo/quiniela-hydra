@@ -16,7 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // ────────────────────────────────
-// 🔹 Inicializar Firebase Admin con variable de entorno
+// 🔹 Inicializar Firebase Admin
 // ────────────────────────────────
 let db;
 try {
@@ -37,10 +37,10 @@ try {
 }
 
 // ────────────────────────────────
-// 🔹 Inicializar MercadoPago v2
+// 🔹 Inicializar MercadoPago
 // ────────────────────────────────
 if (!process.env.MP_ACCESS_TOKEN) {
-  console.warn("⚠️ MP_ACCESS_TOKEN no configurado en variables de entorno");
+  console.warn("⚠️ MP_ACCESS_TOKEN no configurado");
 }
 
 const mpClient = new MercadoPagoConfig({
@@ -90,16 +90,20 @@ app.post("/create-preference", async (req, res) => {
 });
 
 // ────────────────────────────────
-// 🔹 Endpoint: webhook MercadoPago
+// 🔹 Endpoint: Webhook MercadoPago
 // ────────────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const data = req.body;
     console.log("📩 Webhook recibido:", JSON.stringify(data, null, 2));
 
-    if (data.type === "payment" && data.data?.id) {
+    // Compatibilidad con formato antiguo y nuevo
+    const paymentId = data.data?.id || data.id;
+    const type = data.type || data.topic;
+
+    if (type === "payment" && paymentId) {
       const paymentInstance = new Payment(mpClient);
-      const payment = await paymentInstance.get({ id: data.data.id });
+      const payment = await paymentInstance.get({ id: paymentId });
 
       const estado = payment.status;
       const monto = payment.transaction_amount;
@@ -121,6 +125,8 @@ app.post("/webhook", async (req, res) => {
           console.warn(`⚠️ Usuario no encontrado: ${userId}`);
         }
       }
+    } else {
+      console.log("📘 Webhook ignorado. Tipo:", type);
     }
 
     res.sendStatus(200);
