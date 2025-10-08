@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────
-// 🔹 Quiniela360 | Backend MercadoPago + Firebase
+// 🔹 Quiniela360 | Backend Producción MercadoPago + Firebase
 // ────────────────────────────────────────────────
 
 import express from "express";
@@ -16,7 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // ────────────────────────────────
-// 🔹 Inicializar Firebase Admin
+// 🔹 Inicializar Firebase
 // ────────────────────────────────
 let db;
 try {
@@ -37,18 +37,18 @@ try {
 }
 
 // ────────────────────────────────
-// 🔹 Inicializar MercadoPago
+// 🔹 Inicializar MercadoPago PRODUCCIÓN
 // ────────────────────────────────
 if (!process.env.MP_ACCESS_TOKEN) {
   console.warn("⚠️ MP_ACCESS_TOKEN no configurado");
 }
 
 const mpClient = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN || "",
+  accessToken: process.env.MP_ACCESS_TOKEN,
 });
 
 // ────────────────────────────────
-// 🔹 Endpoint: crear preferencia de pago
+// 🔹 Crear preferencia de pago REAL
 // ────────────────────────────────
 app.post("/create-preference", async (req, res) => {
   try {
@@ -82,7 +82,7 @@ app.post("/create-preference", async (req, res) => {
     });
 
     console.log(`🧾 Preferencia creada para ${name || userId}: ${amount} MXN`);
-    res.json({ id: preference.id, init_point: preference.init_point });
+    res.json({ id: preference.id, init_point: preference.init_point }); // <-- Pago real
   } catch (error) {
     console.error("❌ Error creando preferencia:", error);
     res.status(500).json({ error: "Error creando preferencia de pago" });
@@ -90,20 +90,16 @@ app.post("/create-preference", async (req, res) => {
 });
 
 // ────────────────────────────────
-// 🔹 Endpoint: Webhook MercadoPago
+// 🔹 Webhook PRODUCCIÓN
 // ────────────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const data = req.body;
     console.log("📩 Webhook recibido:", JSON.stringify(data, null, 2));
 
-    // Compatibilidad con formato antiguo y nuevo
-    const paymentId = data.data?.id || data.id;
-    const type = data.type || data.topic;
-
-    if (type === "payment" && paymentId) {
+    if (data.type === "payment" && data.data?.id) {
       const paymentInstance = new Payment(mpClient);
-      const payment = await paymentInstance.get({ id: paymentId });
+      const payment = await paymentInstance.get({ id: data.data.id });
 
       const estado = payment.status;
       const monto = payment.transaction_amount;
@@ -125,8 +121,6 @@ app.post("/webhook", async (req, res) => {
           console.warn(`⚠️ Usuario no encontrado: ${userId}`);
         }
       }
-    } else {
-      console.log("📘 Webhook ignorado. Tipo:", type);
     }
 
     res.sendStatus(200);
@@ -140,7 +134,7 @@ app.post("/webhook", async (req, res) => {
 // 🔹 Ruta de prueba
 // ────────────────────────────────
 app.get("/", (req, res) => {
-  res.send("✅ Servidor Quiniela360 activo con MercadoPago + Firebase");
+  res.send("✅ Quiniela360 | Backend en modo PRODUCCIÓN con MercadoPago");
 });
 
 // ────────────────────────────────
