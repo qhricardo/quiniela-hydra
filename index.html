@@ -101,7 +101,45 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
   </ul>
 <button id="comprarCreditos">💳 Comprar 5 Créditos</button>
 
+<script>
+document.getElementById("comprarCreditos").addEventListener("click", async () => {
+  try {
+    console.log("🟢 Iniciando compra de créditos...");
 
+    const body = {
+      userId: currentUser?.uid || "",
+      name: currentUser?.displayName || "Usuario",
+      email: currentUser?.email || "",
+      amount: 5, // ✅ COMA CORRECTA AQUÍ
+    };
+
+    console.log("📦 Enviando datos al servidor:", body);
+
+    const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+    console.log("📩 Respuesta del servidor:", data);
+
+    if (data.init_point) {
+      const newTab = window.open(data.init_point, "_blank");
+      if (!newTab) {
+        alert("⚠️ El navegador bloqueó la ventana emergente. Permite popups para continuar.");
+      }
+    } else {
+      alert("❌ No se pudo generar la preferencia de pago");
+      console.error("Respuesta sin init_point:", data);
+    }
+
+  } catch (error) {
+    console.error("❌ Error al iniciar compra:", error);
+    alert("Ocurrió un error al intentar comprar créditos.");
+  }
+});
+</script>
      </div>
 
     <div style="flex: 3 1 600px; padding: 10px;" class="container">
@@ -445,76 +483,6 @@ document.getElementById('guardar-btn').addEventListener('click', async()=>{
     }
 });
 
-
-const db = firebase.firestore();
-let currentUser = null;
-let userCredits = 0;
-
-firebase.auth().onAuthStateChanged(async (user) => {
-  if (!user) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  currentUser = user;
-
-  const userDoc = await db.collection('users').doc(user.uid).get();
-  if (userDoc.exists) {
-    const userData = userDoc.data();
-    userCredits = userData.creditos ?? 0;
-    document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
-  }
-
-  const grupoActual = localStorage.getItem('grupoSeleccionado');
-  if (!grupoActual) {
-    alert("Debes seleccionar un grupo");
-    return;
-  }
-  document.getElementById('grupoActual').textContent = `Grupo: ${grupoActual}`;
-
-  // ✅ Activar botón de compra una vez que el usuario está logeado
-  const comprarBtn = document.getElementById("comprarCreditos");
-  if (comprarBtn) {
-    comprarBtn.addEventListener("click", async () => {
-      try {
-        console.log("🟢 Iniciando compra de créditos...");
-
-        const body = {
-          userId: currentUser.uid,
-          name: currentUser.displayName || "Usuario",
-          email: currentUser.email || "",
-          amount: 5,
-        };
-
-        console.log("📦 Enviando datos al servidor:", body);
-
-        const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        });
-
-        const data = await res.json();
-        console.log("📩 Respuesta del servidor:", data);
-
-        if (data.init_point) {
-          const newTab = window.open(data.init_point, "_blank");
-          if (!newTab) {
-            alert("⚠️ El navegador bloqueó la ventana emergente. Permite popups para continuar.");
-          }
-        } else {
-          alert("❌ No se pudo generar la preferencia de pago");
-          console.error("Respuesta sin init_point:", data);
-        }
-
-      } catch (error) {
-        console.error("❌ Error al iniciar compra:", error);
-        alert("Ocurrió un error al intentar comprar créditos.");
-      }
-    });
-  }
-});
-
     
 // 🔹 Mostrar grupo actual en el header
 async function mostrarGrupoActual() {
@@ -596,6 +564,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
