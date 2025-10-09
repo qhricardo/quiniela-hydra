@@ -82,12 +82,24 @@ app.post("/create-preference", async (req, res) => {
     });
 
     // 🔹 Guardar preferencia en Firestore
-    if (db) {
-      await db.collection("preferences").doc(preference.id).set({ userId, creditsToAdd });
+  if (db) {
+      const userRef = db.collection("users").doc(userId);
+      const userDoc = await userRef.get();
+
+      if (userDoc.exists) {
+        const currentCredits = userDoc.data().credits || 0;
+        await userRef.update({ credits: currentCredits + Number(creditsToAdd) });
+        console.log(`✅ Créditos actualizados para ${userId}: ${currentCredits} ➜ ${currentCredits + Number(creditsToAdd)}`);
+      } else {
+        // Si no existe el usuario, lo creamos con los créditos
+        await userRef.set({ name: name || "", credits: Number(creditsToAdd) });
+        console.log(`🆕 Usuario ${userId} creado con ${creditsToAdd} créditos`);
+      }
     }
 
     console.log(`🧾 Preferencia creada para ${name || userId}: ${amount} MXN`);
     res.json({ id: preference.id, init_point: preference.init_point });
+
   } catch (error) {
     console.error("❌ Error creando preferencia:", error);
     res.status(500).json({ error: "Error creando preferencia de pago" });
