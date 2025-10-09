@@ -110,12 +110,14 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
   }
 
   // Datos dinámicos del usuario
-  const body = { 
-    userId: currentUser.uid || "",
-    name: currentUser.displayName || "Usuario",
-    email: currentUser.email || "",
-    amount: 5
-  };
+    const body = { 
+    amount: 5,
+    metadata: {
+        userId: currentUser.uid,
+        name: currentUser.displayName || "Usuario",
+        email: currentUser.email || "",
+    }
+};
 
   try {
     const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
@@ -564,6 +566,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
