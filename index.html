@@ -129,47 +129,48 @@ firebase.auth().onAuthStateChanged(async (user) => {
   document.getElementById('grupoActual').textContent = `Grupo: ${grupoActual}`;
 
   // ✅ Activar botón de compra una vez que el usuario está logeado
-  document.getElementById("comprarCreditos").addEventListener("click", async () => {
-    try {
-      console.log("🟢 Iniciando compra de créditos...");
+  const comprarBtn = document.getElementById("comprarCreditos");
+  if (comprarBtn) {
+    comprarBtn.addEventListener("click", async () => {
+      try {
+        console.log("🟢 Iniciando compra de créditos...");
 
-      const body = {
-        userId: currentUser.uid,
-        name: currentUser.displayName || "Usuario",
-        email: currentUser.email || "",
-        amount: 5,
-      };
+        const body = {
+          userId: currentUser.uid,
+          name: currentUser.displayName || "Usuario",
+          email: currentUser.email || "",
+          amount: 5
+        };
 
-      console.log("📦 Enviando datos al servidor:", body);
+        console.log("📦 Enviando datos al servidor:", body);
 
-      const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+        const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
 
-      const data = await res.json();
-      console.log("📩 Respuesta del servidor:", data);
+        const data = await res.json();
+        console.log("📩 Respuesta del servidor:", data);
 
-      if (data.init_point) {
-        const newTab = window.open(data.init_point, "_blank");
-        if (!newTab) {
-          alert("⚠️ El navegador bloqueó la ventana emergente. Permite popups para continuar.");
+        if (data.init_point) {
+          const newTab = window.open(data.init_point, "_blank");
+          if (!newTab) {
+            alert("⚠️ El navegador bloqueó la ventana emergente. Permite popups para continuar.");
+          }
+        } else {
+          alert("❌ No se pudo generar la preferencia de pago");
+          console.error("Respuesta sin init_point:", data);
         }
-      } else {
-        alert("❌ No se pudo generar la preferencia de pago");
-        console.error("Respuesta sin init_point:", data);
-      }
 
-    } catch (error) {
-      console.error("❌ Error al iniciar compra:", error);
-      alert("Ocurrió un error al intentar comprar créditos.");
-    }
-  });
+      } catch (error) {
+        console.error("❌ Error al iniciar compra:", error);
+        alert("Ocurrió un error al intentar comprar créditos.");
+      }
+    });
+  }
 });
 </script>
-
-
 
      </div>
 
@@ -595,6 +596,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
