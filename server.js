@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────
-// 🔹 Quiniela360 | Backend MercadoPago + Firebase
+// 🔹 Quiniela360 | Backend MercadoPago + Firebase (Producción)
 // ────────────────────────────────────────────────
 
 import express from "express";
@@ -34,6 +34,7 @@ try {
   console.log("✅ Firebase inicializado correctamente");
 } catch (error) {
   console.error("❌ Error inicializando Firebase:", error.message);
+  process.exit(1);
 }
 
 // ────────────────────────────────
@@ -87,7 +88,7 @@ app.post("/create-preference", async (req, res) => {
       await db
         .collection("preferences")
         .doc(preference.id)
-        .set({ userId, creditsToAdd });
+        .set({ userId, creditsToAdd, status: "pending" });
     }
 
     console.log(
@@ -108,7 +109,6 @@ app.post("/webhook", async (req, res) => {
     const data = req.body;
     console.log("📩 Webhook recibido:", JSON.stringify(data, null, 2));
 
-    // Solo procesar pagos
     if (data.type === "payment" && data.data?.id) {
       const paymentInstance = new Payment(mpClient);
       const payment = await paymentInstance.get({ id: data.data.id });
@@ -117,8 +117,9 @@ app.post("/webhook", async (req, res) => {
       const metadata = payment.metadata || {};
       const { userId: metaUserId, creditsToAdd } = metadata;
 
-      // Obtener userId desde metadata o Firestore
       let userId = metaUserId;
+
+      // Obtener userId desde Firestore si falta
       if (!userId && db && payment.preference_id) {
         const prefRef = db.collection("preferences").doc(payment.preference_id);
         const prefSnap = await prefRef.get();
@@ -127,11 +128,30 @@ app.post("/webhook", async (req, res) => {
         }
       }
 
+      if (!userId) {
+        console.warn("⚠️ No se encontró userId para actualizar créditos");
+        return res.sendStatus(400);
+      }
+
+      const prefRef = db.collection("preferences").doc(payment.preference_id);
+      const prefSnap = await prefRef.get();
+
+      if (!prefSnap.exists) {
+        console.warn("⚠️ Preferencia no encontrada en Firestore");
+        return res.sendStatus(400);
+      }
+
+      // Evitar actualizar créditos varias veces
+      if (prefSnap.data().status === "approved") {
+        console.log("ℹ️ Créditos ya fueron actualizados para esta preferencia");
+        return res.sendStatus(200);
+      }
+
       console.log(
         `💰 Pago recibido | Estado: ${estado} | Usuario: ${userId} | Credits to add: ${creditsToAdd}`
       );
 
-      if (estado === "approved" && userId && db) {
+      if (estado === "approved") {
         const userRef = db.collection("users").doc(userId);
         const userSnap = await userRef.get();
 
@@ -143,9 +163,14 @@ app.post("/webhook", async (req, res) => {
           console.log(
             `✅ Créditos actualizados: ${currentCredits} ➜ ${newCredits}`
           );
+
+          // Marcar preferencia como aprobada
+          await prefRef.update({ status: "approved" });
         } else {
           console.warn(`⚠️ Usuario no encontrado: ${userId}`);
         }
+      } else {
+        console.log(`⚠️ Pago no aprobado aún. Estado: ${estado}`);
       }
     } else {
       console.log("⚠️ Notificación ignorada (no es pago)", data);
