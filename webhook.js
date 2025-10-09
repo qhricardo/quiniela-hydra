@@ -21,78 +21,67 @@ router.post("/", async (req, res) => {
       return res.status(400).send("Invalid notification");
     }
 
-    const db = admin.firestore();
-
-    // ─────────────────────────────────────────────
-    // 🔹 Pagos directos
-    // ─────────────────────────────────────────────
+    // Solo procesamos notificaciones de pagos
     if (data.type === "payment") {
-      const paymentId = data.data.id;
-      console.log(`🔍 Consultando pago ID: ${paymentId}...`);
+      const paymentId = data.data?.id;
+      if (!paymentId) {
+        console.warn("⚠️ No se recibió ID del pago");
+        return res.status(400).send("Payment ID missing");
+      }
 
+      console.log(`🔍 Consultando pago ID: ${paymentId}...`);
       const payment = await mercadopago.payment.findById(paymentId);
       const estado = payment.body.status;
       const monto = payment.body.transaction_amount;
-      const metadataUserId = payment.body.metadata?.userId;
-      const payerEmail = payment.body.payer.email;
+      const metadata = payment.body.metadata || {};
+      const userId = metadata.userId;
+      const email = payment.body.payer?.email || metadata.email;
 
-      console.log(`💰 Estado: ${estado} | Monto: ${monto} | userId: ${metadataUserId} | Email: ${payerEmail}`);
+      console.log(`💰 Estado del pago: ${estado} | Monto: ${monto} | userId: ${userId} | Email: ${email}`);
 
       if (estado === "approved") {
-        if (metadataUserId) {
-          // Si userId está definido en metadata
-          const userRef = db.collection("usuarios").doc(metadataUserId);
-          const userSnap = await userRef.get();
+        const db = admin.firestore();
 
+        if (userId) {
+          // Actualiza por userId
+          const userRef = db.collection("usuarios").doc(userId);
+          const userSnap = await userRef.get();
           if (userSnap.exists) {
             const creditosActuales = userSnap.data().creditos || 0;
-            const nuevosCreditos = creditosActuales + monto;
-            await userRef.update({ creditos: nuevosCreditos });
-            console.log(`✅ Créditos actualizados para userId ${metadataUserId}: ${creditosActuales} ➜ ${nuevosCreditos}`);
+            await userRef.update({ creditos: creditosActuales + monto });
+            console.log(`✅ Créditos actualizados para userId ${userId}: ${creditosActuales} ➜ ${creditosActuales + monto}`);
           } else {
-            console.warn(`⚠️ Usuario con userId ${metadataUserId} no encontrado`);
+            console.warn(`⚠️ No se encontró usuario con ID: ${userId}`);
           }
-        } else if (payerEmail) {
-          // Si no hay userId, buscar por email
-          const snapshot = await db.collection("usuarios").where("email", "==", payerEmail).get();
+        } else if (email) {
+          // Actualiza por email
+          const usuariosRef = db.collection("usuarios");
+          const snapshot = await usuariosRef.where("email", "==", email).get();
           if (snapshot.empty) {
-            console.warn(`⚠️ No se encontró usuario con email: ${payerEmail}`);
+            console.warn(`⚠️ No se encontró usuario con email: ${email}`);
           } else {
             snapshot.forEach(async (doc) => {
               const creditosActuales = doc.data().creditos || 0;
-              const nuevosCreditos = creditosActuales + monto;
-              await doc.ref.update({ creditos: nuevosCreditos });
-              console.log(`✅ Créditos actualizados para ${payerEmail}: ${creditosActuales} ➜ ${nuevosCreditos}`);
+              await doc.ref.update({ creditos: creditosActuales + monto });
+              console.log(`✅ Créditos actualizados para ${email}: ${creditosActuales} ➜ ${creditosActuales + monto}`);
             });
           }
         } else {
-          console.warn("⚠️ Pago aprobado pero no se pudo identificar usuario (no userId ni email)");
+          console.warn("⚠️ No se encontró userId ni email para actualizar créditos");
         }
       } else {
         console.log(`⚠️ Pago no aprobado. Estado: ${estado}`);
       }
     }
 
-    // ─────────────────────────────────────────────
-    // 🔹 Suscripciones / Preapproval
-    // ─────────────────────────────────────────────
-    else if (data.type === "subscription_preapproval" || data.type === "preapproval") {
-      const preapprovalId = data.data.id;
-      console.log(`🔄 Suscripción o preapproval actualizado: ${preapprovalId}`);
-      // Aquí podrías actualizar info de suscripciones si quieres
-    }
-
-    else {
-      console.log("📘 Tipo de evento no manejado:", data.type);
-    }
-
-    // Confirmar recepción
     res.status(200).send("OK");
-
   } catch (error) {
     console.error("❌ Error procesando webhook:", error);
     res.status(500).send("Internal Server Error");
   }
 });
 
+// ────────────────────────────────────────────────
+// Exportar router
+// ────────────────────────────────────────────────
 export default router;
