@@ -101,6 +101,50 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
   </ul>
 <button id="comprarCreditos">Comprar 3 Créditos</button>
 
+<script>
+  // Asegurarse de que currentUser esté definido (usuario logueado)
+  document.getElementById("comprarCreditos").addEventListener("click", async () => {
+    if (!currentUser) {
+      alert("Debes iniciar sesión para comprar créditos");
+      return;
+    }
+
+    // Configura los datos de compra dinámicamente
+    const creditsToAdd = 3; // 🔹 Aquí cambias la cantidad de créditos que quieres entregar
+    const amount = 5;       // 🔹 Aquí cambias el costo en MXN del paquete de créditos
+
+    const body = {
+      userId: currentUser.uid,
+      name: currentUser.displayName || "Usuario",
+      email: currentUser.email || "",
+      amount: amount,
+      creditsToAdd: creditsToAdd
+    };
+
+    try {
+      const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+
+      if (data.init_point) {
+        // Redirige al checkout de Mercado Pago
+        window.location.href = data.init_point;
+      } else {
+        alert("No se pudo generar la preferencia");
+        console.error("Respuesta del servidor:", data);
+      }
+    } catch (error) {
+      console.error("Error al crear la preferencia:", error);
+      alert("Ocurrió un error al intentar comprar créditos");
+    }
+  });
+</script>
+
+
 
      </div>
 
@@ -285,17 +329,6 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     </div>
 </div>
 
-    <footer style="background-color: #1a1a1a; color: white; padding: 40px 20px; font-family: Arial, sans-serif;">
-<div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
-<div style="flex: 1 1 200px; margin-bottom: 20px;">
-<h2 style="margin:0; color:#00d084;">Quiniela360</h2>
-<p style="font-size:14px;color:#ccc;">Plataforma de pronósticos deportivos en línea.</p>
-<p style="font-size:14px;color:#ccc;">© 2025 Quiniela360.com - Todos los derechos reservados.</p>
-<p style="font-size:10px;color:#ccc;">q.h.ricardoarturo@gmail.com</p>
-</div>
-</div>
-</footer>
-
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
@@ -365,7 +398,33 @@ firebase.auth().onAuthStateChanged(async(user)=>{
     }
 });
 
+ document.getElementById("comprarCreditos").addEventListener("click", async () => {
+    const creditsToAdd = 3;
+    const amount = 5; // MXN
 
+    const body = {
+      userId: currentUser.uid,
+      name: currentUser.displayName || "Usuario",
+      email: currentUser.email || "",
+      amount,
+      creditsToAdd
+    };
+
+    try {
+      const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (data.init_point) window.location.href = data.init_point;
+      else alert("Error al generar la preferencia");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Ocurrió un error al crear la preferencia");
+    }
+  });
+});
     
 // Selección de resultado
 document.querySelectorAll('.opcion').forEach(el=>{
@@ -519,33 +578,6 @@ firebase.auth().onAuthStateChanged(async (user) => {
     }
 });
 
-     document.getElementById("comprarCreditos").addEventListener("click", async () => {
-    const creditsToAdd = 3;
-    const amount = 5; // MXN
-
-    const body = {
-      userId: currentUser.uid,
-      name: currentUser.displayName || "Usuario",
-      email: currentUser.email || "",
-      amount,
-      creditsToAdd
-    };
-
-    try {
-      const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (data.init_point) window.location.href = data.init_point;
-      else alert("Error al generar la preferencia");
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Ocurrió un error al crear la preferencia");
-    }
-  });
-});
 
 // Logout
 document.getElementById('logout-btn').addEventListener('click', ()=>firebase.auth().signOut());
@@ -554,8 +586,18 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </body>
 </html>
 
-
-
+<footer style="background-color: #1a1a1a; color: white; padding: 40px 20px; font-family: Arial, sans-serif;">
+<div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
+<div style="flex: 1 1 200px; margin-bottom: 20px;">
+<h2 style="margin:0; color:#00d084;">Quiniela360</h2>
+<p style="font-size:14px;color:#ccc;">Plataforma de pronósticos deportivos en línea.</p>
+<p style="font-size:14px;color:#ccc;">© 2025 Quiniela360.com - Todos los derechos reservados.</p>
+<p style="font-size:10px;color:#ccc;">q.h.ricardoarturo@gmail.com</p>
+</div>
+</div>
+</footer>
+</body>
+</html>
 
 
 
