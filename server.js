@@ -54,19 +54,11 @@ app.post("/create-preference", async (req, res) => {
   try {
     const { userId, amount, name, email, creditsToAdd } = req.body;
 
-    // Validaciones básicas
-    if (!userId || !amount || !email) {
-      return res.status(400).json({ error: "Faltan datos obligatorios: userId, amount o email" });
-    }
-
-    // Validar monto mínimo
-    const price = parseFloat(amount);
-    if (isNaN(price) || price < 1) {
-      return res.status(400).json({ error: "El monto debe ser un número mayor a 0" });
+    if (!userId || !amount) {
+      return res.status(400).json({ error: "Faltan datos: userId o amount" });
     }
 
     const preferenceInstance = new Preference(mpClient);
-
     const preference = await preferenceInstance.create({
       body: {
         items: [
@@ -74,59 +66,46 @@ app.post("/create-preference", async (req, res) => {
             title: "Créditos Quiniela360",
             quantity: 1,
             currency_id: "MXN",
-            unit_price: price,
+            unit_price: parseFloat(amount),
           },
         ],
-        metadata: {
-          userId,
-          name,
-          email,
-          creditsToAdd,
-        },
-        payer: {
-          name: name || "Usuario",
-          email: email || "usuario@prueba.com", // Email obligatorio para Mercado Pago
-        },
+        metadata: { userId, name, email, creditsToAdd },
+        payer: { name: name || "Usuario", email: email || "" },
         back_urls: {
-          success: "https://qhricardo.github.io/quiniela-hydra/index.html",
-          failure: "https://qhricardo.github.io/quiniela-hydra/index.html",
-          pending: "https://qhricardo.github.io/quiniela-hydra/index.html",
+          success: "https://quiniela360.com/success.html",
+          failure: "https://quiniela360.com/failure.html",
+          pending: "https://quiniela360.com/pending.html",
         },
         auto_return: "approved",
         notification_url: "https://quiniela-hydra.onrender.com/webhook",
       },
     });
 
-    // Guardar referencia preference ↔ usuario en Firestore
+    // 🔹 Guardar preferencia en Firestore
     if (db) {
-      await db.collection("preferences").doc(preference.id).set({
-        userId,
-        creditsToAdd,
-        amount: price,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+      await db.collection("preferences").doc(preference.id).set({ userId, creditsToAdd });
     }
 
-    console.log(`🧾 Preferencia creada para ${name} (${email}): ${price} MXN`);
+    console.log(`🧾 Preferencia creada para ${name || userId}: ${amount} MXN`);
     res.json({ id: preference.id, init_point: preference.init_point });
   } catch (error) {
-    console.error("❌ Error creando preferencia:", error.response || error);
+    console.error("❌ Error creando preferencia:", error);
     res.status(500).json({ error: "Error creando preferencia de pago" });
   }
 });
 
-// ────────────────────────────────────────────────
+// ────────────────────────────────
 // 🔹 Endpoint: webhook MercadoPago
-// ────────────────────────────────────────────────
+// ────────────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const data = req.body;
     console.log("📩 Webhook recibido:", JSON.stringify(data, null, 2));
 
-    // Validar que sea notificación de pago
+    // 🔹 Ignorar webhooks no relacionados con pago
     if (data.type !== "payment" || !data.data?.id) {
-      console.warn("⚠️ Notificación no válida:", data);
-      return res.sendStatus(400);
+      console.warn("⚠️ Notificación ignorada (no es pago):", data);
+      return res.sendStatus(200);
     }
 
     const paymentInstance = new Payment(mpClient);
@@ -136,8 +115,10 @@ app.post("/webhook", async (req, res) => {
     const metadata = payment.metadata || {};
     const { userId: metaUserId, creditsToAdd } = metadata;
 
-    // 🔹 Obtener userId desde metadata o Firestore
+    // 🔹 Usar siempre metadata.userId
     let userId = metaUserId;
+
+    // 🔹 Solo intentar Firestore por preference_id si existe
     if (!userId && db && payment.preference_id) {
       const prefRef = db.collection("preferences").doc(payment.preference_id);
       const prefSnap = await prefRef.get();
@@ -161,8 +142,6 @@ app.post("/webhook", async (req, res) => {
       } else {
         console.warn(`⚠️ Usuario no encontrado: ${userId}`);
       }
-    } else if (!userId) {
-      console.warn("⚠️ No se encontró userId para actualizar créditos");
     }
 
     res.sendStatus(200);
