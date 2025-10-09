@@ -1,193 +1,82 @@
-// ────────────────────────────────────────────────
-// 🔹 Quiniela360 | Backend MercadoPago + Firebase
-// ────────────────────────────────────────────────
-
 import express from "express";
 import bodyParser from "body-parser";
-import cors from "cors";
-import dotenv from "dotenv";
 import admin from "firebase-admin";
-import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
-
-dotenv.config();
+import mercadopago from "mercadopago";
 
 const app = express();
-app.use(cors());
 app.use(bodyParser.json());
 
-// ────────────────────────────────
-// 🔹 Inicializar Firebase Admin
-// ────────────────────────────────
-let db;
-try {
-  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-    throw new Error("FIREBASE_SERVICE_ACCOUNT no configurada");
-  }
-
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-
-  db = admin.firestore();
-  console.log("✅ Firebase inicializado correctamente");
-} catch (error) {
-  console.error("❌ Error inicializando Firebase:", error.message);
-}
-
-// ────────────────────────────────
-// 🔹 Inicializar MercadoPago
-// ────────────────────────────────
-if (!process.env.MP_ACCESS_TOKEN) {
-  console.warn("⚠️ MP_ACCESS_TOKEN no configurado");
-}
-
-const mpClient = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN || "",
+// Inicializa Firebase Admin
+admin.initializeApp({
+  credential: admin.credential.cert("./serviceAccountKey.json"),
 });
+const db = admin.firestore();
 
-// ────────────────────────────────
-// 🔹 Endpoint: crear preferencia de pago
-// ────────────────────────────────
-app.post("/create-preference", async (req, res) => {
-  try {
-    const { userId, amount, name, email, creditsToAdd } = req.body;
+// Configura tu access token de Mercado Pago
+mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
 
-    if (!userId || !amount) {
-      return res.status(400).json({ error: "Faltan datos: userId o amount" });
-    }
-
-    const preferenceInstance = new Preference(mpClient);
-    const preference = await preferenceInstance.create({
-      body: {
-        items: [
-          {
-            title: "Créditos Quiniela360",
-            quantity: 1,
-            currency_id: "MXN",
-            unit_price: parseFloat(amount),
-          },
-        ],
-        metadata: { userId, name, email, creditsToAdd },
-        payer: { name: name || "Usuario", email: email || "" },
-        back_urls: {
-          success: "https://quiniela360.com/success.html",
-          failure: "https://quiniela360.com/failure.html",
-          pending: "https://quiniela360.com/pending.html",
-        },
-        auto_return: "approved",
-        notification_url: "https://quiniela-hydra.onrender.com/webhook",
-      },
-    });
-
-    // 🔹 Guardar preferencia en Firestore
-  if (db) {
-      const userRef = db.collection("users").doc(userId);
-      const userDoc = await userRef.get();
-
-      if (userDoc.exists) {
-        const currentCredits = userDoc.data().credits || 0;
-        await userRef.update({ credits: currentCredits + Number(creditsToAdd) });
-        console.log(`✅ Créditos actualizados para ${userId}: ${currentCredits} ➜ ${currentCredits + Number(creditsToAdd)}`);
-      } else {
-        // Si no existe el usuario, lo creamos con los créditos
-        await userRef.set({ name: name || "", credits: Number(creditsToAdd) });
-        console.log(`🆕 Usuario ${userId} creado con ${creditsToAdd} créditos`);
-      }
-    }
-
-    console.log(`🧾 Preferencia creada para ${name || userId}: ${amount} MXN`);
-    res.json({ id: preference.id, init_point: preference.init_point });
-
-  } catch (error) {
-    console.error("❌ Error creando preferencia:", error);
-    res.status(500).json({ error: "Error creando preferencia de pago" });
-  }
-});
-
-// ────────────────────────────────
-// 🔹 Endpoint: webhook MercadoPago (mejorado)
-// ────────────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
-    const data = req.body;
-    console.log("📩 Webhook recibido:", JSON.stringify(data, null, 2));
+    const topic = req.body.topic || req.body.type;
+    let paymentId = null;
 
-    // 🔹 Solo procesar topic "payment"
-    if (data.type !== "payment" || !data.data?.id) {
-      console.warn("⚠️ Notificación ignorada (no es pago):", data);
+    if (topic === "payment") {
+      paymentId = req.body.data?.id || req.body.resource;
+    } else if (topic === "merchant_order") {
+      console.log("⚠️ Notificación ignorada (no es pago)", req.body);
+      return res.sendStatus(200);
+    } else {
+      console.log("⚠️ Notificación desconocida", req.body);
       return res.sendStatus(200);
     }
 
-    const paymentInstance = new Payment(mpClient);
-    const payment = await paymentInstance.get({ id: data.data.id });
+    if (!paymentId) {
+      console.error("❌ No se encontró paymentId en el webhook");
+      return res.sendStatus(400);
+    }
 
-    const estado = payment.status;
-    const metadata = payment.metadata || {};
-    const { userId: metaUserId, creditsToAdd } = metadata;
+    // 🔹 Obtener info del pago
+    const paymentResponse = await mercadopago.payment.findById(paymentId);
+    const payment = paymentResponse.response;
 
-    // 🔹 Intentar usar metadata.userId primero
-    let userId = metaUserId;
+    if (payment.status !== "approved") {
+      console.log(`💰 Pago recibido | Estado: ${payment.status} | Ignorado`);
+      return res.sendStatus(200);
+    }
 
-    // 🔹 Fallback: buscar userId por preference_id en Firestore
-    if (!userId && db && payment.preference_id) {
-      const prefRef = db.collection("preferences").doc(payment.preference_id);
-      const prefSnap = await prefRef.get();
-      if (prefSnap.exists) {
-        userId = prefSnap.data().userId;
+    // 🔹 Obtener metadata de la preferencia
+    let userId = payment.metadata?.userId;
+    let creditsToAdd = payment.metadata?.creditsToAdd;
+
+    // 🔹 Si no está en metadata, buscar en la colección preferences
+    if (!userId && payment.preference_id) {
+      const prefDoc = await db.collection("preferences").doc(payment.preference_id).get();
+      if (prefDoc.exists) {
+        const data = prefDoc.data();
+        userId = data.userId;
+        creditsToAdd = data.creditsToAdd;
       }
     }
 
-    console.log(`💰 Pago recibido | Estado: ${estado} | Usuario: ${userId || "undefined"} | Credits: ${creditsToAdd || "undefined"}`);
-
-    // 🔹 Guardar todos los pagos en Firestore
-    if (db) {
-      await db.collection("payments").doc(payment.id).set({
-        status: estado,
-        userId: userId || null,
-        creditsToAdd: creditsToAdd || 0,
-        metadata: metadata,
-        preferenceId: payment.preference_id || null,
-        createdAt: admin.firestore.FieldValue.serverTimestamp()
-      });
+    if (!userId) {
+      console.error("❌ userId no encontrado, no se puede actualizar créditos");
+      return res.sendStatus(400);
     }
 
-    // 🔹 Solo acreditar créditos si el pago está aprobado
-    if (estado === "approved" && userId && db) {
-      const userRef = db.collection("users").doc(userId);
-      const userSnap = await userRef.get();
+    // 🔹 Actualizar créditos en users
+    const userRef = db.collection("users").doc(userId);
+    await db.runTransaction(async (t) => {
+      const userDoc = await t.get(userRef);
+      const currentCredits = userDoc.exists ? userDoc.data().credits || 0 : 0;
+      t.set(userRef, { credits: currentCredits + creditsToAdd }, { merge: true });
+    });
 
-      if (userSnap.exists) {
-        const currentCredits = userSnap.data().creditos || 0;
-        const newCredits = currentCredits + (parseInt(creditsToAdd) || 0);
-
-        await userRef.update({ creditos: newCredits });
-        console.log(`✅ Créditos actualizados: ${currentCredits} ➜ ${newCredits}`);
-      } else {
-        console.warn(`⚠️ Usuario no encontrado: ${userId}`);
-      }
-    } else if (estado !== "approved") {
-      console.warn(`⚠️ Pago con estado '${estado}' — no se acreditan créditos`);
-    }
-
-    res.sendStatus(200);
+    console.log(`✅ Créditos actualizados para usuario ${userId}: +${creditsToAdd}`);
+    return res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error en webhook:", error);
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 });
 
-
-// ────────────────────────────────
-// 🔹 Ruta de prueba
-// ────────────────────────────────
-app.get("/", (req, res) => {
-  res.send("✅ Servidor Quiniela360 activo con MercadoPago + Firebase");
-});
-
-// ────────────────────────────────
-// 🔹 Iniciar servidor
-// ────────────────────────────────
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
+app.listen(3000, () => console.log("Webhook corriendo en puerto 3000"));
