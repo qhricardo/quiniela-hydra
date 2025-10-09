@@ -137,7 +137,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
         userId: currentUser.uid,
         name: currentUser.displayName || "Usuario",
         email: currentUser.email || "",
-        amount: 5
+        amount: 5,
       };
 
       console.log("📦 Enviando datos al servidor:", body);
@@ -595,6 +595,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
