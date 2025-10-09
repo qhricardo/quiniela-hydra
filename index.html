@@ -398,34 +398,7 @@ firebase.auth().onAuthStateChanged(async(user)=>{
     }
 });
 
- document.getElementById("comprarCreditos").addEventListener("click", async () => {
-    const creditsToAdd = 3;
-    const amount = 5; // MXN
 
-    const body = {
-      userId: currentUser.uid,
-      name: currentUser.displayName || "Usuario",
-      email: currentUser.email || "",
-      amount,
-      creditsToAdd
-    };
-
-    try {
-      const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (data.init_point) window.location.href = data.init_point;
-      else alert("Error al generar la preferencia");
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Ocurrió un error al crear la preferencia");
-    }
-  });
-});
-    
 // Selección de resultado
 document.querySelectorAll('.opcion').forEach(el=>{
     el.addEventListener('click', function(){
@@ -598,6 +571,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
