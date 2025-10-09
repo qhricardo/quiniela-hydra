@@ -115,48 +115,54 @@ app.post("/create-preference", async (req, res) => {
   }
 });
 
-// ────────────────────────────────
+// ────────────────────────────────────────────────
 // 🔹 Endpoint: webhook MercadoPago
-// ────────────────────────────────
+// ────────────────────────────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const data = req.body;
     console.log("📩 Webhook recibido:", JSON.stringify(data, null, 2));
 
-    if (data.type === "payment" && data.data?.id) {
-      const paymentInstance = new Payment(mpClient);
-      const payment = await paymentInstance.get({ id: data.data.id });
+    // Validar que sea notificación de pago
+    if (data.type !== "payment" || !data.data?.id) {
+      console.warn("⚠️ Notificación no válida:", data);
+      return res.sendStatus(400);
+    }
 
-      const estado = payment.status;
-      const metadata = payment.metadata || {};
-      const { userId: metaUserId, creditsToAdd } = metadata;
+    const paymentInstance = new Payment(mpClient);
+    const payment = await paymentInstance.get({ id: data.data.id });
 
-      // Obtener userId desde metadata o Firestore
-      let userId = metaUserId;
-      if (!userId && db) {
-        const prefRef = db.collection("preferences").doc(payment.preference_id);
-        const prefSnap = await prefRef.get();
-        if (prefSnap.exists) {
-          userId = prefSnap.data().userId;
-        }
+    const estado = payment.status;
+    const metadata = payment.metadata || {};
+    const { userId: metaUserId, creditsToAdd } = metadata;
+
+    // 🔹 Obtener userId desde metadata o Firestore
+    let userId = metaUserId;
+    if (!userId && db && payment.preference_id) {
+      const prefRef = db.collection("preferences").doc(payment.preference_id);
+      const prefSnap = await prefRef.get();
+      if (prefSnap.exists) {
+        userId = prefSnap.data().userId;
       }
+    }
 
-      console.log(`💰 Pago recibido | Estado: ${estado} | Usuario: ${userId}`);
+    console.log(`💰 Pago recibido | Estado: ${estado} | Usuario: ${userId} | Credits to add: ${creditsToAdd}`);
 
-      if (estado === "approved" && userId && db) {
-        const userRef = db.collection("users").doc(userId);
-        const userSnap = await userRef.get();
+    if (estado === "approved" && userId && db) {
+      const userRef = db.collection("users").doc(userId);
+      const userSnap = await userRef.get();
 
-        if (userSnap.exists) {
-          const currentCredits = userSnap.data().creditos || 0;
-          const newCredits = currentCredits + (creditsToAdd || 0);
+      if (userSnap.exists) {
+        const currentCredits = userSnap.data().creditos || 0;
+        const newCredits = currentCredits + (parseInt(creditsToAdd) || 0);
 
-          await userRef.update({ creditos: newCredits });
-          console.log(`✅ Créditos actualizados: ${currentCredits} ➜ ${newCredits}`);
-        } else {
-          console.warn(`⚠️ Usuario no encontrado: ${userId}`);
-        }
+        await userRef.update({ creditos: newCredits });
+        console.log(`✅ Créditos actualizados: ${currentCredits} ➜ ${newCredits}`);
+      } else {
+        console.warn(`⚠️ Usuario no encontrado: ${userId}`);
       }
+    } else if (!userId) {
+      console.warn("⚠️ No se encontró userId para actualizar créditos");
     }
 
     res.sendStatus(200);
