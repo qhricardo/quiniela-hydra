@@ -114,6 +114,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
     amount: 5, // Monto real a cobrar en Mercado Pago
     userId: currentUser.uid,
     name: currentUser.displayName || "Usuario",
+    email: currentUser.email || "",
     creditsToAdd: 3 // Créditos que se sumarán al aprobar el pago
   };
 
@@ -565,6 +566,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
