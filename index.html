@@ -99,47 +99,51 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     <li>🏆 Proxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
      <li>💰 Suscripcion 3 creditos x $50.</li>
   </ul>
- <button id="comprarCreditos">Comprar 3 Créditos</button>
+<button id="comprarCreditos">Comprar 3 Créditos</button>
 
 <script>
-document.getElementById("comprarCreditos").addEventListener("click", async () => {
-  // Verificar que el usuario esté logueado
-  if (!currentUser) {
-    alert("Debes iniciar sesión para comprar créditos");
-    return;
-  }
-
-  // Preparamos los datos para enviar al backend
-  const body = {
-    amount: 5, // Monto real a cobrar en Mercado Pago
-    userId: currentUser.uid,
-    name: currentUser.displayName || "Usuario",
-    email: currentUser.email || "",
-    creditsToAdd: 3 // Créditos que se sumarán al aprobar el pago
-  };
-
-  try {
-    const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-
-    const data = await res.json();
-
-    if (data.init_point) {
-      // Redirige al checkout de Mercado Pago
-      window.location.href = data.init_point;
-    } else {
-      alert("No se pudo generar la preferencia");
-      console.error("Respuesta del servidor:", data);
+  // Asegurarse de que currentUser esté definido (usuario logueado)
+  document.getElementById("comprarCreditos").addEventListener("click", async () => {
+    if (!currentUser) {
+      alert("Debes iniciar sesión para comprar créditos");
+      return;
     }
-  } catch (error) {
-    console.error("Error al crear la preferencia:", error);
-    alert("Ocurrió un error al intentar comprar créditos");
-  }
-});
+
+    // Configura los datos de compra dinámicamente
+    const creditsToAdd = 3; // 🔹 Aquí cambias la cantidad de créditos que quieres entregar
+    const amount = 5;       // 🔹 Aquí cambias el costo en MXN del paquete de créditos
+
+    const body = {
+      userId: currentUser.uid,
+      name: currentUser.displayName || "Usuario",
+      email: currentUser.email || "",
+      amount: amount,
+      creditsToAdd: creditsToAdd
+    };
+
+    try {
+      const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+
+      if (data.init_point) {
+        // Redirige al checkout de Mercado Pago
+        window.location.href = data.init_point;
+      } else {
+        alert("No se pudo generar la preferencia");
+        console.error("Respuesta del servidor:", data);
+      }
+    } catch (error) {
+      console.error("Error al crear la preferencia:", error);
+      alert("Ocurrió un error al intentar comprar créditos");
+    }
+  });
 </script>
+
 
 
      </div>
@@ -566,6 +570,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
