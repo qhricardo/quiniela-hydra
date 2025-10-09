@@ -111,7 +111,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
 
   // Preparamos los datos para enviar al backend
   const body = {
-    amount: 50, // Monto real a cobrar en Mercado Pago
+    amount: 5, // Monto real a cobrar en Mercado Pago
     userId: currentUser.uid,
     name: currentUser.displayName || "Usuario",
     email: currentUser.email || "",
@@ -566,6 +566,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
