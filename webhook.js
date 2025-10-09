@@ -32,14 +32,19 @@ router.post("/", async (req, res) => {
       console.log(`🔍 Consultando pago ID: ${paymentId}...`);
       const payment = await mercadopago.payment.findById(paymentId);
       const estado = payment.body.status;
-      const monto = payment.body.transaction_amount;
       const metadata = payment.body.metadata || {};
       const userId = metadata.userId;
+      const creditsToAdd = Number(metadata.creditsToAdd) || 0;
       const email = payment.body.payer?.email || metadata.email;
 
-      console.log(`💰 Estado del pago: ${estado} | Monto: ${monto} | userId: ${userId} | Email: ${email}`);
+      console.log(`💰 Estado del pago: ${estado} | userId: ${userId} | Email: ${email} | Créditos a sumar: ${creditsToAdd}`);
 
       if (estado === "approved") {
+        if (creditsToAdd <= 0) {
+          console.warn("⚠️ No hay créditos definidos en metadata, se ignora.");
+          return res.status(400).send("No credits to add");
+        }
+
         const db = admin.firestore();
 
         if (userId) {
@@ -47,9 +52,10 @@ router.post("/", async (req, res) => {
           const userRef = db.collection("usuarios").doc(userId);
           const userSnap = await userRef.get();
           if (userSnap.exists) {
-            const creditosActuales = userSnap.data().creditos || 0;
-            await userRef.update({ creditos: creditosActuales + monto });
-            console.log(`✅ Créditos actualizados para userId ${userId}: ${creditosActuales} ➜ ${creditosActuales + monto}`);
+            await userRef.update({
+              creditos: admin.firestore.FieldValue.increment(creditsToAdd)
+            });
+            console.log(`✅ Créditos actualizados para userId ${userId}: +${creditsToAdd}`);
           } else {
             console.warn(`⚠️ No se encontró usuario con ID: ${userId}`);
           }
@@ -61,9 +67,10 @@ router.post("/", async (req, res) => {
             console.warn(`⚠️ No se encontró usuario con email: ${email}`);
           } else {
             snapshot.forEach(async (doc) => {
-              const creditosActuales = doc.data().creditos || 0;
-              await doc.ref.update({ creditos: creditosActuales + monto });
-              console.log(`✅ Créditos actualizados para ${email}: ${creditosActuales} ➜ ${creditosActuales + monto}`);
+              await doc.ref.update({
+                creditos: admin.firestore.FieldValue.increment(creditsToAdd)
+              });
+              console.log(`✅ Créditos actualizados para ${email}: +${creditsToAdd}`);
             });
           }
         } else {
