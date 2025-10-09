@@ -99,7 +99,7 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     <li>🏆 Proxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
      <li>💰 Suscripcion 5 creditos x $50.</li>
   </ul>
- <button id="comprarCreditos">Comprar 100 Créditos</button>
+ <button id="comprarCreditos">Comprar 5 Créditos</button>
 
 <script>
 document.getElementById("comprarCreditos").addEventListener("click", async () => {
@@ -108,7 +108,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       userId: "ID_DEL_USUARIO_FIRESTORE",
-      amount: 50,
+      amount: 5,
       name: "Richar",
     }),
   });
@@ -546,6 +546,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
