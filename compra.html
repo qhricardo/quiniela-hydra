@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Comprar Créditos</title>
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+</head>
+<body>
+  <h2>Comprar Créditos Quiniela360</h2>
+
+  <label>Nombre:</label>
+  <input type="text" id="nombre" value="Edensin Quintero"><br><br>
+
+  <label>User ID:</label>
+  <input type="text" id="userId" value="u12345"><br><br>
+
+  <label>Créditos:</label>
+  <select id="creditos">
+    <option value="5">5 créditos - $5 MXN</option>
+    <option value="10">10 créditos - $10 MXN</option>
+    <option value="20">20 créditos - $20 MXN</option>
+  </select><br><br>
+
+  <button id="btnPagar">💳 Pagar</button>
+
+  <script>
+    const mp = new MercadoPago("TEST-XXXXXXXXXXXXXXXXXXXXXXXXX", { locale: "es-MX" }); // ⚠️ Reemplaza con tu PUBLIC_KEY
+
+    document.getElementById("btnPagar").addEventListener("click", async () => {
+      const nombre = document.getElementById("nombre").value;
+      const userId = document.getElementById("userId").value;
+      const creditos = parseInt(document.getElementById("creditos").value);
+      const monto = creditos; // 1 crédito = 1 MXN
+
+      // 🟢 Envía los datos al servidor
+      const res = await fetch("/crear-preferencia", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, userId, creditos, monto })
+      });
+
+      const data = await res.json();
+
+      if (data.init_point) {
+        window.location.href = data.init_point; // Redirige al pago
+      } else {
+        alert("Error al crear preferencia de pago");
+        console.log(data);
+      }
+    });
+  </script>
+</body>
+</html>
