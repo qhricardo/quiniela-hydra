@@ -86,44 +86,38 @@ app.post("/webhook", async (req, res) => {
     const data = req.body;
     console.log("📩 Webhook recibido:", JSON.stringify(data, null, 2));
 
-    if (data.type !== "payment" || !data.data?.id) {
-      console.warn("⚠️ Notificación ignorada (no es pago):", data);
-      return res.sendStatus(200); // ignorar pero no romper
-    }
+    // Solo procesamos topics de pago
+    if (data.type === "payment" && data.data?.id) {
+      const paymentInstance = new Payment(mpClient);
+      const payment = await paymentInstance.get({ id: data.data.id });
 
-    const paymentInstance = new Payment(mpClient);
-    const payment = await paymentInstance.get({ id: data.data.id });
+      const estado = payment.body.status;
+      let userId = payment.body.metadata?.userId;
+      const creditsToAdd = payment.body.metadata?.creditsToAdd;
 
-    const estado = payment.status;
-    const metadata = payment.metadata || {};
-    const { userId: metaUserId, creditsToAdd } = metadata;
-
-    // 🔹 Usar siempre metadata.userId como principal
-    let userId = metaUserId;
-
-    // 🔹 Solo intentar Firestore por preference_id si existe
-    if (!userId && db && payment.preference_id) {
-      const prefRef = db.collection("preferences").doc(payment.preference_id);
-      const prefSnap = await prefRef.get();
-      if (prefSnap.exists) {
-        userId = prefSnap.data().userId;
+      // 🔹 Si no tenemos userId, buscar en Firestore por preference_id
+      if (!userId && db && payment.body.preference_id) {
+        const prefSnap = await db.collection("preferences").doc(payment.body.preference_id).get();
+        if (prefSnap.exists) {
+          userId = prefSnap.data().userId;
+        }
       }
-    }
 
-    console.log(`💰 Pago recibido | Estado: ${estado} | Usuario: ${userId} | Credits to add: ${creditsToAdd}`);
+      console.log(`💰 Pago recibido | Estado: ${estado} | Usuario: ${userId} | Credits to add: ${creditsToAdd}`);
 
-    if (estado === "approved" && userId && db) {
-      const userRef = db.collection("users").doc(userId);
-      const userSnap = await userRef.get();
+      if (estado === "approved" && userId && db) {
+        const userRef = db.collection("users").doc(userId);
+        const userSnap = await userRef.get();
 
-      if (userSnap.exists) {
-        const currentCredits = userSnap.data().creditos || 0;
-        const newCredits = currentCredits + (parseInt(creditsToAdd) || 0);
+        if (userSnap.exists) {
+          const currentCredits = userSnap.data().creditos || 0;
+          const newCredits = currentCredits + (creditsToAdd || 0);
 
-        await userRef.update({ creditos: newCredits });
-        console.log(`✅ Créditos actualizados: ${currentCredits} ➜ ${newCredits}`);
-      } else {
-        console.warn(`⚠️ Usuario no encontrado: ${userId}`);
+          await userRef.update({ creditos: newCredits });
+          console.log(`✅ Créditos actualizados: ${currentCredits} ➜ ${newCredits}`);
+        } else {
+          console.warn(`⚠️ Usuario no encontrado: ${userId}`);
+        }
       }
     }
 
@@ -133,6 +127,7 @@ app.post("/webhook", async (req, res) => {
     res.sendStatus(500);
   }
 });
+
 
 
 // ────────────────────────────────
