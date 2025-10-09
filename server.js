@@ -95,43 +95,30 @@ app.post("/create-preference", async (req, res) => {
 });
 
 // ────────────────────────────────
-// 🔹 Endpoint: webhook MercadoPago
+// 🔹 Endpoint: webhook MercadoPago (mejorado)
 // ────────────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const data = req.body;
     console.log("📩 Webhook recibido:", JSON.stringify(data, null, 2));
 
-    // ✅ Detectar tanto 'type' como 'topic'
-    const isPayment =
-      (data.type && data.type === "payment") ||
-      (data.topic && data.topic === "payment");
-
-    if (!isPayment) {
+    // 🔹 Solo procesar topic "payment"
+    if (data.type !== "payment" || !data.data?.id) {
       console.warn("⚠️ Notificación ignorada (no es pago):", data);
       return res.sendStatus(200);
     }
 
-    // ✅ Obtener ID del pago (distintos formatos)
-    const paymentId = data.data?.id || data.resource;
-    if (!paymentId) {
-      console.warn("⚠️ Notificación sin paymentId:", data);
-      return res.sendStatus(200);
-    }
-
-    console.log(`🔍 Consultando pago #${paymentId}`);
-
-    // ✅ Obtener detalles del pago desde MercadoPago
     const paymentInstance = new Payment(mpClient);
-    const payment = await paymentInstance.get({ id: paymentId });
+    const payment = await paymentInstance.get({ id: data.data.id });
 
     const estado = payment.status;
     const metadata = payment.metadata || {};
     const { userId: metaUserId, creditsToAdd } = metadata;
 
+    // 🔹 Intentar usar metadata.userId primero
     let userId = metaUserId;
 
-    // ✅ Intentar recuperar el userId desde Firestore si no viene en metadata
+    // 🔹 Fallback: buscar userId por preference_id en Firestore
     if (!userId && db && payment.preference_id) {
       const prefRef = db.collection("preferences").doc(payment.preference_id);
       const prefSnap = await prefRef.get();
@@ -140,11 +127,21 @@ app.post("/webhook", async (req, res) => {
       }
     }
 
-    console.log(
-      `💰 Pago recibido | Estado: ${estado} | Usuario: ${userId} | Credits: ${creditsToAdd}`
-    );
+    console.log(`💰 Pago recibido | Estado: ${estado} | Usuario: ${userId || "undefined"} | Credits: ${creditsToAdd || "undefined"}`);
 
-    // ✅ Solo procesar pagos aprobados
+    // 🔹 Guardar todos los pagos en Firestore
+    if (db) {
+      await db.collection("payments").doc(payment.id).set({
+        status: estado,
+        userId: userId || null,
+        creditsToAdd: creditsToAdd || 0,
+        metadata: metadata,
+        preferenceId: payment.preference_id || null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    // 🔹 Solo acreditar créditos si el pago está aprobado
     if (estado === "approved" && userId && db) {
       const userRef = db.collection("users").doc(userId);
       const userSnap = await userRef.get();
@@ -152,13 +149,11 @@ app.post("/webhook", async (req, res) => {
       if (userSnap.exists) {
         const currentCredits = userSnap.data().creditos || 0;
         const newCredits = currentCredits + (parseInt(creditsToAdd) || 0);
-        await userRef.update({ creditos: newCredits });
 
-        console.log(
-          `✅ Créditos actualizados en Firestore: ${currentCredits} ➜ ${newCredits}`
-        );
+        await userRef.update({ creditos: newCredits });
+        console.log(`✅ Créditos actualizados: ${currentCredits} ➜ ${newCredits}`);
       } else {
-        console.warn(`⚠️ Usuario no encontrado en Firestore: ${userId}`);
+        console.warn(`⚠️ Usuario no encontrado: ${userId}`);
       }
     } else if (estado !== "approved") {
       console.warn(`⚠️ Pago con estado '${estado}' — no se acreditan créditos`);
