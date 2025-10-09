@@ -2,86 +2,56 @@
 // 🔹 webhook.js | Procesa notificaciones de Mercado Pago
 // ────────────────────────────────────────────────
 import express from "express";
-import mercadopago from "mercadopago";
+import bodyParser from "body-parser";
 import admin from "firebase-admin";
 
-const router = express.Router();
-router.use(express.json());
+// 🔹 Inicializa Firebase Admin (asegúrate de tener tu serviceAccountKey.json)
+admin.initializeApp({
+  credential: admin.credential.cert('./serviceAccountKey.json')
+});
 
-// ────────────────────────────────────────────────
-// 🔹 Webhook principal de Mercado Pago
-// ────────────────────────────────────────────────
-router.post("/", async (req, res) => {
+const db = admin.firestore();
+const app = express();
+app.use(bodyParser.json());
+
+// 🔹 Webhook de Mercado Pago
+app.post("/webhook", async (req, res) => {
   try {
-    const data = req.body;
-    console.log("📩 Notificación recibida de Mercado Pago:", JSON.stringify(data, null, 2));
+    const payment = req.body;
 
-    if (!data || !data.type) {
-      console.warn("⚠️ Notificación inválida:", data);
-      return res.status(400).send("Invalid notification");
+    console.log("🔔 Webhook recibido:", payment);
+
+    // Solo procesar pagos aprobados
+    if (payment.status !== "approved") {
+      console.log("❌ Pago no aprobado. Ignorando.");
+      return res.status(200).send("Pago no aprobado, no se actualiza.");
     }
 
-    // Solo procesamos notificaciones de pagos
-    if (data.type === "payment") {
-      const paymentId = data.data?.id;
-      if (!paymentId) {
-        console.warn("⚠️ No se recibió ID del pago");
-        return res.status(400).send("Payment ID missing");
-      }
+    // Obtener metadata enviada al crear la preferencia
+    const metadata = payment.metadata || {};
+    const userId = metadata.userId;
+    const creditsToAdd = Number(metadata.creditsToAdd) || 0;
 
-      console.log(`🔍 Consultando pago ID: ${paymentId}...`);
-      const payment = await mercadopago.payment.findById(paymentId);
-      const estado = payment.body.status;
-      const monto = payment.body.transaction_amount;
-      const metadata = payment.body.metadata || {};
-      const userId = metadata.userId;
-      const email = payment.body.payer?.email || metadata.email;
-
-      console.log(`💰 Estado del pago: ${estado} | Monto: ${monto} | userId: ${userId} | Email: ${email}`);
-
-      if (estado === "approved") {
-        const db = admin.firestore();
-
-        if (userId) {
-          // Actualiza por userId
-          const userRef = db.collection("usuarios").doc(userId);
-          const userSnap = await userRef.get();
-          if (userSnap.exists) {
-            const creditosActuales = userSnap.data().creditos || 0;
-            await userRef.update({ creditos: creditosActuales + monto });
-            console.log(`✅ Créditos actualizados para userId ${userId}: ${creditosActuales} ➜ ${creditosActuales + monto}`);
-          } else {
-            console.warn(`⚠️ No se encontró usuario con ID: ${userId}`);
-          }
-        } else if (email) {
-          // Actualiza por email
-          const usuariosRef = db.collection("usuarios");
-          const snapshot = await usuariosRef.where("email", "==", email).get();
-          if (snapshot.empty) {
-            console.warn(`⚠️ No se encontró usuario con email: ${email}`);
-          } else {
-            snapshot.forEach(async (doc) => {
-              const creditosActuales = doc.data().creditos || 0;
-              await doc.ref.update({ creditos: creditosActuales + monto });
-              console.log(`✅ Créditos actualizados para ${email}: ${creditosActuales} ➜ ${creditosActuales + monto}`);
-            });
-          }
-        } else {
-          console.warn("⚠️ No se encontró userId ni email para actualizar créditos");
-        }
-      } else {
-        console.log(`⚠️ Pago no aprobado. Estado: ${estado}`);
-      }
+    if (!userId || creditsToAdd <= 0) {
+      console.error("❌ Datos de usuario o créditos inválidos:", metadata);
+      return res.status(400).send("Datos inválidos");
     }
 
-    res.status(200).send("OK");
+    // 🔹 Referencia al usuario en Firestore
+    const userRef = db.collection("users").doc(userId);
+
+    // Actualizar créditos
+    await userRef.update({
+      creditos: admin.firestore.FieldValue.increment(creditsToAdd)
+    });
+
+    console.log(`✅ Créditos actualizados: ${creditsToAdd} para usuario ${userId}`);
+    res.status(200).send("Créditos actualizados correctamente");
   } catch (error) {
-    console.error("❌ Error procesando webhook:", error);
-    res.status(500).send("Internal Server Error");
+    console.error("❌ Error en webhook:", error);
+    res.status(500).send("Error interno");
   }
 });
 
-// ────────────────────────────────────────────────
-// Exportar router
-// ────────────────────────────────────────────────
-export default router;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor webhook escuchando en puerto ${PORT}`));
