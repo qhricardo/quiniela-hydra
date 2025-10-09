@@ -111,11 +111,12 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
 
   // Datos dinámicos del usuario
     const body = { 
-    amount: 5,
+    amount: 50,
     metadata: {
         userId: currentUser.uid,
         name: currentUser.displayName || "Usuario",
         email: currentUser.email || "",
+        creditsToAdd: 5,
     }
 };
 
@@ -566,6 +567,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
