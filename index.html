@@ -99,49 +99,27 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     <li>🏆 Proxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
      <li>💰 Suscripcion 5 creditos x $50.</li>
   </ul>
-<button id="comprarCreditos">Comprar 5 Créditos</button>
+ <button id="comprarCreditos">Comprar 100 Créditos</button>
 
 <script>
-  // Supongamos que guardaste el usuario logeado en localStorage al iniciar sesión:
-  // localStorage.setItem("user", JSON.stringify({ id: "ABC123", name: "Richar" }));
-
-  // Recuperamos los datos del usuario logeado
-  const currentUser = JSON.parse(localStorage.getItem("user"));
-
-  document.getElementById("comprarCreditos").addEventListener("click", async () => {
-    try {
-      // Verifica que haya un usuario logeado
-      if (!currentUser || !currentUser.id) {
-        alert("⚠️ Debes iniciar sesión antes de comprar créditos.");
-        return;
-      }
-
-      // Envía solicitud al backend para crear preferencia de pago
-      const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: currentUser.id,  // ahora se toma automáticamente
-          amount: 5,             // cantidad de créditos a comprar
-          name: currentUser.name
-        }),
-      });
-
-      const data = await res.json();
-
-      // Redirige al checkout real de Mercado Pago
-      if (data.init_point) {
-        window.location.href = data.init_point;
-      } else {
-        alert("❌ No se pudo generar la preferencia de pago");
-        console.error("Error al crear preferencia:", data);
-      }
-
-    } catch (error) {
-      console.error("❌ Error al iniciar compra:", error);
-      alert("Ocurrió un error al intentar comprar créditos.");
-    }
+document.getElementById("comprarCreditos").addEventListener("click", async () => {
+  const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId: "ID_DEL_USUARIO_FIRESTORE",
+      amount: 50,
+      name: "Richar",
+    }),
   });
+
+  const data = await res.json();
+  if (data.init_point) {
+    window.location.href = data.init_point; // checkout real de Mercado Pago
+  } else {
+    alert("No se pudo generar la preferencia");
+  }
+});
 </script>
 
      </div>
@@ -568,6 +546,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
