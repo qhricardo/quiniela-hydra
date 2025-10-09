@@ -16,7 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // ────────────────────────────────
-// 🔹 Inicializar Firebase Admin con variable de entorno
+// 🔹 Inicializar Firebase Admin
 // ────────────────────────────────
 let db;
 try {
@@ -37,10 +37,10 @@ try {
 }
 
 // ────────────────────────────────
-// 🔹 Inicializar MercadoPago v2
+// 🔹 Inicializar MercadoPago
 // ────────────────────────────────
 if (!process.env.MP_ACCESS_TOKEN) {
-  console.warn("⚠️ MP_ACCESS_TOKEN no configurado en variables de entorno");
+  console.warn("⚠️ MP_ACCESS_TOKEN no configurado");
 }
 
 const mpClient = new MercadoPagoConfig({
@@ -52,7 +52,7 @@ const mpClient = new MercadoPagoConfig({
 // ────────────────────────────────
 app.post("/create-preference", async (req, res) => {
   try {
-    const { userId, amount, name } = req.body;
+    const { userId, amount, name, email, creditsToAdd } = req.body;
 
     if (!userId || !amount) {
       return res.status(400).json({ error: "Faltan datos: userId o amount" });
@@ -69,8 +69,8 @@ app.post("/create-preference", async (req, res) => {
             unit_price: parseFloat(amount),
           },
         ],
-        metadata: { userId },
-        payer: { name: name || "Usuario" },
+        metadata: { userId, name, email, creditsToAdd },
+        payer: { name: name || "Usuario", email: email || "" },
         back_urls: {
           success: "https://quiniela360.com/success.html",
           failure: "https://quiniela360.com/failure.html",
@@ -81,9 +81,8 @@ app.post("/create-preference", async (req, res) => {
       },
     });
 
-    // 🔹 Guardar relación preferenceId ↔ userId en Firestore
     if (db) {
-      await db.collection("preferences").doc(preference.id).set({ userId });
+      await db.collection("preferences").doc(preference.id).set({ userId, creditsToAdd });
     }
 
     console.log(`🧾 Preferencia creada para ${name || userId}: ${amount} MXN`);
@@ -107,18 +106,20 @@ app.post("/webhook", async (req, res) => {
       const payment = await paymentInstance.get({ id: data.data.id });
 
       const estado = payment.status;
-      const monto = payment.transaction_amount;
+      const metadata = payment.metadata || {};
+      const { userId: metaUserId, creditsToAdd } = metadata;
 
-      // 🔹 Obtener userId desde metadata o Firestore
-      let userId = payment.metadata?.userId;
-
+      // Obtener userId desde metadata o Firestore
+      let userId = metaUserId;
       if (!userId && db) {
         const prefRef = db.collection("preferences").doc(payment.preference_id);
         const prefSnap = await prefRef.get();
-        if (prefSnap.exists) userId = prefSnap.data().userId;
+        if (prefSnap.exists) {
+          userId = prefSnap.data().userId;
+        }
       }
 
-      console.log(`💰 Pago recibido | Estado: ${estado} | Monto: ${monto} | Usuario: ${userId}`);
+      console.log(`💰 Pago recibido | Estado: ${estado} | Usuario: ${userId}`);
 
       if (estado === "approved" && userId && db) {
         const userRef = db.collection("users").doc(userId);
@@ -126,7 +127,7 @@ app.post("/webhook", async (req, res) => {
 
         if (userSnap.exists) {
           const currentCredits = userSnap.data().creditos || 0;
-          const newCredits = currentCredits + monto;
+          const newCredits = currentCredits + (creditsToAdd || 0);
 
           await userRef.update({ creditos: newCredits });
           console.log(`✅ Créditos actualizados: ${currentCredits} ➜ ${newCredits}`);
