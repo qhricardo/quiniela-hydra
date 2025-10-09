@@ -104,37 +104,52 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
 <script>
 document.getElementById("comprarCreditos").addEventListener("click", async () => {
   try {
-    // Verifica que haya un usuario logeado
-    if (!currentUser || (!currentUser.uid && !currentUser.email)) {
+    console.log("🟢 Iniciando compra de créditos...");
+
+    // ✅ 1. Verificar usuario logeado
+    if (typeof currentUser === "undefined" || (!currentUser.uid && !currentUser.email)) {
       alert("⚠️ Debes iniciar sesión antes de comprar créditos.");
+      console.warn("🚫 No se encontró currentUser o faltan datos:", currentUser);
       return;
     }
 
-    // Envía solicitud al backend para crear preferencia de pago
+    console.log("👤 Usuario logeado:", currentUser);
+
+    // ✅ 2. Llamar al backend para crear la preferencia de pago
+    const body = {
+      userId: currentUser.uid || "",
+      name: currentUser.displayName || "Usuario",
+      email: currentUser.email || "",
+      amount: 5
+    };
+
+    console.log("📦 Enviando datos al servidor:", body);
+
     const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: currentUser.uid || "",       // ID del usuario autenticado
-        name: currentUser.displayName || "Usuario",
-        email: currentUser.email || "",
-        amount: 5                            // Cantidad de créditos
-      }),
+      body: JSON.stringify(body),
     });
 
     const data = await res.json();
+    console.log("📩 Respuesta del servidor:", data);
 
+    // ✅ 3. Si MercadoPago devolvió un link válido, abrirlo
     if (data.init_point) {
-      // 🔹 Abre el pago en una nueva pestaña
-      window.open(data.init_point, "_blank");
+      console.log("🌐 Abriendo checkout:", data.init_point);
+      // Abrir en nueva pestaña
+      const newTab = window.open(data.init_point, "_blank");
+      if (!newTab) {
+        alert("⚠️ El navegador bloqueó la ventana emergente. Permite popups para continuar.");
+      }
     } else {
       alert("❌ No se pudo generar la preferencia de pago");
-      console.error("Error al crear preferencia:", data);
+      console.error("Respuesta del servidor sin init_point:", data);
     }
 
   } catch (error) {
     console.error("❌ Error al iniciar compra:", error);
-    alert("Ocurrió un error al intentar comprar créditos.");
+    alert("Ocurrió un error al intentar comprar créditos. Revisa la consola para más detalles.");
   }
 });
 </script>
@@ -564,6 +579,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
