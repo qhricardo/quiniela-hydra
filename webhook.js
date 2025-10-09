@@ -86,10 +86,9 @@ app.post("/webhook", async (req, res) => {
     const data = req.body;
     console.log("📩 Webhook recibido:", JSON.stringify(data, null, 2));
 
-    // Validar que sea notificación de pago
     if (data.type !== "payment" || !data.data?.id) {
-      console.warn("⚠️ Notificación no válida:", data);
-      return res.sendStatus(400);
+      console.warn("⚠️ Notificación ignorada (no es pago):", data);
+      return res.sendStatus(200); // ignorar pero no romper
     }
 
     const paymentInstance = new Payment(mpClient);
@@ -99,8 +98,10 @@ app.post("/webhook", async (req, res) => {
     const metadata = payment.metadata || {};
     const { userId: metaUserId, creditsToAdd } = metadata;
 
-    // 🔹 Obtener userId desde metadata o Firestore
+    // 🔹 Usar siempre metadata.userId como principal
     let userId = metaUserId;
+
+    // 🔹 Solo intentar Firestore por preference_id si existe
     if (!userId && db && payment.preference_id) {
       const prefRef = db.collection("preferences").doc(payment.preference_id);
       const prefSnap = await prefRef.get();
@@ -124,8 +125,6 @@ app.post("/webhook", async (req, res) => {
       } else {
         console.warn(`⚠️ Usuario no encontrado: ${userId}`);
       }
-    } else if (!userId) {
-      console.warn("⚠️ No se encontró userId para actualizar créditos");
     }
 
     res.sendStatus(200);
