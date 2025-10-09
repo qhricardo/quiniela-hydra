@@ -1,4 +1,4 @@
-// ────────────────────────────────────────────────
+  // ────────────────────────────────────────────────
 // 🔹 Quiniela360 | Backend MercadoPago + Firebase
 // ────────────────────────────────────────────────
 
@@ -54,7 +54,10 @@ app.post("/create-preference", async (req, res) => {
       body: {
         items: [{ title: "Créditos Quiniela360", quantity: 1, currency_id: "MXN", unit_price: parseFloat(amount) }],
         metadata: { userId, name, email, creditsToAdd },
-        payer: { name: name || "Usuario", email: email || "" },
+       payer: { 
+        name: name || "Usuario", 
+        email: email || "usuario@prueba.com" 
+        },
         back_urls: {
           success: "https://qhricardo.github.io/quiniela-hydra/success.html",
           failure: "https://qhricardo.github.io/quiniela-hydra/failure.html",
