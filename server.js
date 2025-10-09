@@ -54,11 +54,19 @@ app.post("/create-preference", async (req, res) => {
   try {
     const { userId, amount, name, email, creditsToAdd } = req.body;
 
-    if (!userId || !amount) {
-      return res.status(400).json({ error: "Faltan datos: userId o amount" });
+    // Validaciones básicas
+    if (!userId || !amount || !email) {
+      return res.status(400).json({ error: "Faltan datos obligatorios: userId, amount o email" });
+    }
+
+    // Validar monto mínimo
+    const price = parseFloat(amount);
+    if (isNaN(price) || price < 1) {
+      return res.status(400).json({ error: "El monto debe ser un número mayor a 0" });
     }
 
     const preferenceInstance = new Preference(mpClient);
+
     const preference = await preferenceInstance.create({
       body: {
         items: [
@@ -66,29 +74,43 @@ app.post("/create-preference", async (req, res) => {
             title: "Créditos Quiniela360",
             quantity: 1,
             currency_id: "MXN",
-            unit_price: parseFloat(amount),
+            unit_price: price,
           },
         ],
-        metadata: { userId, name, email, creditsToAdd },
-        payer: { name: name || "Usuario", email: email || "" },
+        metadata: {
+          userId,
+          name,
+          email,
+          creditsToAdd,
+        },
+        payer: {
+          name: name || "Usuario",
+          email: email || "usuario@prueba.com", // Email obligatorio para Mercado Pago
+        },
         back_urls: {
-          success: "https://quiniela360.com/success.html",
-          failure: "https://quiniela360.com/failure.html",
-          pending: "https://quiniela360.com/pending.html",
+          success: "https://qhricardo.github.io/quiniela-hydra/index.html",
+          failure: "https://qhricardo.github.io/quiniela-hydra/index.html",
+          pending: "https://qhricardo.github.io/quiniela-hydra/index.html",
         },
         auto_return: "approved",
         notification_url: "https://quiniela-hydra.onrender.com/webhook",
       },
     });
 
+    // Guardar referencia preference ↔ usuario en Firestore
     if (db) {
-      await db.collection("preferences").doc(preference.id).set({ userId, creditsToAdd });
+      await db.collection("preferences").doc(preference.id).set({
+        userId,
+        creditsToAdd,
+        amount: price,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
     }
 
-    console.log(`🧾 Preferencia creada para ${name || userId}: ${amount} MXN`);
+    console.log(`🧾 Preferencia creada para ${name} (${email}): ${price} MXN`);
     res.json({ id: preference.id, init_point: preference.init_point });
   } catch (error) {
-    console.error("❌ Error creando preferencia:", error);
+    console.error("❌ Error creando preferencia:", error.response || error);
     res.status(500).json({ error: "Error creando preferencia de pago" });
   }
 });
