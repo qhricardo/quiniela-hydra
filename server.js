@@ -1,27 +1,28 @@
+// ────────────────────────────────────────────────
+// 🔹 server.js | Mercado Pago v2 + Webhook + Firebase
+// ────────────────────────────────────────────────
 import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
-import MercadoPagoConfig, { Preference } from "mercadopago";
-import dotenv from "dotenv";
 import fetch from "node-fetch";
-
-// 🔹 Cargar variables de entorno (.env en local o Environment Variables en Render)
-dotenv.config();
+import MercadoPagoConfig, { Preference } from "mercadopago"; // SDK v2
 
 const app = express();
 app.use(bodyParser.json());
 
-// 🔹 Inicializa Firebase Admin
+// 🔹 Inicializa Firebase Admin usando variable de entorno
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert("./serviceAccountKey.json"),
+    credential: admin.credential.cert(serviceAccount),
   });
 }
 const db = admin.firestore();
 
-// 🔹 Inicializa Mercado Pago v2
+// 🔹 Inicializa Mercado Pago v2 usando variable de entorno
 const mp = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN, // ⚠️ Pon tu token real en Render secrets
+  accessToken: process.env.MP_ACCESS_TOKEN,
 });
 
 // ─────────────── Crear preferencia ───────────────
