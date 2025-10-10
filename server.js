@@ -56,7 +56,7 @@ app.post("/create-preference", async (req, res) => {
         items: [{ title: `Créditos Quiniela360 (${creditsToAdd} créditos)`, quantity: 1, currency_id: "MXN", unit_price: Number(amount) }],
         payer: { name, email },
         metadata: { userId, creditsToAdd },
-        back_urls: { success: "https://quiniela360.com/success", failure: "https://quiniela360.com/failure", pending: "https://quiniela360.com/pending" },
+        back_urls: { success: "https://qhricardo.github.io/quiniela-hydra/success.html", failure: "https://qhricardo.github.io/quiniela-hydra/index.html", pending: "https://qhricardo.github.io/quiniela-hydra/index.html" },
         auto_return: "approved",
       },
     });
