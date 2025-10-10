@@ -5,7 +5,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
 import cors from "cors";
-import mercadopago from "mercadopago";
+import mercadopago from "@mercadopago/sdk-node";
 
 // ──────────────── Configuraciones ────────────────
 const app = express();
@@ -34,11 +34,9 @@ const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
 // 🔹 Inicializa Mercado Pago v2
-if (!process.env.MP_ACCESS_TOKEN) {
-  console.error("❌ No se encontró la variable MP_ACCESS_TOKEN");
-  process.exit(1);
-}
-mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
+const mp = new mercadopago({
+  access_token: process.env.MP_ACCESS_TOKEN,
+});
 
 // ──────────────── Endpoints ────────────────
 
