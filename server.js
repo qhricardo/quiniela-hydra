@@ -2,81 +2,127 @@ import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
 import mercadopago from "mercadopago";
+import fetch from "node-fetch";
 
 const app = express();
 app.use(bodyParser.json());
 
-// Inicializa Firebase Admin
-admin.initializeApp({
-  credential: admin.credential.cert("./serviceAccountKey.json"),
-});
+// 🔹 Inicializa Firebase Admin
+import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 const db = admin.firestore();
 
-// Configura tu access token de Mercado Pago
-mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
+// 🔹 Configura Mercado Pago
+mercadopago.configure({
+  access_token: process.env.MP_ACCESS_TOKEN,
+});
 
-app.post("/webhook", async (req, res) => {
+// ─────────────────────────────────────────────
+// 🔸 Crear preferencia de pago
+// ─────────────────────────────────────────────
+app.post("/create-preference", async (req, res) => {
   try {
-    const topic = req.body.topic || req.body.type;
-    let paymentId = null;
+    const { amount, userId, name, email, creditsToAdd } = req.body;
 
-    if (topic === "payment") {
-      paymentId = req.body.data?.id || req.body.resource;
-    } else if (topic === "merchant_order") {
-      console.log("⚠️ Notificación ignorada (no es pago)", req.body);
-      return res.sendStatus(200);
-    } else {
-      console.log("⚠️ Notificación desconocida", req.body);
-      return res.sendStatus(200);
+    if (!userId || !creditsToAdd) {
+      return res.status(400).json({ error: "Faltan datos obligatorios" });
     }
 
-    if (!paymentId) {
-      console.error("❌ No se encontró paymentId en el webhook");
-      return res.sendStatus(400);
-    }
-
-    // 🔹 Obtener info del pago
-    const paymentResponse = await mercadopago.payment.findById(paymentId);
-    const payment = paymentResponse.response;
-
-    if (payment.status !== "approved") {
-      console.log(`💰 Pago recibido | Estado: ${payment.status} | Ignorado`);
-      return res.sendStatus(200);
-    }
-
-    // 🔹 Obtener metadata de la preferencia
-    let userId = payment.metadata?.userId;
-    let creditsToAdd = payment.metadata?.creditsToAdd;
-
-    // 🔹 Si no está en metadata, buscar en la colección preferences
-    if (!userId && payment.preference_id) {
-      const prefDoc = await db.collection("preferences").doc(payment.preference_id).get();
-      if (prefDoc.exists) {
-        const data = prefDoc.data();
-        userId = data.userId;
-        creditsToAdd = data.creditsToAdd;
-      }
-    }
-
-    if (!userId) {
-      console.error("❌ userId no encontrado, no se puede actualizar créditos");
-      return res.sendStatus(400);
-    }
-
-    // 🔹 Actualizar créditos en users
-    const userRef = db.collection("users").doc(userId);
-    await db.runTransaction(async (t) => {
-      const userDoc = await t.get(userRef);
-      const currentCredits = userDoc.exists ? userDoc.data().credits || 0 : 0;
-      t.set(userRef, { credits: currentCredits + creditsToAdd }, { merge: true });
+    const preference = await mercadopago.preferences.create({
+      items: [
+        {
+          title: "Compra de créditos Quiniela360",
+          quantity: 1,
+          currency_id: "MXN",
+          unit_price: amount,
+        },
+      ],
+      payer: { name, email },
+      metadata: { userId, creditsToAdd },
+      back_urls: {
+        success: "https://quiniela360.com/exito",
+        failure: "https://quiniela360.com/error",
+        pending: "https://quiniela360.com/pending",
+      },
+      auto_return: "approved",
     });
 
-    console.log(`✅ Créditos actualizados para usuario ${userId}: +${creditsToAdd}`);
-    return res.sendStatus(200);
+    console.log(`🧾 Preferencia creada para ${name || userId}: ${amount} MXN`);
+    console.log("📦 Metadata enviada:", { userId, creditsToAdd });
+
+    res.json({
+      id: preference.body.id,
+      init_point: preference.body.init_point,
+    });
   } catch (error) {
-    console.error("❌ Error en webhook:", error);
-    return res.sendStatus(500);
+    console.error("❌ Error creando preferencia:", error);
+    res.status(500).json({ error: "Error creando preferencia de pago" });
   }
 });
 
-app.listen(3000, () => console.log("Webhook corriendo en puerto 3000"));
+// ─────────────────────────────────────────────
+// 🔸 Webhook de Mercado Pago
+// ─────────────────────────────────────────────
+app.post("/webhook", async (req, res) => {
+  try {
+    console.log("📩 Webhook recibido:", JSON.stringify(req.body, null, 2));
+
+    const { action, data, type } = req.body;
+    if (type !== "payment" && !data?.id) {
+      console.log("⚠️ Notificación ignorada (no es pago válido)");
+      return res.sendStatus(200);
+    }
+
+    const paymentId = data.id || req.body.resource;
+    const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      headers: { Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}` },
+    });
+
+    const payment = await response.json();
+    const paymentStatus = payment.status;
+    const metadata = payment.metadata || {};
+
+    console.log("💰 Pago recibido | Estado:", paymentStatus);
+    console.log("🔍 Metadata recibida:", metadata);
+
+    // Solo procesar si fue aprobado
+    if (paymentStatus === "approved" && metadata.userId) {
+      const userId = metadata.userId;
+      const creditsToAdd = Number(metadata.creditsToAdd) || 0;
+
+      const userRef = db.collection("users").doc(userId);
+      const userDoc = await userRef.get();
+
+      if (!userDoc.exists) {
+        console.log(`⚠️ Usuario ${userId} no encontrado en Firestore`);
+        return res.sendStatus(200);
+      }
+
+      const currentCredits = userDoc.data().credits || 0;
+      const newCredits = currentCredits + creditsToAdd;
+
+      await userRef.update({ credits: newCredits });
+
+      console.log(`✅ Créditos actualizados: ${currentCredits} → ${newCredits} para usuario ${userId}`);
+    } else {
+      console.log("⚠️ No se actualizan créditos (estado no aprobado o falta metadata)");
+    }
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("❌ Error en webhook:", error);
+    res.status(500).json({ error: "Error procesando webhook" });
+  }
+});
+
+// ─────────────────────────────────────────────
+// 🔸 Servidor activo
+// ─────────────────────────────────────────────
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
+});
