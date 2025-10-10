@@ -53,30 +53,24 @@ app.post("/create-preference", async (req, res) => {
 
     const preference = await new Preference(mpClient).create({
       body: {
-        items: [
-          {
-            title: `Créditos Quiniela360 (${creditsToAdd} créditos)`,
-            quantity: 1,
-            currency_id: "MXN",
-            unit_price: Number(amount),
-          },
-        ],
+        items: [{ title: `Créditos Quiniela360 (${creditsToAdd} créditos)`, quantity: 1, currency_id: "MXN", unit_price: Number(amount) }],
         payer: { name, email },
         metadata: { userId, creditsToAdd },
-        back_urls: {
-          success: "https://quiniela360.com/success",
-          failure: "https://quiniela360.com/failure",
-          pending: "https://quiniela360.com/pending",
-        },
+        back_urls: { success: "https://quiniela360.com/success", failure: "https://quiniela360.com/failure", pending: "https://quiniela360.com/pending" },
         auto_return: "approved",
       },
     });
 
-      res.json({
+    return res.json({
       id: preference.id,
-      init_point: preference.init_point,        // 🔹 Link para abrir el checkout en producción
-      sandbox_init_point: preference.sandbox_init_point, // 🔹 Link sandbox para pruebas
+      init_point: preference.init_point,
+      sandbox_init_point: preference.sandbox_init_point,
     });
+  } catch (error) {
+    console.error("❌ Error creando preferencia:", error);
+    res.status(500).json({ error: "No se pudo generar la preferencia de pago" });
+  }
+});
 
 // Webhook de pagos
 app.post("/webhook", async (req, res) => {
