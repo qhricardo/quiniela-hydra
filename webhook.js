@@ -4,6 +4,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
+import fetch from "node-fetch"; // asegúrate de instalarlo: npm i node-fetch@2
 
 const app = express();
 app.use(bodyParser.json());
@@ -44,38 +45,42 @@ app.post("/webhook", async (req, res) => {
 
     console.log(`💰 Pago recibido | Estado: ${payment.status}`);
 
-    // Solo procesar pagos aprobados
-    if (payment.status !== "approved") {
-      console.log(`⚠️ Pago no aprobado, se ignora`);
-      return res.sendStatus(200);
-    }
-
     // 🔹 Obtenemos userId y creditsToAdd desde metadata
-    const userId = payment.metadata?.userId;
+    const userId = payment.metadata?.userId || null;
     const creditsToAdd = Number(payment.metadata?.creditsToAdd) || 0;
 
-    if (!userId) {
-      console.error("❌ userId no encontrado en metadata");
-      return res.sendStatus(400);
+    // 🔹 Creamos un documentPath seguro
+    const docPath = userId ? userId : `payment_${payment.id}`;
+
+    // 🔹 Guardamos pago en Firestore
+    const paymentData = {
+      id: payment.id,
+      status: payment.status,
+      userId: userId || null,
+      creditsToAdd: creditsToAdd,
+      amount: payment.transaction_amount || 0,
+      date: payment.date_created,
+    };
+
+    await db.collection("payments").doc(docPath).set(paymentData);
+    console.log(`✅ Pago guardado en Firestore: ${docPath}`);
+
+    // 🔹 Solo actualizar créditos si el pago está aprobado y hay créditos
+    if (payment.status === "approved" && userId && creditsToAdd > 0) {
+      const userRef = db.collection("users").doc(userId);
+      await db.runTransaction(async (t) => {
+        const doc = await t.get(userRef);
+        if (!doc.exists) {
+          throw new Error("Usuario no encontrado en Firestore");
+        }
+        const currentCredits = doc.data().credits || 0;
+        t.update(userRef, { credits: currentCredits + creditsToAdd });
+      });
+      console.log(`✅ Créditos actualizados para ${userId}: +${creditsToAdd}`);
+    } else {
+      console.log(`⚠️ Pago no aprobado o créditos no válidos, no se actualizan créditos`);
     }
 
-    if (!creditsToAdd || creditsToAdd <= 0) {
-      console.error("❌ creditsToAdd inválido en metadata");
-      return res.sendStatus(400);
-    }
-
-    // 🔹 Actualizamos los créditos del usuario en Firebase
-    const userRef = db.collection("users").doc(userId);
-    await db.runTransaction(async (t) => {
-      const doc = await t.get(userRef);
-      if (!doc.exists) {
-        throw new Error("Usuario no encontrado en Firestore");
-      }
-      const currentCredits = doc.data().credits || 0;
-      t.update(userRef, { credits: currentCredits + creditsToAdd });
-    });
-
-    console.log(`✅ Créditos actualizados para ${userId}: +${creditsToAdd}`);
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error en webhook:", error);
@@ -85,8 +90,7 @@ app.post("/webhook", async (req, res) => {
 
 app.listen(3000, () => console.log("Webhook escuchando en puerto 3000"));
 
-
 // ────────────────────────────────────────────────
-// Exportar router
+// 🔹 Exportar app (no router, ahora usamos app directamente)
 // ────────────────────────────────────────────────
-export default router;
+export default app;
