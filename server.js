@@ -5,7 +5,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
 import cors from "cors";
-import mercadopago from "@mercadopago/sdk-node";
+import mercadopago from "mercadopago";
 
 // ──────────────── Configuraciones ────────────────
 const app = express();
@@ -34,7 +34,7 @@ const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
 // 🔹 Inicializa Mercado Pago v2
-const mp = new mercadopago({
+mercadopago.configure({
   access_token: process.env.MP_ACCESS_TOKEN,
 });
 console.log("✅ MercadoPago inicializado correctamente");
@@ -50,28 +50,25 @@ app.post("/create-preference", async (req, res) => {
   try {
     const { amount, userId, name, email, creditsToAdd } = req.body;
 
-    if (!amount || !userId) {
-      return res.status(400).json({ error: "Datos incompletos" });
-    }
+    const preference = await mercadopago.preferences.create({
+      items: [
+        {
+          title: `Créditos Quiniela360 (${creditsToAdd} créditos)`,
+          quantity: 1,
+          unit_price: Number(amount),
+        },
+      ],
+      payer: { name, email },
+      back_urls: {
+        success: "https://quiniela360.com/success",
+        failure: "https://quiniela360.com/failure",
+      },
+      auto_return: "approved",
+    });
 
-   const preference = {
-  items: [
-    { title: `Créditos Quiniela360: ${creditsToAdd}`, quantity: 1, unit_price: Number(amount) },
-  ],
-  payer: { name, email },
-  metadata: { userId, creditsToAdd },
-  back_urls: {
-    success: "https://qhricardo.github.io/success.html",
-    failure: "https://qhricardo.github.io/failure.html",
-    pending: "https://qhricardo.github.io/pending.html",
-  },
-  auto_return: "approved",
-};
-
-const response = await mercadopago.preferences.create(preference);
-    res.json(response);
+    res.json({ id: preference.body.id });
   } catch (error) {
-    console.error("🚨 Error al crear preferencia:", error);
+    console.error("❌ Error al crear preferencia:", error);
     res.status(500).json({ error: "Error al crear preferencia" });
   }
 });
