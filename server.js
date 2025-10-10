@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
-import mercadopago from "mercadopago";
+import MercadoPagoConfig, { Preference } from "mercadopago";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 
@@ -28,9 +28,10 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 // 🔹 Configurar Mercado Pago
-mercadopago.configure({
-  access_token: process.env.MP_ACCESS_TOKEN,
+const client = new MercadoPagoConfig({
+  accessToken: process.env.MP_ACCESS_TOKEN, // ⚠️ Usa variable de entorno
 });
+
 
 // ========================================================================
 // 📦 CREAR PREFERENCIA DE PAGO
