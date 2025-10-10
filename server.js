@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────
-// 🔹 server.js | Mercado Pago + Firebase + Webhook
+// 🔹 server.js | Mercado Pago + Firebase + Webhook Seguro
 // ────────────────────────────────────────────────
 import express from "express";
 import bodyParser from "body-parser";
@@ -19,8 +19,9 @@ if (!admin.apps.length) {
   });
 }
 const db = admin.firestore();
+console.log("✅ Firebase inicializado correctamente");
 
-// 🔹 Inicializa Mercado Pago (SDK Node.js)
+// 🔹 Inicializa Mercado Pago
 mercadopago.configure({
   access_token: process.env.MP_ACCESS_TOKEN,
 });
@@ -48,9 +49,9 @@ app.post("/create-preference", async (req, res) => {
         creditsToAdd,
       },
       back_urls: {
-        success: "https://qhricardo.github.io/quiniela-hydra/",
-        failure: "https://qhricardo.github.io/quiniela-hydra/",
-        pending: "https://qhricardo.github.io/quiniela-hydra/",
+        success: "https://tuweb.com/success",
+        failure: "https://tuweb.com/failure",
+        pending: "https://tuweb.com/pending",
       },
       auto_return: "approved",
     };
@@ -101,9 +102,7 @@ app.post("/webhook", async (req, res) => {
     const creditsToAdd = Number(payment.metadata?.creditsToAdd) || 0;
 
     // 🔹 Generar docPath seguro
-    const docPath = userId
-      ? `payment_${payment.id}`
-      : payment.id
+    const docPath = payment.id
       ? `payment_${payment.id}`
       : `payment_unknown_${Date.now()}`;
 
@@ -119,7 +118,7 @@ app.post("/webhook", async (req, res) => {
     await db.collection("payments").doc(docPath).set(paymentData);
     console.log(`✅ Pago guardado en Firestore: ${docPath}`);
 
-    // 🔹 Solo actualizar créditos si está aprobado y hay metadata válida
+    // 🔹 Solo actualizar créditos si está aprobado y metadata válida
     if (payment.status === "approved" && userId && creditsToAdd > 0) {
       const userRef = db.collection("users").doc(userId);
       await db.runTransaction(async (t) => {
@@ -130,7 +129,7 @@ app.post("/webhook", async (req, res) => {
       });
       console.log(`✅ Créditos actualizados para ${userId}: +${creditsToAdd}`);
     } else {
-      console.log(`⚠️ Pago no aprobado o créditos no válidos, no se actualizan créditos`);
+      console.log(`⚠️ Pago no aprobado o metadata inválida, no se actualizan créditos`);
     }
 
     res.sendStatus(200);
@@ -140,6 +139,7 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Webhook escuchando en puerto 3000"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
 
 export default app;
