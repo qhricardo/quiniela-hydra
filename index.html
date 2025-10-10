@@ -99,6 +99,23 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     <li>🏆 Proxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
      <li>💰 Suscripcion 3 creditos x $50.</li>
   </ul>
+
+  <h1>💳 Recargar Créditos</h1>
+
+  <form id="paymentForm">
+    <label>Nombre del Usuario</label>
+    <input type="text" id="name" placeholder="Ej. Edensin Quintero" required>
+
+    <label>ID del Usuario (Firestore)</label>
+    <input type="text" id="userId" placeholder="Ej. sOMTvpitNbNQ7TOaW4wk8g8QDbH2" required>
+
+    <label>Cantidad de créditos</label>
+    <select id="creditsToAdd">
+      <option value="5">5 créditos - $5 MXN</option>
+      <option value="10">10 créditos - $10 MXN</option>
+      <option value="15">15 créditos - $15 MXN</option>
+    </select>
+        
 <button type="submit">💰 Pagar con MercadoPago</button>
   </form>
 
@@ -564,6 +581,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
