@@ -72,12 +72,11 @@ app.post("/create-preference", async (req, res) => {
       },
     });
 
-    res.json({ id: preference.id });
-  } catch (error) {
-    console.error("❌ Error al crear preferencia:", error);
-    res.status(500).json({ error: "Error al crear preferencia" });
-  }
-});
+      res.json({
+      id: preference.id,
+      init_point: preference.init_point,        // 🔹 Link para abrir el checkout en producción
+      sandbox_init_point: preference.sandbox_init_point, // 🔹 Link sandbox para pruebas
+    });
 
 // Webhook de pagos
 app.post("/webhook", async (req, res) => {
