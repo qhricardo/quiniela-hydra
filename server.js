@@ -4,7 +4,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
-import mercadopago from "mercadopago";
+import MercadoPago from "@mercadopago/sdk-node";
 import fetch from "node-fetch";
 
 const app = express();
@@ -22,9 +22,7 @@ const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
 // 🔹 Inicializa Mercado Pago
-mercadopago.configure({
-  access_token: process.env.MP_ACCESS_TOKEN,
-});
+const mercadopago = new MercadoPago({ accessToken: process.env.MP_ACCESS_TOKEN });
 
 // ─────────────── Crear preferencia ───────────────
 app.post("/create-preference", async (req, res) => {
