@@ -4,7 +4,8 @@
 import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
-import fetch from "node-fetch"; // asegúrate de instalarlo: npm i node-fetch@2
+import fetch from "node-fetch"; // Node 18+ ya tiene fetch, pero lo incluimos por compatibilidad
+import MercadoPago from "@mercadopago/sdk-node";
 
 const app = express();
 app.use(bodyParser.json());
@@ -12,73 +13,71 @@ app.use(bodyParser.json());
 // 🔹 Inicializa Firebase Admin
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert("./serviceAccountKey.json"),
+    credential: admin.credential.cert("./serviceAccountKey.json"), // Asegúrate que el JSON exista
   });
 }
 const db = admin.firestore();
 
-// 🔹 Webhook de Mercado Pago
+// 🔹 Inicializa Mercado Pago
+const mercadopago = new MercadoPago({
+  accessToken: process.env.MP_ACCESS_TOKEN, // Pon tu token en variables de entorno
+});
+
+// ──────────────────────────
+// POST /webhook
+// ──────────────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // Solo procesamos si es payment
-    if (webhook.topic !== "payment" && webhook.type !== "payment") {
+    // ─ Ignorar topics que no sean payment
+    const topic = webhook.topic || webhook.type || webhook.action;
+    if (!topic || !topic.includes("payment")) {
       console.log("⚠️ Notificación ignorada (no es pago)");
       return res.sendStatus(200);
     }
 
-    // 🔹 Obtenemos el ID del pago
+    // ─ Obtener ID de pago
     const paymentId = webhook.data?.id || webhook.resource;
     if (!paymentId) {
       console.error("❌ No se encontró ID de pago");
       return res.sendStatus(400);
     }
 
-    // 🔹 Llamada a la API de Mercado Pago para obtener el pago completo
-    // Reemplaza `YOUR_ACCESS_TOKEN` por tu token real
-    const mpResponse = await fetch(`https://api.mercadolibre.com/payments/${paymentId}`, {
-      headers: { Authorization: `Bearer YOUR_ACCESS_TOKEN` },
-    });
-    const payment = await mpResponse.json();
+    // ─ Obtener info del pago desde Mercado Pago
+    const payment = await mercadopago.payment.get(paymentId).then(r => r.response);
 
     console.log(`💰 Pago recibido | Estado: ${payment.status}`);
 
-    // 🔹 Obtenemos userId y creditsToAdd desde metadata
-    const userId = payment.metadata?.userId || null;
-    const creditsToAdd = Number(payment.metadata?.creditsToAdd) || 0;
+    // ─ ID seguro para Firestore
+    const docPath = payment.id ? `payment_${payment.id}` : `payment_unknown_${Date.now()}`;
 
-    // 🔹 Creamos un documentPath seguro
-    const docPath = userId ? userId : `payment_${payment.id}`;
-
-    // 🔹 Guardamos pago en Firestore
-    const paymentData = {
+    // ─ Guardar pago en Firestore (aunque sea rejected/pending)
+    await db.collection("payments").doc(docPath).set({
       id: payment.id,
       status: payment.status,
-      userId: userId || null,
-      creditsToAdd: creditsToAdd,
+      userId: payment.metadata?.userId || null,
+      creditsToAdd: Number(payment.metadata?.creditsToAdd) || 0,
       amount: payment.transaction_amount || 0,
-      date: payment.date_created,
-    };
+      date: payment.date_created || new Date().toISOString(),
+    });
 
-    await db.collection("payments").doc(docPath).set(paymentData);
-    console.log(`✅ Pago guardado en Firestore: ${docPath}`);
-
-    // 🔹 Solo actualizar créditos si el pago está aprobado y hay créditos
-    if (payment.status === "approved" && userId && creditsToAdd > 0) {
-      const userRef = db.collection("users").doc(userId);
+    // ─ Actualizar créditos solo si aprobado y metadata válida
+    if (
+      payment.status === "approved" &&
+      payment.metadata?.userId &&
+      payment.metadata?.creditsToAdd > 0
+    ) {
+      const userRef = db.collection("users").doc(payment.metadata.userId);
       await db.runTransaction(async (t) => {
         const doc = await t.get(userRef);
-        if (!doc.exists) {
-          throw new Error("Usuario no encontrado en Firestore");
-        }
+        if (!doc.exists) throw new Error("Usuario no encontrado en Firestore");
         const currentCredits = doc.data().credits || 0;
-        t.update(userRef, { credits: currentCredits + creditsToAdd });
+        t.update(userRef, { credits: currentCredits + Number(payment.metadata.creditsToAdd) });
       });
-      console.log(`✅ Créditos actualizados para ${userId}: +${creditsToAdd}`);
-    } else {
-      console.log(`⚠️ Pago no aprobado o créditos no válidos, no se actualizan créditos`);
+
+      console.log(`✅ Créditos actualizados para ${payment.metadata.userId}: +${payment.metadata.creditsToAdd}`);
     }
 
     res.sendStatus(200);
@@ -88,9 +87,10 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Webhook escuchando en puerto 3000"));
+// ──────────────────────────
+// Servidor
+// ──────────────────────────
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Webhook escuchando en puerto ${PORT}`));
 
-// ────────────────────────────────────────────────
-// 🔹 Exportar app (no router, ahora usamos app directamente)
-// ────────────────────────────────────────────────
 export default app;
