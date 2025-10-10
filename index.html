@@ -118,28 +118,29 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
         creditsToAdd: 3, // 🔸 número de créditos a sumar al aprobarse
       };
 
-  try {
-    const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+    try {
+        console.log("📤 Enviando a backend:", body);
+        const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        const data = await res.json();
+
+        if (data.init_point) {
+          console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
+          window.location.href = data.init_point;
+        } else {
+          console.error("❌ Respuesta del servidor:", data);
+          alert("No se pudo generar la preferencia de pago.");
+        }
+      } catch (error) {
+        console.error("🚨 Error al crear preferencia:", error);
+        alert("Ocurrió un error al intentar crear la preferencia.");
+      }
     });
-
-    const data = await res.json();
-
-    if (data.init_point) {
-      // Redirige al checkout de Mercado Pago
-      window.location.href = data.init_point;
-    } else {
-      alert("No se pudo generar la preferencia");
-      console.error("Respuesta del servidor:", data);
-    }
-  } catch (error) {
-    console.error("Error al crear la preferencia:", error);
-    alert("Ocurrió un error al intentar comprar créditos");
-  }
-});
-</script>
+  </script>
 
 
      </div>
@@ -567,6 +568,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
