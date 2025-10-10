@@ -86,44 +86,13 @@ app.post("/webhook", async (req, res) => {
     console.log("📩 Webhook recibido:", webhook);
 
     const paymentId = webhook.data?.id || webhook.resource;
-    if (!paymentId) return res.sendStatus(400);
-
-    const payment = await new Payment(mpClient).get({ id: paymentId });
-    console.log(`💰 Pago recibido | Estado: ${payment.status}`);
-
-    if (payment.status !== "approved") return res.sendStatus(200);
-
-    const userId = payment.metadata?.userId;
-    const creditsToAdd = Number(payment.metadata?.creditsToAdd) || 0;
-
-    if (!userId || creditsToAdd <= 0) return res.sendStatus(400);
-
-    const userRef = db.collection("users").doc(userId);
-    await db.runTransaction(async (t) => {
-      const doc = await t.get(userRef);
-      if (!doc.exists) throw new Error("Usuario no encontrado");
-      const currentCredits = doc.data().credits || 0;
-      t.update(userRef, { credits: currentCredits + creditsToAdd });
-    });
-
-    console.log(`✅ Créditos actualizados para ${userId}: +${creditsToAdd}`);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("❌ Error en webhook:", error);
-    res.sendStatus(500);
-  }
-});
-
-    // Obtener ID del pago
-    const paymentId = webhook.data?.id || webhook.resource;
     if (!paymentId) {
       console.error("❌ No se encontró ID de pago");
       return res.sendStatus(400);
     }
 
-    // Consultar pago completo usando SDK v2
-    const { body: payment } = await mp.payment.findById(paymentId);
-
+    // Consulta el pago con SDK v2
+    const payment = await new Payment(mpClient).get({ id: paymentId });
     console.log(
       `💰 Pago recibido | Estado: ${payment.status} | Usuario: ${payment.metadata?.userId} | Credits: ${payment.metadata?.creditsToAdd}`
     );
@@ -159,6 +128,6 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
-// ──────────────── Iniciar servidor ────────────────
+// ──────────────── Servidor ────────────────
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
