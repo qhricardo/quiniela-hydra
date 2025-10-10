@@ -99,50 +99,46 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     <li>🏆 Proxima Quiniela inicia Lunes 25 de agosto 2025 08:00hrs.</li>
      <li>💰 Suscripcion 3 creditos x $50.</li>
   </ul>
-<button id="comprarCreditos">Comprar 3 Créditos</button>
+<button type="submit">💰 Pagar con MercadoPago</button>
+  </form>
 
-<script>
-document.getElementById("comprarCreditos").addEventListener("click", async () => {
-  // Verificar que el usuario esté logueado
-  if (!currentUser) {
-    alert("Debes iniciar sesión para comprar créditos");
-    return;
-  }
+  <div class="msg" id="msg"></div>
 
-  // Preparamos los datos para enviar al backend
-    const body = {
-        amount: 10, // 💵 precio en MXN
-        userId: currentUser.uid,
-        name: currentUser.displayName || "Usuario",
-        email: currentUser.email || "",
-        creditsToAdd: 3, // 🔸 número de créditos a sumar al aprobarse
-      };
+  <script>
+    const BASE_URL = "https://quiniela-hydra.onrender.com"; // 🟡 Cambia esto por tu dominio real de Render
 
-    try {
-        console.log("📤 Enviando a backend:", body);
-        const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+    document.getElementById("paymentForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const userId = document.getElementById("userId").value.trim();
+      const creditsToAdd = parseInt(document.getElementById("creditsToAdd").value);
+      const amount = creditsToAdd; // 💵 cada crédito vale 1 peso
+
+      document.getElementById("msg").innerText = "Creando preferencia de pago...";
+
+      try {
+        const res = await fetch(`${BASE_URL}/create_preference`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ name, userId, creditsToAdd, amount })
         });
 
         const data = await res.json();
 
         if (data.init_point) {
-          console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
-          window.location.href = data.init_point;
+          document.getElementById("msg").innerText = "Redirigiendo a MercadoPago...";
+          window.location.href = data.init_point; // 🔹 Redirige al checkout
         } else {
-          console.error("❌ Respuesta del servidor:", data);
-          alert("No se pudo generar la preferencia de pago.");
+          document.getElementById("msg").innerText = "Error creando la preferencia.";
+          console.error(data);
         }
-      } catch (error) {
-        console.error("🚨 Error al crear preferencia:", error);
-        alert("Ocurrió un error al intentar crear la preferencia.");
+      } catch (err) {
+        console.error("❌ Error:", err);
+        document.getElementById("msg").innerText = "Error conectando con el servidor.";
       }
     });
   </script>
-
-
      </div>
 
     <div style="flex: 3 1 600px; padding: 10px;" class="container">
@@ -568,6 +564,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
