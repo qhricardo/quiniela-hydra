@@ -13,6 +13,5 @@
     "dotenv": "^16.4.5",
    "@mercadopago/sdk-node": "^3.0.0",
     "firebase-admin": "^12.0.0"
-     "node-fetch": "^3.3.2"
   }
 }
