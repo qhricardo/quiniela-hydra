@@ -110,13 +110,13 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
   }
 
   // Preparamos los datos para enviar al backend
-  const body = {
-    amount: 5, // Monto real a cobrar en Mercado Pago
-    userId: currentUser.uid,
-    name: currentUser.displayName || "Usuario",
-    email: currentUser.email || "",
-    creditsToAdd: 3 // Créditos que se sumarán al aprobar el pago
-  };
+  body: JSON.stringify({
+  amount: 5,
+  userId: "UID_DE_FIREBASE",
+  name: "Edensin Quintero",
+  email: "correo@ejemplo.com",
+  creditsToAdd: 3
+})
 
   try {
     const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
@@ -567,6 +567,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
