@@ -33,10 +33,10 @@ const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
 // 🔹 Configuración de Mercado Pago
-import mercadopago from "mercadopago";
 
 mercadopago.configurations = {};
 mercadopago.configurations.access_token = process.env.MP_ACCESS_TOKEN;
+
 // ──────────────── Webhook ────────────────
 app.post("/webhook", async (req, res) => {
   try {
