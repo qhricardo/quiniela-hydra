@@ -1,11 +1,11 @@
 // ────────────────────────────────────────────────
-// 🔹 server.js | Mercado Pago v2 + Webhook + Firebase
+// 🔹 server.js | Mercado Pago + Firebase + Webhook
 // ────────────────────────────────────────────────
 import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
+import mercadopago from "mercadopago";
 import fetch from "node-fetch";
-import MercadoPagoConfig, { Preference } from "mercadopago"; // SDK v2
 
 const app = express();
 app.use(bodyParser.json());
@@ -20,9 +20,9 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// 🔹 Inicializa Mercado Pago v2 usando variable de entorno
-const mp = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN,
+// 🔹 Inicializa Mercado Pago (SDK Node.js)
+mercadopago.configure({
+  access_token: process.env.MP_ACCESS_TOKEN,
 });
 
 // ─────────────── Crear preferencia ───────────────
@@ -34,33 +34,31 @@ app.post("/create-preference", async (req, res) => {
       return res.status(400).json({ error: "Faltan datos obligatorios" });
     }
 
-    const preference = new Preference(mp);
-
-    const result = await preference.create({
-      body: {
-        items: [
-          {
-            title: `Créditos Quiniela360`,
-            quantity: 1,
-            currency_id: "MXN",
-            unit_price: amount,
-          },
-        ],
-        metadata: {
-          userId,
-          creditsToAdd,
+    const preferenceData = {
+      items: [
+        {
+          title: `Créditos Quiniela360`,
+          quantity: 1,
+          currency_id: "MXN",
+          unit_price: amount,
         },
-        back_urls: {
-          success: "https://tuweb.com/success",
-          failure: "https://tuweb.com/failure",
-          pending: "https://tuweb.com/pending",
-        },
-        auto_return: "approved",
+      ],
+      metadata: {
+        userId,
+        creditsToAdd,
       },
-    });
+      back_urls: {
+        success: "https://qhricardo.github.io/quiniela-hydra/",
+        failure: "https://qhricardo.github.io/quiniela-hydra/",
+        pending: "https://qhricardo.github.io/quiniela-hydra/",
+      },
+      auto_return: "approved",
+    };
 
-    console.log(`🧾 Preferencia creada para ${userId}: ${result.id}`);
-    res.json({ preferenceId: result.id, init_point: result.init_point });
+    const preference = await mercadopago.preferences.create(preferenceData);
+
+    console.log(`🧾 Preferencia creada para ${userId}: ${preference.body.id}`);
+    res.json({ preferenceId: preference.body.id, init_point: preference.body.init_point });
   } catch (error) {
     console.error("❌ Error creando preferencia:", error);
     res.status(500).json({ error: "Error creando preferencia" });
@@ -91,31 +89,37 @@ app.post("/webhook", async (req, res) => {
     }
 
     // 🔹 Obtener pago completo desde la API
-    const mpPayment = await fetch(`https://api.mercadolibre.com/payments/${paymentId}`, {
+    const mpPaymentResp = await fetch(`https://api.mercadolibre.com/payments/${paymentId}`, {
       headers: { Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}` },
     });
-    const payment = await mpPayment.json();
+    const payment = await mpPaymentResp.json();
 
     console.log(`💰 Pago recibido | Estado: ${payment.status}`);
 
     // 🔹 Preparar datos para Firestore
     const userId = payment.metadata?.userId || null;
     const creditsToAdd = Number(payment.metadata?.creditsToAdd) || 0;
-    const docPath = userId ? userId : `payment_${payment.id}`;
+
+    // 🔹 Generar docPath seguro
+    const docPath = userId
+      ? `payment_${payment.id}`
+      : payment.id
+      ? `payment_${payment.id}`
+      : `payment_unknown_${Date.now()}`;
 
     const paymentData = {
-      id: payment.id,
-      status: payment.status,
+      id: payment.id || null,
+      status: payment.status || "unknown",
       userId: userId || null,
-      creditsToAdd: creditsToAdd,
+      creditsToAdd,
       amount: payment.transaction_amount || 0,
-      date: payment.date_created,
+      date: payment.date_created || new Date().toISOString(),
     };
 
     await db.collection("payments").doc(docPath).set(paymentData);
     console.log(`✅ Pago guardado en Firestore: ${docPath}`);
 
-    // 🔹 Solo sumar créditos si está aprobado y hay metadata válida
+    // 🔹 Solo actualizar créditos si está aprobado y hay metadata válida
     if (payment.status === "approved" && userId && creditsToAdd > 0) {
       const userRef = db.collection("users").doc(userId);
       await db.runTransaction(async (t) => {
