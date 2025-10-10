@@ -1,127 +1,151 @@
-// ───────────────────────────────────────────────────────────────
-//  Quiniela360 - Servidor Node.js (Render compatible)
-// ───────────────────────────────────────────────────────────────
-
 import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
-import fs from "fs";
+import mercadopago from "mercadopago";
+import dotenv from "dotenv";
 import fetch from "node-fetch";
 
-// ─── Inicializar Express ───────────────────────────────────────
+// 🔹 Cargar variables de entorno (.env en local o Environment Variables en Render)
+dotenv.config();
+
 const app = express();
 app.use(bodyParser.json());
 
-// ─── Cargar credenciales de Firebase ───────────────────────────
-const serviceAccount = JSON.parse(fs.readFileSync("./serviceAccountKey.json", "utf8"));
+// 🔹 Inicializar Firebase Admin con clave desde variable de entorno
+if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+  console.error("❌ No se encontró la variable FIREBASE_SERVICE_ACCOUNT.");
+  process.exit(1);
+}
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 const db = admin.firestore();
 
-// ─── Configuración de MercadoPago ──────────────────────────────
-const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN; // Usa variable de entorno en Render
-const MP_API_URL = "https://api.mercadopago.com/v1/payments/";
-
-// ───────────────────────────────────────────────────────────────
-// 🔹 Endpoint raíz
-// ───────────────────────────────────────────────────────────────
-app.get("/", (req, res) => {
-  res.send("✅ Servidor de Quiniela360 activo y corriendo.");
+// 🔹 Configurar Mercado Pago
+mercadopago.configure({
+  access_token: process.env.MP_ACCESS_TOKEN,
 });
 
-// ───────────────────────────────────────────────────────────────
-// 🔹 Webhook de MercadoPago
-// ───────────────────────────────────────────────────────────────
-app.post("/webhook", async (req, res) => {
+// ========================================================================
+// 📦 CREAR PREFERENCIA DE PAGO
+// ========================================================================
+app.post("/create_preference", async (req, res) => {
   try {
-    console.log("📩 Webhook recibido:", JSON.stringify(req.body, null, 2));
-    const body = req.body;
+    const { userId, creditsToAdd, name, amount } = req.body;
 
-    // ─── Validar tipo de notificación ───────────────────────────
-    if (!body || (!body.topic && !body.type)) {
-      console.log("⚠️ Webhook sin información útil");
-      return res.sendStatus(400);
+    if (!userId || !creditsToAdd || !amount) {
+      return res.status(400).json({ error: "Datos insuficientes." });
     }
 
-    // ─── Manejar pagos ─────────────────────────────────────────
-    if (body.topic === "payment" || body.type === "payment") {
-      const paymentId = body.resource?.toString().replace(/\D/g, "") || body.data?.id;
-      if (!paymentId) {
-        console.log("⚠️ Webhook de pago sin ID válido.");
-        return res.sendStatus(400);
-      }
+    const preference = await mercadopago.preferences.create({
+      items: [
+        {
+          title: `Recarga de créditos (${creditsToAdd})`,
+          quantity: 1,
+          currency_id: "MXN",
+          unit_price: Number(amount),
+        },
+      ],
+      metadata: {
+        userId,
+        creditsToAdd,
+        name: name || "Usuario desconocido",
+      },
+      notification_url: `${process.env.BASE_URL}/webhook`,
+    });
 
-      console.log(`🔍 Consultando pago #${paymentId}`);
+    console.log(`🧾 Preferencia creada para ${name || userId}: ${amount} MXN`);
 
-      // ─── Obtener información del pago desde la API de MP ──────
-      const response = await fetch(`${MP_API_URL}${paymentId}`, {
-        headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` }
-      });
-      const paymentData = await response.json();
-
-      if (!paymentData || paymentData.error) {
-        console.log("⚠️ No se pudo obtener la información del pago:", paymentData.error);
-        return res.sendStatus(400);
-      }
-
-      const estado = paymentData.status;
-      const metadata = paymentData.metadata || {};
-      const userId = metadata.userId || metadata.firebaseUid || null;
-      const credits = metadata.credits || 0;
-
-      console.log(`💰 Pago recibido | Estado: ${estado} | Usuario: ${userId} | Credits: ${credits}`);
-
-      // ─── Validar usuario ─────────────────────────────────────
-      if (!userId) {
-        console.error("❌ Error: No se pudo obtener el userId desde metadata.");
-        return res.sendStatus(400);
-      }
-
-      // ─── Solo actualizar si el pago fue aprobado ─────────────
-      if (estado === "approved") {
-        const userRef = db.collection("users").doc(userId);
-        const userSnap = await userRef.get();
-
-        if (userSnap.exists) {
-          const currentCredits = userSnap.data().credits || 0;
-          const newCredits = currentCredits + credits;
-
-          await userRef.update({ credits: newCredits });
-          console.log(`✅ Créditos actualizados para ${userId}: ${currentCredits} ➜ ${newCredits}`);
-        } else {
-          console.log(`⚠️ Usuario ${userId} no encontrado en Firestore.`);
-        }
-      } else {
-        console.log(`⚠️ Pago con estado '${estado}' — no se acreditó.`);
-      }
-
-      return res.sendStatus(200);
-    }
-
-    // ─── Ignorar otros temas ──────────────────────────────────
-    console.log("⚠️ Notificación ignorada (no es pago):", body);
-    res.sendStatus(200);
-
+    // 🔹 No se guarda en preferences, ya no es necesario
+    res.json({ id: preference.id, init_point: preference.init_point });
   } catch (error) {
-    console.error("❌ Error en webhook:", error);
-    res.sendStatus(500);
+    console.error("❌ Error creando preferencia:", error);
+    res.status(500).json({ error: "Error creando preferencia de pago" });
   }
 });
 
-// ───────────────────────────────────────────────────────────────
-// 🔹 Endpoint de verificación de salud
-// ───────────────────────────────────────────────────────────────
-app.get("/health", (req, res) => {
-  res.status(200).send("Servidor funcionando correctamente ✅");
+// ========================================================================
+// 📩 WEBHOOK DE MERCADO PAGO
+// ========================================================================
+app.post("/webhook", async (req, res) => {
+  try {
+    const body = req.body;
+    console.log("📩 Webhook recibido:", JSON.stringify(body, null, 2));
+
+    if (!body || !body.topic) {
+      console.warn("⚠️ Webhook sin 'topic'.");
+      return res.sendStatus(400);
+    }
+
+    // 🔸 Solo procesar pagos
+    if (body.topic === "payment" || body.type === "payment") {
+      const paymentId = body.data?.id || body.resource?.split("/").pop();
+      if (!paymentId) {
+        console.warn("⚠️ No se encontró ID de pago en el webhook.");
+        return res.sendStatus(400);
+      }
+
+      // 🔹 Consultar pago en MercadoPago
+      const paymentRes = await fetch(
+        `https://api.mercadopago.com/v1/payments/${paymentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+          },
+        }
+      );
+      const payment = await paymentRes.json();
+
+      const status = payment.status;
+      const metadata = payment.metadata || {};
+      const userId = metadata.userId;
+      const creditsToAdd = metadata.creditsToAdd;
+
+      console.log(
+        `💰 Pago recibido | Estado: ${status} | Usuario: ${userId} | Credits: ${creditsToAdd}`
+      );
+
+      if (status !== "approved") {
+        console.log("⚠️ Pago no aprobado. Se ignora.");
+        return res.sendStatus(200);
+      }
+
+      // ✅ Si el pago fue aprobado, actualizar créditos del usuario
+      if (userId && creditsToAdd) {
+        const userRef = db.collection("users").doc(userId);
+        const userDoc = await userRef.get();
+
+        if (userDoc.exists) {
+          const currentCredits = userDoc.data().credits || 0;
+          const newCredits = currentCredits + Number(creditsToAdd);
+          await userRef.update({ credits: newCredits });
+          console.log(`✅ Créditos actualizados: ${currentCredits} → ${newCredits}`);
+        } else {
+          console.warn(`⚠️ Usuario no encontrado: ${userId}`);
+        }
+      } else {
+        console.error("❌ Error: userId o creditsToAdd no definidos en metadata.");
+      }
+
+      return res.sendStatus(200);
+    } else {
+      console.log(`⚠️ Notificación ignorada (no es pago):`, body);
+      return res.sendStatus(200);
+    }
+  } catch (error) {
+    console.error("❌ Error en webhook:", error);
+    return res.sendStatus(500);
+  }
 });
 
-// ───────────────────────────────────────────────────────────────
-// 🔹 Iniciar servidor
-// ───────────────────────────────────────────────────────────────
+// ========================================================================
+// 🚀 INICIO DEL SERVIDOR
+// ========================================================================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Servidor escuchando en puerto ${PORT}`));
