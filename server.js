@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────
-// server.js | Webhook Mercado Pago + Firebase + CORS + Crear Preferencia
+// server.js | Webhook + Mercado Pago v2 + Firebase + CORS
 // ────────────────────────────────────────────────
 import express from "express";
 import bodyParser from "body-parser";
@@ -33,39 +33,39 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
-// 🔹 Configuración de Mercado Pago
+// 🔹 Inicializa Mercado Pago v2
 if (!process.env.MP_ACCESS_TOKEN) {
   console.error("❌ No se encontró la variable MP_ACCESS_TOKEN");
   process.exit(1);
 }
+const mp = new mercadopago(process.env.MP_ACCESS_TOKEN);
 
-mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
+// ──────────────── Endpoints ────────────────
 
-// ──────────────── Endpoint: Crear preferencia ────────────────
+// Crear preferencia
 app.post("/create-preference", async (req, res) => {
   try {
     const { amount, userId, name, email, creditsToAdd } = req.body;
 
-    if (!amount || !userId || !creditsToAdd) {
+    if (!amount || !userId) {
       return res.status(400).json({ error: "Datos incompletos" });
     }
 
     const preference = {
       items: [
         {
-          title: "Créditos Quiniela360",
+          title: `Créditos Quiniela360: ${creditsToAdd}`,
           quantity: 1,
-          currency_id: "MXN",
-          unit_price: amount,
+          unit_price: Number(amount),
         },
       ],
-      metadata: {
-        userId,
-        creditsToAdd,
-      },
       payer: {
         name,
         email,
+      },
+      metadata: {
+        userId,
+        creditsToAdd,
       },
       back_urls: {
         success: "https://qhricardo.github.io/success.html",
@@ -75,20 +75,21 @@ app.post("/create-preference", async (req, res) => {
       auto_return: "approved",
     };
 
-    const response = await mercadopago.preferences.create(preference);
+    const response = await mp.preferences.create(preference);
     res.json(response);
   } catch (error) {
     console.error("🚨 Error al crear preferencia:", error);
-    res.status(500).json({ error: "No se pudo crear la preferencia" });
+    res.status(500).json({ error: "Error al crear preferencia" });
   }
 });
 
-// ──────────────── Webhook ────────────────
+// Webhook de pagos
 app.post("/webhook", async (req, res) => {
   try {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
+    // Procesar solo pagos (tipo payment)
     if (
       webhook.topic !== "payment" &&
       webhook.type !== "payment" &&
@@ -99,21 +100,23 @@ app.post("/webhook", async (req, res) => {
       return res.sendStatus(200);
     }
 
+    // Obtener ID del pago
     const paymentId = webhook.data?.id || webhook.resource;
     if (!paymentId) {
       console.error("❌ No se encontró ID de pago");
       return res.sendStatus(400);
     }
 
-    // Consultar pago completo en Mercado Pago usando SDK
-    const { body: payment } = await mercadopago.payment.findById(paymentId);
+    // Consultar pago completo usando SDK v2
+    const { body: payment } = await mp.payment.findById(paymentId);
 
     console.log(
       `💰 Pago recibido | Estado: ${payment.status} | Usuario: ${payment.metadata?.userId} | Credits: ${payment.metadata?.creditsToAdd}`
     );
 
+    // Solo procesar pagos aprobados
     if (payment.status !== "approved") {
-      console.log(`⚠️ Pago no aprobado, se ignora`);
+      console.log("⚠️ Pago no aprobado, se ignora");
       return res.sendStatus(200);
     }
 
@@ -125,6 +128,7 @@ app.post("/webhook", async (req, res) => {
       return res.sendStatus(400);
     }
 
+    // Actualizar créditos en Firestore
     const userRef = db.collection("users").doc(userId);
     await db.runTransaction(async (t) => {
       const doc = await t.get(userRef);
