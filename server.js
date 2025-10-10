@@ -1,108 +1,103 @@
-// ────────────────────────────────────────────────
-// server.js | Webhook Mercado Pago + Firebase
-// ────────────────────────────────────────────────
+// server.js
 import express from "express";
 import bodyParser from "body-parser";
+import cors from "cors";
 import admin from "firebase-admin";
-import fetch from "node-fetch"; // Asegúrate de tener node-fetch instalado
+import mercadopago from "@mercadopago/sdk-node"; // versión nueva SDK
 
-// ──────────────── Configuraciones ────────────────
+import serviceAccount from "./serviceAccountKey.json" assert { type: "json" }; // asegúrate de subir este archivo a Render
+
 const app = express();
+const PORT = process.env.PORT || 10000;
+
+// ─── Middleware ─────────────────────────────
 app.use(bodyParser.json());
 
-// 🔹 Inicializa Firebase con variable de entorno
-if (!admin.apps.length) {
-  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-    console.error("❌ No se encontró la variable FIREBASE_SERVICE_ACCOUNT");
-    process.exit(1);
-  }
+// Permitir solicitudes desde tu frontend
+app.use(cors({
+  origin: "https://qhricardo.github.io", // tu dominio frontend
+  methods: ["GET", "POST", "OPTIONS"],
+}));
 
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
-
+// ─── Firebase Admin ────────────────────────
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
-// 🔹 Configuración de Mercado Pago
-if (!process.env.MP_ACCESS_TOKEN) {
-  console.error("❌ No se encontró la variable MP_ACCESS_TOKEN");
-  process.exit(1);
-}
-const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
+// ─── MercadoPago ──────────────────────────
+mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN); // tu token de producción o sandbox
 
-// ──────────────── Webhook ────────────────
-app.post("/webhook", async (req, res) => {
+// ─── Rutas ────────────────────────────────
+app.post("/create-preference", async (req, res) => {
   try {
-    const webhook = req.body;
-    console.log("📩 Webhook recibido:", webhook);
+    const { amount, userId, name, email, creditsToAdd } = req.body;
 
-    // Procesar solo pagos (tipo payment)
-    if (
-      webhook.topic !== "payment" &&
-      webhook.type !== "payment" &&
-      webhook.action !== "payment.created" &&
-      webhook.action !== "payment.updated"
-    ) {
-      console.log("⚠️ Notificación ignorada (no es pago)");
-      return res.sendStatus(200);
+    if (!amount || !userId) {
+      return res.status(400).json({ error: "Faltan datos requeridos" });
     }
 
-    // Obtener ID del pago
-    const paymentId = webhook.data?.id || webhook.resource;
-    if (!paymentId) {
-      console.error("❌ No se encontró ID de pago");
-      return res.sendStatus(400);
-    }
-
-    // Consultar pago completo en Mercado Pago
-    const mpResponse = await fetch(
-      `https://api.mercadolibre.com/payments/${paymentId}`,
-      {
-        headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` },
-      }
-    );
-    const payment = await mpResponse.json();
-    console.log(
-      `💰 Pago recibido | Estado: ${payment.status} | Usuario: ${payment.metadata?.userId} | Credits: ${payment.metadata?.creditsToAdd}`
-    );
-
-    // Solo procesar pagos aprobados
-    if (payment.status !== "approved") {
-      console.log(`⚠️ Pago no aprobado, se ignora`);
-      return res.sendStatus(200);
-    }
-
-    // Obtener userId y creditsToAdd desde metadata
-    const userId = payment.metadata?.userId;
-    const creditsToAdd = Number(payment.metadata?.creditsToAdd) || 0;
-
-    if (!userId || creditsToAdd <= 0) {
-      console.error("❌ userId o creditsToAdd inválidos en metadata");
-      return res.sendStatus(400);
-    }
-
-    // Actualizar créditos en Firestore
-    const userRef = db.collection("users").doc(userId);
-    await db.runTransaction(async (t) => {
-      const doc = await t.get(userRef);
-      if (!doc.exists) {
-        throw new Error("Usuario no encontrado en Firestore");
-      }
-      const currentCredits = doc.data().credits || 0;
-      t.update(userRef, { credits: currentCredits + creditsToAdd });
+    // Ejemplo: crear preferencia
+    const preference = await mercadopago.preferences.create({
+      items: [
+        {
+          title: `Créditos ${creditsToAdd}`,
+          quantity: 1,
+          unit_price: amount,
+        },
+      ],
+      payer: {
+        name,
+        email,
+      },
+      back_urls: {
+        success: "https://qhricardo.github.io/success",
+        failure: "https://qhricardo.github.io/failure",
+        pending: "https://qhricardo.github.io/pending",
+      },
+      auto_return: "approved",
     });
 
-    console.log(`✅ Créditos actualizados para ${userId}: +${creditsToAdd}`);
-    res.sendStatus(200);
+    res.json(preference.body);
   } catch (error) {
-    console.error("❌ Error en webhook:", error);
-    res.sendStatus(500);
+    console.error("🚨 Error al crear preferencia:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-// ──────────────── Iniciar servidor ────────────────
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
+// ─── Webhook de pagos ─────────────────────
+app.post("/webhook", async (req, res) => {
+  try {
+    const event = req.body;
+
+    console.log("📩 Webhook recibido:", event);
+
+    if (event.type === "payment") {
+      const paymentId = event.data.id;
+
+      // Validar que el documento existe antes de usarlo
+      if (!paymentId || typeof paymentId !== "string") {
+        console.warn("⚠️ PaymentId inválido:", paymentId);
+        return res.status(400).send("Invalid payment id");
+      }
+
+      const userRef = db.collection("users").doc(paymentId); // ejemplo, adapta según tu lógica
+      await userRef.set({ status: "paid" }, { merge: true });
+
+      console.log("💰 Pago registrado en Firestore:", paymentId);
+    } else {
+      console.log("⚠️ Notificación ignorada (no es pago):", event);
+    }
+
+    res.status(200).send("OK");
+  } catch (error) {
+    console.error("❌ Error en webhook:", error);
+    res.status(500).send(error.message);
+  }
+});
+
+// ─── Iniciar servidor ─────────────────────
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor activo en puerto ${PORT}`);
+});
