@@ -38,7 +38,7 @@ if (!process.env.MP_ACCESS_TOKEN) {
   console.error("❌ No se encontró la variable MP_ACCESS_TOKEN");
   process.exit(1);
 }
-const mp = new mercadopago(process.env.MP_ACCESS_TOKEN);
+mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
 
 // ──────────────── Endpoints ────────────────
 
@@ -51,31 +51,21 @@ app.post("/create-preference", async (req, res) => {
       return res.status(400).json({ error: "Datos incompletos" });
     }
 
-    const preference = {
-      items: [
-        {
-          title: `Créditos Quiniela360: ${creditsToAdd}`,
-          quantity: 1,
-          unit_price: Number(amount),
-        },
-      ],
-      payer: {
-        name,
-        email,
-      },
-      metadata: {
-        userId,
-        creditsToAdd,
-      },
-      back_urls: {
-        success: "https://qhricardo.github.io/success.html",
-        failure: "https://qhricardo.github.io/failure.html",
-        pending: "https://qhricardo.github.io/pending.html",
-      },
-      auto_return: "approved",
-    };
+   const preference = {
+  items: [
+    { title: `Créditos Quiniela360: ${creditsToAdd}`, quantity: 1, unit_price: Number(amount) },
+  ],
+  payer: { name, email },
+  metadata: { userId, creditsToAdd },
+  back_urls: {
+    success: "https://qhricardo.github.io/success.html",
+    failure: "https://qhricardo.github.io/failure.html",
+    pending: "https://qhricardo.github.io/pending.html",
+  },
+  auto_return: "approved",
+};
 
-    const response = await mp.preferences.create(preference);
+const response = await mercadopago.preferences.create(preference);
     res.json(response);
   } catch (error) {
     console.error("🚨 Error al crear preferencia:", error);
