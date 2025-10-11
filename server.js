@@ -84,6 +84,10 @@ app.post("/webhook", async (req, res) => {
       return res.sendStatus(400);
     }
 
+  // Obtener el pago completo
+    const { body: payment } = await new Payment(mpClient).get({ id: paymentId });
+    console.log("🔹 Pago recibido:", payment);
+    
     // Consulta el pago con SDK v2
     const payment = await new Payment(mpClient).get({ id: paymentId });
     console.log(
