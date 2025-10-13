@@ -103,45 +103,48 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
 <button id="comprarCreditos">Comprar 3 Créditos</button>
 
 <script>
-document.getElementById("comprarCreditos").addEventListener("click", async () => {
-  // Verificar que el usuario esté logueado
-  if (!currentUser) {
-    alert("Debes iniciar sesión para comprar créditos");
-    return;
-  }
+  document.getElementById("comprarCreditos").addEventListener("click", async () => {
+    // Verificar que el usuario esté logueado
+    if (!currentUser) {
+      alert("Debes iniciar sesión para comprar créditos");
+      return;
+    }
 
-  // Preparamos los datos para enviar al backend
+    // Datos a enviar al backend
     const body = {
-        amount: 10, // 💵 precio en MXN
-        userId: currentUser.uid,
-        name: currentUser.displayName || "Usuario",
-        email: currentUser.email || "",
-        creditsToAdd: 3, // 🔸 número de créditos a sumar al aprobarse
-      };
+      amount: 10,                  // 💵 precio en MXN
+      userId: currentUser.uid,     // 🔸 se usará como external_reference
+      name: currentUser.displayName || "Usuario",
+      email: currentUser.email || "",
+      creditsToAdd: 3              // 🔹 créditos a sumar
+    };
 
     try {
-        console.log("📤 Enviando a backend:", body);
-        const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
+      console.log("📤 Enviando a backend:", body);
 
-        const data = await res.json();
+      const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
 
-        if (data.init_point) {
-          console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
-          window.location.href = data.init_point;
-        } else {
-          console.error("❌ Respuesta del servidor:", data);
-          alert("No se pudo generar la preferencia de pago.");
-        }
-      } catch (error) {
-        console.error("🚨 Error al crear preferencia:", error);
-        alert("Ocurrió un error al intentar crear la preferencia.");
+      const data = await res.json();
+
+      if (data.init_point) {
+        console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
+        window.location.href = data.init_point;
+      } else {
+        console.error("❌ Respuesta del servidor:", data);
+        alert("No se pudo generar la preferencia de pago.");
       }
-    });
-  </script>
+
+    } catch (error) {
+      console.error("🚨 Error al crear preferencia:", error);
+      alert("Ocurrió un error al intentar crear la preferencia.");
+    }
+  });
+</script>
+
      </div>
 
     <div style="flex: 3 1 600px; padding: 10px;" class="container">
@@ -567,6 +570,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
