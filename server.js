@@ -126,8 +126,8 @@ app.post("/webhook", async (req, res) => {
       await db.runTransaction(async (t) => {
         const doc = await t.get(userRef);
         if (!doc.exists) throw new Error("Usuario no encontrado en Firestore");
-        const currentCredits = doc.data().credits || 0;
-        t.update(userRef, { credits: currentCredits + creditsToAdd });
+        const currentCredits = doc.data().creditos || 0;
+        t.update(userRef, { creditos: currentCredits + creditsToAdd });
       });
 
       console.log(`✅ Créditos actualizados para ${userId}: +${creditsToAdd}`);
