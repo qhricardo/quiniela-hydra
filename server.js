@@ -53,12 +53,13 @@ app.post("/create-preference", async (req, res) => {
           },
         ],
         payer: { name, email },
-        metadata: { userId, creditsToAdd },
+        external_reference: JSON.stringify({ userId, creditsToAdd }),
         back_urls: {
           success: "https://qhricardo.github.io/quiniela-hydra/success.html",
           failure: "https://qhricardo.github.io/quiniela-hydra/index.html",
           pending: "https://qhricardo.github.io/quiniela-hydra/index.html",
         },
+        notification_url: "https://quiniela-hydra.onrender.com/webhook",
         auto_return: "approved",
       },
     });
@@ -74,81 +75,79 @@ app.post("/create-preference", async (req, res) => {
   }
 });
 
+
 // ──────────────── Endpoint: Webhook de pagos ────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // ── Ignorar notificaciones que no sean de pago ──
     const topic = webhook.topic || webhook.type || webhook.action;
     if (!topic || !topic.includes("payment")) {
       console.log("⚠️ Notificación ignorada (no es de pago)");
       return res.sendStatus(200);
     }
 
-    // ── Obtener ID de pago ──
     const paymentId = webhook.data?.id || webhook.resource;
     if (!paymentId) {
       console.error("❌ No se encontró ID de pago");
       return res.sendStatus(400);
     }
 
-    // ── Manejar pruebas de Mercado Pago ──
-    if (paymentId === "123456") {
-      console.log("🧪 Webhook de prueba recibido, respondiendo OK");
-      return res.sendStatus(200);
-    }
+    const payment = await new Payment(mpClient).get({ id: paymentId });
+    console.log("🔍 Detalle del pago:", payment);
 
-    // ── Consultar el pago real ──
-    let payment;
+    // Intentar leer metadata desde payment.metadata o external_reference
+    let metadata = {};
     try {
-      payment = await new Payment(mpClient).get({ id: paymentId });
-    } catch (err) {
-      console.warn(`⚠️ No se encontró el pago con ID ${paymentId}:`, err.message);
-      return res.sendStatus(200); // evitar error 500 si el ID no existe
+      if (payment.metadata?.userId) {
+        metadata = payment.metadata;
+      } else if (payment.external_reference) {
+        metadata = JSON.parse(payment.external_reference);
+      }
+    } catch (e) {
+      console.warn("⚠️ No se pudo leer metadata del pago:", e);
     }
 
     console.log(
-      `💰 Pago recibido | Estado: ${payment.status} | Usuario: ${payment.metadata?.userId} | Créditos: ${payment.metadata?.creditsToAdd}`
+      `💰 Pago recibido | Estado: ${payment.status} | Usuario: ${metadata.userId} | Créditos: ${metadata.creditsToAdd}`
     );
 
-    // ── Guardar siempre el pago en Firestore ──
+    // Guardar en Firestore
     await db.collection("payments").doc(`payment_${payment.id}`).set({
       id: payment.id,
       status: payment.status,
-      userId: payment.metadata?.userId || null,
-      creditsToAdd: Number(payment.metadata?.creditsToAdd) || 0,
+      userId: metadata.userId || null,
+      creditsToAdd: Number(metadata.creditsToAdd) || 0,
       amount: payment.transaction_amount || 0,
       date: payment.date_created || new Date().toISOString(),
     });
 
-    // ── Actualizar créditos solo si el pago fue aprobado ──
+    // Si el pago está aprobado, actualiza créditos
     if (
       payment.status === "approved" &&
-      payment.metadata?.userId &&
-      payment.metadata?.creditsToAdd > 0
+      metadata.userId &&
+      metadata.creditsToAdd > 0
     ) {
-      const userRef = db.collection("users").doc(payment.metadata.userId);
+      const userRef = db.collection("users").doc(metadata.userId);
       await db.runTransaction(async (t) => {
         const doc = await t.get(userRef);
         if (!doc.exists) throw new Error("Usuario no encontrado en Firestore");
         const currentCredits = doc.data().credits || 0;
         t.update(userRef, {
-          credits: currentCredits + Number(payment.metadata.creditsToAdd),
+          credits: currentCredits + Number(metadata.creditsToAdd),
         });
       });
 
-      console.log(`✅ Créditos actualizados para ${payment.metadata.userId}: +${payment.metadata.creditsToAdd}`);
+      console.log(`✅ Créditos actualizados para ${metadata.userId}: +${metadata.creditsToAdd}`);
     }
 
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error en webhook:", error);
-    res.sendStatus(200); // ✅ responder 200 aunque haya error interno
+    res.sendStatus(500);
   }
 });
-
 // ──────────────── Servidor ────────────────
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
