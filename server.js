@@ -80,27 +80,40 @@ app.post("/webhook", async (req, res) => {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // Solo continuar si el evento es de pago
+    // ── Ignorar notificaciones que no sean de pago ──
     const topic = webhook.topic || webhook.type || webhook.action;
     if (!topic || !topic.includes("payment")) {
       console.log("⚠️ Notificación ignorada (no es de pago)");
       return res.sendStatus(200);
     }
 
-    // Obtener el ID de pago
+    // ── Obtener ID de pago ──
     const paymentId = webhook.data?.id || webhook.resource;
     if (!paymentId) {
       console.error("❌ No se encontró ID de pago");
       return res.sendStatus(400);
     }
 
-    // Consultar el pago en Mercado Pago
-    const payment = await new Payment(mpClient).get({ id: paymentId });
+    // ── Manejar pruebas de Mercado Pago ──
+    if (paymentId === "123456") {
+      console.log("🧪 Webhook de prueba recibido, respondiendo OK");
+      return res.sendStatus(200);
+    }
+
+    // ── Consultar el pago real ──
+    let payment;
+    try {
+      payment = await new Payment(mpClient).get({ id: paymentId });
+    } catch (err) {
+      console.warn(`⚠️ No se encontró el pago con ID ${paymentId}:`, err.message);
+      return res.sendStatus(200); // evitar error 500 si el ID no existe
+    }
+
     console.log(
       `💰 Pago recibido | Estado: ${payment.status} | Usuario: ${payment.metadata?.userId} | Créditos: ${payment.metadata?.creditsToAdd}`
     );
 
-    // Guardar siempre en Firestore
+    // ── Guardar siempre el pago en Firestore ──
     await db.collection("payments").doc(`payment_${payment.id}`).set({
       id: payment.id,
       status: payment.status,
@@ -110,7 +123,7 @@ app.post("/webhook", async (req, res) => {
       date: payment.date_created || new Date().toISOString(),
     });
 
-    // Solo procesar pagos aprobados
+    // ── Actualizar créditos solo si el pago fue aprobado ──
     if (
       payment.status === "approved" &&
       payment.metadata?.userId &&
@@ -121,7 +134,9 @@ app.post("/webhook", async (req, res) => {
         const doc = await t.get(userRef);
         if (!doc.exists) throw new Error("Usuario no encontrado en Firestore");
         const currentCredits = doc.data().credits || 0;
-        t.update(userRef, { credits: currentCredits + Number(payment.metadata.creditsToAdd) });
+        t.update(userRef, {
+          credits: currentCredits + Number(payment.metadata.creditsToAdd),
+        });
       });
 
       console.log(`✅ Créditos actualizados para ${payment.metadata.userId}: +${payment.metadata.creditsToAdd}`);
@@ -130,7 +145,7 @@ app.post("/webhook", async (req, res) => {
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error en webhook:", error);
-    res.sendStatus(500);
+    res.sendStatus(200); // ✅ responder 200 aunque haya error interno
   }
 });
 
