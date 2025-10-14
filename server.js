@@ -1,6 +1,6 @@
 // ────────────────────────────────────────────────
 // server.js | Webhook + Mercado Pago v2 + Firebase + CORS
-// Versión final para Quiniela360
+// Versión final funcional para Quiniela360 (Render)
 // ────────────────────────────────────────────────
 
 import express from "express";
@@ -9,11 +9,11 @@ import admin from "firebase-admin";
 import cors from "cors";
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 
-// ──────────────── CONFIGURACIONES BASE ────────────────
+// ──────────────── CONFIGURACIÓN BASE ────────────────
 const app = express();
 app.use(bodyParser.json());
 
-// 🔹 Configurar CORS para tu frontend
+// 🔹 CORS: Permitir solo tu frontend
 app.use(cors({
   origin: "https://qhricardo.github.io",
   methods: ["GET", "POST", "OPTIONS"],
@@ -27,6 +27,7 @@ if (!admin.apps.length) {
   }
 
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
@@ -36,6 +37,11 @@ const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
 // ──────────────── MERCADO PAGO ────────────────
+if (!process.env.MP_ACCESS_TOKEN) {
+  console.error("❌ No se encontró la variable MP_ACCESS_TOKEN");
+  process.exit(1);
+}
+
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
 });
@@ -105,10 +111,10 @@ app.post("/webhook", async (req, res) => {
       return res.sendStatus(400);
     }
 
-    // 🔍 Consultar el pago real desde Mercado Pago
+    // 🔍 Consultar pago desde Mercado Pago
     const payment = await new Payment(mpClient).get({ id: paymentId });
 
-    // 🔹 Leer datos del pago
+    // 🔹 Extraer datos del pago
     let userId = null;
     let creditsToAdd = 0;
 
@@ -124,7 +130,7 @@ app.post("/webhook", async (req, res) => {
 
     console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
 
-    // 🔹 Guardar registro del pago en Firestore
+    // 🔹 Guardar registro del pago
     await db.collection("payments").doc(`payment_${payment.id}`).set({
       id: payment.id,
       status: payment.status,
@@ -134,29 +140,29 @@ app.post("/webhook", async (req, res) => {
       date: payment.date_created || new Date().toISOString(),
     });
 
-   // 🔹 Si el pago está aprobado, actualizar créditos
-if (payment.status === "approved" && userId && creditsToAdd > 0) {
-  try {
-    const userRef = db.collection("users").doc(userId);
-    const userDoc = await userRef.get();
+    // 🔹 Si el pago fue aprobado, actualizar créditos
+    if (payment.status === "approved" && userId && creditsToAdd > 0) {
+      try {
+        const userRef = db.collection("users").doc(userId);
+        const userDoc = await userRef.get();
 
-    if (userDoc.exists) {
-      await userRef.set({
-        creditos: admin.firestore.FieldValue.increment(creditsToAdd),
-        updatedAt: new Date().toISOString(),
-      }, { merge: true });
+        if (userDoc.exists) {
+          await userRef.set({
+            creditos: admin.firestore.FieldValue.increment(creditsToAdd),
+            updatedAt: new Date().toISOString(),
+          }, { merge: true });
 
-      console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
+          console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
+        } else {
+          console.warn(`⚠️ No se encontró documento de usuario con ID = ${userId}`);
+        }
+      } catch (err) {
+        console.error(`❌ Error actualizando créditos para ${userId}:`, err);
+      }
     } else {
-      console.warn(`⚠️ No se encontró usuario con ID ${userId}`);
+      console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
     }
-  } catch (err) {
-    console.error(`❌ Error actualizando créditos para ${userId}:`, err);
-  }
-} else {
-  console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
-}
-    
+
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error general en webhook:", error);
