@@ -1,5 +1,6 @@
 // ────────────────────────────────────────────────
 // server.js | Webhook + Mercado Pago v2 + Firebase + CORS
+// Optimizado por ChatGPT para Quiniela360
 // ────────────────────────────────────────────────
 
 import express from "express";
@@ -8,17 +9,17 @@ import admin from "firebase-admin";
 import cors from "cors";
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 
-// ──────────────── Configuraciones base ────────────────
+// ──────────────── CONFIGURACIONES BASE ────────────────
 const app = express();
 app.use(bodyParser.json());
 
-// 🔹 CORS: permitir tu frontend
+// 🔹 Configurar CORS para tu frontend
 app.use(cors({
-  origin: "https://qhricardo.github.io", // frontend en GitHub Pages
+  origin: "https://qhricardo.github.io", // tu frontend en GitHub Pages
   methods: ["GET", "POST", "OPTIONS"],
 }));
 
-// ──────────────── Firebase ────────────────
+// ──────────────── FIREBASE ────────────────
 if (!admin.apps.length) {
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
     console.error("❌ No se encontró la variable FIREBASE_SERVICE_ACCOUNT");
@@ -26,7 +27,6 @@ if (!admin.apps.length) {
   }
 
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
@@ -35,7 +35,7 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
-// ──────────────── Mercado Pago ────────────────
+// ──────────────── MERCADO PAGO ────────────────
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
 });
@@ -68,6 +68,8 @@ app.post("/create-preference", async (req, res) => {
       },
     });
 
+    console.log(`🧾 Preferencia creada para ${name}: $${amount} MXN`);
+
     res.json({
       id: preference.id,
       init_point: preference.init_point,
@@ -85,7 +87,7 @@ app.post("/webhook", async (req, res) => {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // 🧪 Manejo especial para pruebas de Mercado Pago
+    // 🧪 Webhook de prueba
     if (req.body.action === "payment.updated" && req.body.data.id === "123456") {
       console.log("🧪 Webhook de prueba recibido correctamente");
       return res.sendStatus(200);
@@ -103,10 +105,10 @@ app.post("/webhook", async (req, res) => {
       return res.sendStatus(400);
     }
 
-    // 🔍 Consultar pago real en Mercado Pago
+    // 🔍 Consultar el pago real desde Mercado Pago
     const payment = await new Payment(mpClient).get({ id: paymentId });
 
-    // 🔹 Leer external_reference
+    // 🔹 Leer datos del pago
     let userId, creditsToAdd;
     if (payment.external_reference) {
       try {
@@ -121,7 +123,7 @@ app.post("/webhook", async (req, res) => {
 
     console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
 
-    // 🔹 Guardar el pago en Firestore
+    // 🔹 Guardar registro del pago en Firestore
     await db.collection("payments").doc(`payment_${payment.id}`).set({
       id: payment.id,
       status: payment.status,
@@ -131,27 +133,32 @@ app.post("/webhook", async (req, res) => {
       date: payment.date_created || new Date().toISOString(),
     });
 
-    // 🔹 Si está aprobado, actualiza o crea créditos
+    // 🔹 Si el pago está aprobado, actualiza los créditos del usuario
     if (payment.status === "approved" && userId && creditsToAdd > 0) {
-      const userRef = db.collection("users").doc(userId);
-
-      await db.runTransaction(async (t) => {
-        const doc = await t.get(userRef);
-        const currentCredits = doc.exists ? (doc.data().creditos || 0) : 0;
-        const newCredits = currentCredits + creditsToAdd;
-        t.set(userRef, { creditos: newCredits }, { merge: true });
-      });
-
-      console.log(`✅ Créditos actualizados (o creados) para ${userId}: +${creditsToAdd}`);
+      try {
+        const userRef = db.collection("users").doc(userId);
+        await userRef.set(
+          {
+            credits: admin.firestore.FieldValue.increment(creditsToAdd),
+            updatedAt: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+        console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
+      } catch (err) {
+        console.error(`❌ Error actualizando créditos para ${userId}:`, err);
+      }
+    } else {
+      console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
     }
 
     res.sendStatus(200);
   } catch (error) {
-    console.error("❌ Error en webhook:", error);
+    console.error("❌ Error general en webhook:", error);
     res.sendStatus(500);
   }
 });
 
-// ──────────────── Servidor ────────────────
+// ──────────────── SERVIDOR ────────────────
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
