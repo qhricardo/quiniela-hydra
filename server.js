@@ -92,6 +92,12 @@ app.post("/webhook", async (req, res) => {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
+    // 🧪 Webhook de prueba (para simulaciones)
+    if (req.body.action === "payment.updated" && req.body.data?.id === "123456") {
+      console.log("🧪 Webhook de prueba recibido correctamente");
+      return res.sendStatus(200);
+    }
+
     const topic = webhook.topic || webhook.type || webhook.action;
     if (!topic || !topic.includes("payment")) {
       console.log("⚠️ Notificación ignorada (no es de pago)");
@@ -134,12 +140,11 @@ app.post("/webhook", async (req, res) => {
       date: paymentData.date_created || new Date().toISOString(),
     });
 
-    // 🔹 Si el pago está aprobado, actualiza los créditos del usuario usando Admin SDK
+    // 🔹 Incrementar creditos solo si el pago está aprobado y los datos existen
     if (paymentData.status === "approved" && userId && creditsToAdd > 0) {
       try {
         const userRef = db.collection("users").doc(userId);
 
-        // Incrementa los créditos correctamente usando el campo `creditos`
         await userRef.set(
           {
             creditos: admin.firestore.FieldValue.increment(creditsToAdd),
