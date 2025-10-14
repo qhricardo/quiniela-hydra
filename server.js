@@ -1,6 +1,6 @@
 // ────────────────────────────────────────────────
 // server.js | Webhook + Mercado Pago v2 + Firebase + CORS
-// Versión final para Quiniela360
+// Adaptado para Quiniela360
 // ────────────────────────────────────────────────
 
 import express from "express";
@@ -14,7 +14,7 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use(cors({
-  origin: "https://qhricardo.github.io", // tu frontend
+  origin: "https://qhricardo.github.io",
   methods: ["GET", "POST", "OPTIONS"],
 }));
 
@@ -33,28 +33,28 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
-// ──────────────── MERCADO PAGO ────────────────
-if (!process.env.MP_ACCESS_TOKEN) {
-  console.error("❌ No se encontró la variable MP_ACCESS_TOKEN");
-  process.exit(1);
-}
-
-mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
+// ──────────────── MERCADO PAGO V2 ────────────────
+const mpClient = new mercadopago.MercadoPago({
+  accessToken: process.env.MP_ACCESS_TOKEN,
+});
 console.log("✅ Mercado Pago inicializado correctamente");
 
 // ──────────────── ENDPOINT: Crear preferencia ────────────────
 app.post("/create-preference", async (req, res) => {
   try {
     const { amount, userId, name, email, creditsToAdd } = req.body;
+
     console.log("📤 Creando preferencia:", req.body);
 
-    const preference = await mercadopago.preferences.create({
-      items: [{
-        title: `Créditos Quiniela360 (${creditsToAdd})`,
-        quantity: 1,
-        currency_id: "MXN",
-        unit_price: Number(amount),
-      }],
+    const preference = await mpClient.preferences.create({
+      items: [
+        {
+          title: `Créditos Quiniela360 (${creditsToAdd})`,
+          quantity: 1,
+          currency_id: "MXN",
+          unit_price: Number(amount),
+        },
+      ],
       payer: { name, email },
       external_reference: JSON.stringify({ userId, creditsToAdd }),
       back_urls: {
@@ -66,6 +66,7 @@ app.post("/create-preference", async (req, res) => {
     });
 
     console.log(`🧾 Preferencia creada para ${name}: $${amount} MXN`);
+
     res.json({
       id: preference.body.id,
       init_point: preference.body.init_point,
@@ -83,53 +84,67 @@ app.post("/webhook", async (req, res) => {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // Ignorar si no es de pago
     const topic = webhook.topic || webhook.type || webhook.action;
-    if (!topic || !topic.includes("payment")) return res.sendStatus(200);
+    if (!topic || !topic.includes("payment")) {
+      console.log("⚠️ Notificación ignorada (no es de pago)");
+      return res.sendStatus(200);
+    }
 
     const paymentId = webhook.data?.id || webhook.resource;
-    if (!paymentId) return res.sendStatus(400);
+    if (!paymentId) {
+      console.error("❌ No se encontró ID de pago");
+      return res.sendStatus(400);
+    }
 
-    // 🔍 Consultar pago real
-    const payment = await mercadopago.payment.get(paymentId);
-    const paymentData = payment.body || payment.response;
+    // 🔍 Consultar el pago real desde Mercado Pago
+    const { body: payment } = await mpClient.payment.get(paymentId);
 
+    // 🔹 Leer userId y creditsToAdd desde external_reference
     let userId = null;
     let creditsToAdd = 0;
 
-    // Leer datos desde external_reference
-    if (paymentData.external_reference) {
+    if (payment.external_reference) {
       try {
-        const meta = JSON.parse(paymentData.external_reference);
+        const meta = JSON.parse(payment.external_reference);
         userId = meta.userId;
         creditsToAdd = Number(meta.creditsToAdd) || 0;
-      } catch {
-        console.warn("⚠️ external_reference malformado:", paymentData.external_reference);
+      } catch (err) {
+        console.warn("⚠️ external_reference malformado:", payment.external_reference);
       }
     }
 
-    console.log(`💰 Pago recibido | Estado: ${paymentData.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
+    console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
 
-    // Guardar registro del pago
-    await db.collection("payments").doc(`payment_${paymentData.id}`).set({
-      id: paymentData.id,
-      status: paymentData.status,
+    // 🔹 Guardar registro del pago en Firestore
+    await db.collection("payments").doc(`payment_${payment.id}`).set({
+      id: payment.id,
+      status: payment.status,
       userId: userId || null,
       creditsToAdd,
-      amount: paymentData.transaction_amount || 0,
-      date: paymentData.date_created || new Date().toISOString(),
+      amount: payment.transaction_amount || 0,
+      date: payment.date_created || new Date().toISOString(),
     });
 
-    // Incrementar créditos en Firestore si aprobado
-    if (paymentData.status === "approved" && userId && creditsToAdd > 0) {
+    // 🔹 Actualizar créditos si el pago está aprobado
+    if (payment.status === "approved" && userId && creditsToAdd > 0) {
       const userRef = db.collection("users").doc(userId);
+      const userDoc = await userRef.get();
 
-      await userRef.set({
-        creditos: admin.firestore.FieldValue.increment(creditsToAdd),
-        updatedAt: new Date().toISOString(),
-      }, { merge: true });
+      if (!userDoc.exists) {
+        console.warn(`⚠️ Documento de usuario no encontrado: uid=${userId} → Se creará uno nuevo.`);
+      }
+
+      await userRef.set(
+        {
+          creditos: admin.firestore.FieldValue.increment(creditsToAdd),
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
 
       console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
+    } else {
+      console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
     }
 
     res.sendStatus(200);
