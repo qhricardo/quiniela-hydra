@@ -1,6 +1,6 @@
 // ────────────────────────────────────────────────
 // server.js | Webhook + Mercado Pago v2 + Firebase + CORS
-// Optimizado por ChatGPT para Quiniela360
+// Optimizado para Quiniela360
 // ────────────────────────────────────────────────
 
 import express from "express";
@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 
 // 🔹 Configurar CORS para tu frontend
 app.use(cors({
-  origin: "https://qhricardo.github.io", // tu frontend en GitHub Pages
+  origin: "https://qhricardo.github.io",
   methods: ["GET", "POST", "OPTIONS"],
 }));
 
@@ -36,6 +36,11 @@ const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
 // ──────────────── MERCADO PAGO ────────────────
+if (!process.env.MP_ACCESS_TOKEN) {
+  console.error("❌ No se encontró la variable MP_ACCESS_TOKEN");
+  process.exit(1);
+}
+
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
 });
@@ -87,12 +92,6 @@ app.post("/webhook", async (req, res) => {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // 🧪 Webhook de prueba
-    if (req.body.action === "payment.updated" && req.body.data.id === "123456") {
-      console.log("🧪 Webhook de prueba recibido correctamente");
-      return res.sendStatus(200);
-    }
-
     const topic = webhook.topic || webhook.type || webhook.action;
     if (!topic || !topic.includes("payment")) {
       console.log("⚠️ Notificación ignorada (no es de pago)");
@@ -106,42 +105,44 @@ app.post("/webhook", async (req, res) => {
     }
 
     // 🔍 Consultar el pago real desde Mercado Pago
-    const payment = await new Payment(mpClient).get({ id: paymentId });
+    const paymentData = (await new Payment(mpClient).get({ id: paymentId })).body;
 
     // 🔹 Leer datos del pago
-    let userId, creditsToAdd;
-    if (payment.external_reference) {
+    let userId = null;
+    let creditsToAdd = 0;
+    if (paymentData.external_reference) {
       try {
-        const meta = JSON.parse(payment.external_reference);
+        const meta = JSON.parse(paymentData.external_reference);
         userId = meta.userId;
         creditsToAdd = Number(meta.creditsToAdd) || 0;
       } catch {
-        userId = payment.external_reference;
+        userId = paymentData.external_reference;
         creditsToAdd = 0;
       }
     }
 
-    console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
+    console.log(`💰 Pago recibido | Estado: ${paymentData.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
 
     // 🔹 Guardar registro del pago en Firestore
-    await db.collection("payments").doc(`payment_${payment.id}`).set({
-      id: payment.id,
-      status: payment.status,
+    const paymentRef = db.collection("payments").doc(`payment_${paymentData.id}`);
+    await paymentRef.set({
+      id: paymentData.id,
+      status: paymentData.status,
       userId: userId || null,
       creditsToAdd,
-      amount: payment.transaction_amount || 0,
-      date: payment.date_created || new Date().toISOString(),
+      amount: paymentData.transaction_amount || 0,
+      date: paymentData.date_created || new Date().toISOString(),
     });
 
     // 🔹 Si el pago está aprobado, actualiza los créditos del usuario usando Admin SDK
-    if (payment.status === "approved" && userId && creditsToAdd > 0) {
+    if (paymentData.status === "approved" && userId && creditsToAdd > 0) {
       try {
         const userRef = db.collection("users").doc(userId);
 
-        // Incrementa los créditos sin bloquearse por reglas de seguridad
+        // Incrementa los créditos correctamente usando el campo `creditos`
         await userRef.set(
           {
-            credits: admin.firestore.FieldValue.increment(creditsToAdd),
+            creditos: admin.firestore.FieldValue.increment(creditsToAdd),
             updatedAt: new Date().toISOString(),
           },
           { merge: true }
@@ -149,10 +150,10 @@ app.post("/webhook", async (req, res) => {
 
         console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
       } catch (err) {
-        console.error(`❌ Error actualizando créditos para ${userId}:`, err);
+        console.error(`❌ Error actualizando creditos para ${userId}:`, err);
       }
     } else {
-      console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
+      console.log("ℹ️ No se actualizan creditos (pago no aprobado o datos faltantes)");
     }
 
     res.sendStatus(200);
