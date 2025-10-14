@@ -87,12 +87,6 @@ app.post("/webhook", async (req, res) => {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // 🧪 Webhook de prueba
-    if (req.body.action === "payment.updated" && req.body.data.id === "123456") {
-      console.log("🧪 Webhook de prueba recibido correctamente");
-      return res.sendStatus(200);
-    }
-
     const topic = webhook.topic || webhook.type || webhook.action;
     if (!topic || !topic.includes("payment")) {
       console.log("⚠️ Notificación ignorada (no es de pago)");
@@ -108,14 +102,14 @@ app.post("/webhook", async (req, res) => {
     // 🔍 Consultar el pago real desde Mercado Pago
     const payment = await new Payment(mpClient).get({ id: paymentId });
 
-    // 🔹 Leer datos del pago
+    // 🔹 Leer datos del pago desde external_reference
     let userId = null;
     let creditsToAdd = 0;
 
     try {
       if (payment.external_reference) {
         const meta = JSON.parse(payment.external_reference);
-        userId = meta.userId;
+        userId = meta.userId; // Esto debe coincidir con el ID del documento en Firestore
         creditsToAdd = Number(meta.creditsToAdd) || 0;
       }
     } catch {
@@ -134,23 +128,18 @@ app.post("/webhook", async (req, res) => {
       date: payment.date_created || new Date().toISOString(),
     });
 
-    // 🔹 Si el pago está aprobado, actualizar créditos usando uid
+    // 🔹 Si el pago está aprobado, actualiza los créditos directamente usando el ID del documento
     if (payment.status === "approved" && userId && creditsToAdd > 0) {
       try {
-        // Buscar el documento por el campo uid
-        const userSnapshot = await db.collection("users").where("uid", "==", userId).get();
+        const userRef = db.collection("users").doc(userId); // <-- ID directo del documento
 
-        if (!userSnapshot.empty) {
-          const userDoc = userSnapshot.docs[0];
-          await userDoc.ref.set({
-            creditos: admin.firestore.FieldValue.increment(creditsToAdd),
-            updatedAt: new Date().toISOString(),
-          }, { merge: true });
+        // Incrementa los créditos
+        await userRef.set({
+          creditos: admin.firestore.FieldValue.increment(creditsToAdd),
+          updatedAt: new Date().toISOString(),
+        }, { merge: true });
 
-          console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
-        } else {
-          console.warn(`⚠️ No se encontró documento de usuario con uid=${userId}`);
-        }
+        console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
       } catch (err) {
         console.error(`❌ Error actualizando créditos para ${userId}:`, err);
       }
@@ -164,6 +153,7 @@ app.post("/webhook", async (req, res) => {
     res.sendStatus(500);
   }
 });
+
 
 // ──────────────── SERVIDOR ────────────────
 const PORT = process.env.PORT || 10000;
