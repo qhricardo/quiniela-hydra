@@ -1,6 +1,5 @@
 // ────────────────────────────────────────────────
-// server.js | Webhook + Mercado Pago v2 + Firebase + CORS
-// Optimizado para Quiniela360
+// server.js | Webhook + Mercado Pago v2+ + Firebase + CORS
 // ────────────────────────────────────────────────
 
 import express from "express";
@@ -12,10 +11,8 @@ import mercadopago from "mercadopago";
 // ──────────────── CONFIGURACIONES BASE ────────────────
 const app = express();
 app.use(bodyParser.json());
-
-// 🔹 Configurar CORS para tu frontend
 app.use(cors({
-  origin: "https://qhricardo.github.io", // Ajusta según tu frontend
+  origin: "https://qhricardo.github.io",
   methods: ["GET", "POST", "OPTIONS"],
 }));
 
@@ -25,14 +22,11 @@ if (!admin.apps.length) {
     console.error("❌ No se encontró la variable FIREBASE_SERVICE_ACCOUNT");
     process.exit(1);
   }
-
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
 }
-
 const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
@@ -42,10 +36,8 @@ if (!process.env.MP_ACCESS_TOKEN) {
   process.exit(1);
 }
 
-// Inicialización correcta para v2+ (ES Modules)
-mercadopago.configure({
-  access_token: process.env.MP_ACCESS_TOKEN
-});
+// En la nueva versión solo se asigna el access token al objeto
+mercadopago.configurations = { access_token: process.env.MP_ACCESS_TOKEN };
 console.log("✅ Mercado Pago inicializado correctamente");
 
 // ──────────────── ENDPOINT: Crear preferencia ────────────────
@@ -73,13 +65,12 @@ app.post("/create-preference", async (req, res) => {
       auto_return: "approved",
     });
 
-    console.log(`🧾 Preferencia creada para ${name}: $${amount} MXN`);
-
     res.json({
       id: preference.body.id,
       init_point: preference.body.init_point,
       sandbox_init_point: preference.body.sandbox_init_point,
     });
+    console.log(`🧾 Preferencia creada para ${name}: $${amount} MXN`);
   } catch (error) {
     console.error("❌ Error creando preferencia:", error);
     res.status(500).json({ error: "No se pudo generar la preferencia de pago" });
@@ -93,21 +84,14 @@ app.post("/webhook", async (req, res) => {
     console.log("📩 Webhook recibido:", webhook);
 
     const topic = webhook.topic || webhook.type || webhook.action;
-    if (!topic || !topic.includes("payment")) {
-      console.log("⚠️ Notificación ignorada (no es de pago)");
-      return res.sendStatus(200);
-    }
+    if (!topic || !topic.includes("payment")) return res.sendStatus(200);
 
     const paymentId = webhook.data?.id || webhook.resource;
-    if (!paymentId) {
-      console.error("❌ No se encontró ID de pago");
-      return res.sendStatus(400);
-    }
+    if (!paymentId) return res.sendStatus(400);
 
-    // 🔍 Consultar el pago real desde Mercado Pago
+    // 🔍 Consultar pago
     const { body: payment } = await mercadopago.payment.get(paymentId);
 
-    // 🔹 Leer datos del pago
     let userId, creditsToAdd;
     if (payment.external_reference) {
       try {
@@ -122,7 +106,6 @@ app.post("/webhook", async (req, res) => {
 
     console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
 
-    // 🔹 Guardar registro del pago en Firestore
     await db.collection("payments").doc(`payment_${payment.id}`).set({
       id: payment.id,
       status: payment.status,
@@ -132,7 +115,6 @@ app.post("/webhook", async (req, res) => {
       date: payment.date_created || new Date().toISOString(),
     });
 
-    // 🔹 Actualizar créditos si el pago está aprobado
     if (payment.status === "approved" && userId && creditsToAdd > 0) {
       const userRef = db.collection("users").doc(userId);
       const userDoc = await userRef.get();
@@ -146,8 +128,6 @@ app.post("/webhook", async (req, res) => {
         });
         console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
       }
-    } else {
-      console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
     }
 
     res.sendStatus(200);
