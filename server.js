@@ -1,6 +1,6 @@
 // ────────────────────────────────────────────────
 // server.js | Webhook + Mercado Pago v2 + Firebase + CORS
-// Mejorado para Quiniela360 (dinámico y seguro)
+// Modernizado para Quiniela360 (dinámico y seguro)
 // ────────────────────────────────────────────────
 
 import express from "express";
@@ -41,7 +41,8 @@ if (!process.env.MP_ACCESS_TOKEN) {
   process.exit(1);
 }
 
-mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
+// Inicializa Mercado Pago con el token
+const mpClient = new mercadopago(process.env.MP_ACCESS_TOKEN);
 console.log("✅ Mercado Pago inicializado correctamente");
 
 // ──────────────── ENDPOINT: Crear preferencia ────────────────
@@ -68,7 +69,7 @@ app.post("/create-preference", async (req, res) => {
       auto_return: "approved",
     };
 
-    const response = await mercadopago.preferences.create(preference);
+    const response = await mpClient.preferences.create(preference);
 
     console.log(`🧾 Preferencia creada para ${name}: $${amount} MXN`);
 
@@ -102,8 +103,8 @@ app.post("/webhook", async (req, res) => {
     }
 
     // 🔍 Consultar pago real
-    const payment = await mercadopago.payment.get(paymentId);
-    const paymentData = payment.response;
+    const payment = await mpClient.payment.get(paymentId);
+    const paymentData = payment.body;
 
     let userId = null;
     let creditsToAdd = 0;
