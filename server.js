@@ -1,59 +1,57 @@
 // ────────────────────────────────────────────────
-// server.js | Quiniela360 - Mercado Pago v2 + Firebase
-// Compatible con Node.js 22 y Render
+// server.js | Webhook + Mercado Pago v2 + Firebase + CORS
+// Versión final para Quiniela360
 // ────────────────────────────────────────────────
 
 import express from "express";
 import bodyParser from "body-parser";
-import cors from "cors";
 import admin from "firebase-admin";
-import mercadopagoPkg from "mercadopago";
-import dotenv from "dotenv";
+import cors from "cors";
+import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 
-// Cargar variables de entorno (.env)
-dotenv.config();
+// ──────────────── CONFIGURACIONES BASE ────────────────
+const app = express();
+app.use(bodyParser.json());
 
-// ──────────────── Inicializar Firebase ────────────────
+// 🔹 Configurar CORS para tu frontend
+app.use(cors({
+  origin: "https://qhricardo.github.io",
+  methods: ["GET", "POST", "OPTIONS"],
+}));
+
+// ──────────────── FIREBASE ────────────────
 if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.error("❌ No se encontró la variable FIREBASE_SERVICE_ACCOUNT");
+    process.exit(1);
+  }
+
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
-  console.log("✅ Firebase inicializado correctamente");
 }
 
 const db = admin.firestore();
+console.log("✅ Firebase inicializado correctamente");
 
-// ──────────────── Inicializar Express ────────────────
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
-
-// ──────────────── Inicializar Mercado Pago ────────────────
-if (!process.env.MP_ACCESS_TOKEN) {
-  console.error("❌ No se encontró MP_ACCESS_TOKEN en variables de entorno");
-  process.exit(1);
-}
-
-const { MercadoPagoConfig, Preference, Payment } = mercadopagoPkg;
-
+// ──────────────── MERCADO PAGO ────────────────
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
 });
 console.log("✅ Mercado Pago inicializado correctamente");
 
-// ──────────────── Endpoint: Crear preferencia ────────────────
+// ──────────────── ENDPOINT: Crear preferencia ────────────────
 app.post("/create-preference", async (req, res) => {
   try {
     const { amount, userId, name, email, creditsToAdd } = req.body;
-    console.log("📤 Recibida solicitud para crear preferencia:", req.body);
+    console.log("📤 Creando preferencia:", req.body);
 
-    const preference = new Preference(mpClient);
-    const result = await preference.create({
+    const preference = await new Preference(mpClient).create({
       body: {
         items: [
           {
-            title: `Créditos Quiniela360 (+${creditsToAdd})`,
+            title: `Créditos Quiniela360 (${creditsToAdd})`,
             quantity: 1,
             currency_id: "MXN",
             unit_price: Number(amount),
@@ -71,71 +69,102 @@ app.post("/create-preference", async (req, res) => {
     });
 
     console.log(`🧾 Preferencia creada para ${name}: $${amount} MXN`);
+
     res.json({
-      id: result.id,
-      init_point: result.init_point,
-      sandbox_init_point: result.sandbox_init_point,
+      id: preference.id,
+      init_point: preference.init_point,
+      sandbox_init_point: preference.sandbox_init_point,
     });
   } catch (error) {
-    console.error("❌ Error al crear preferencia:", error);
+    console.error("❌ Error creando preferencia:", error);
     res.status(500).json({ error: "No se pudo generar la preferencia de pago" });
   }
 });
 
-// ──────────────── Webhook Mercado Pago ────────────────
+// ──────────────── ENDPOINT: Webhook ────────────────
 app.post("/webhook", async (req, res) => {
   try {
-    console.log("📩 Webhook recibido:", req.body);
+    const webhook = req.body;
+    console.log("📩 Webhook recibido:", webhook);
 
-    // Solo procesar pagos aprobados
-    if (req.body.type === "payment" && req.body.data?.id) {
-      const payment = new Payment(mpClient);
-      const paymentInfo = await payment.get({ id: req.body.data.id });
+    // 🧪 Webhook de prueba
+    if (req.body.action === "payment.updated" && req.body.data.id === "123456") {
+      console.log("🧪 Webhook de prueba recibido correctamente");
+      return res.sendStatus(200);
+    }
 
-      const { status, metadata, external_reference } = paymentInfo;
-      console.log(`💰 Pago recibido | Estado: ${status}`);
+    const topic = webhook.topic || webhook.type || webhook.action;
+    if (!topic || !topic.includes("payment")) {
+      console.log("⚠️ Notificación ignorada (no es de pago)");
+      return res.sendStatus(200);
+    }
 
-      if (status === "approved") {
-        const refData = external_reference
-          ? JSON.parse(external_reference)
-          : metadata;
+    const paymentId = webhook.data?.id || webhook.resource;
+    if (!paymentId) {
+      console.error("❌ No se encontró ID de pago");
+      return res.sendStatus(400);
+    }
 
-        const { userId, creditsToAdd } = refData || {};
+    // 🔍 Consultar el pago real desde Mercado Pago
+    const payment = await new Payment(mpClient).get({ id: paymentId });
 
-        if (userId && creditsToAdd) {
-          const userRef = db.collection("users").doc(userId);
-          const userSnap = await userRef.get();
+    // 🔹 Leer datos del pago
+    let userId = null;
+    let creditsToAdd = 0;
 
-          if (userSnap.exists) {
-            await userRef.update({
-              credits: admin.firestore.FieldValue.increment(creditsToAdd),
-            });
-            console.log(
-              `✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`
-            );
-          } else {
-            console.log(`⚠️ No se encontró documento de usuario con uid=${userId}`);
-          }
-        } else {
-          console.log("⚠️ No se encontró metadata válida en el pago.");
-        }
+    try {
+      if (payment.external_reference) {
+        const meta = JSON.parse(payment.external_reference);
+        userId = meta.userId;
+        creditsToAdd = Number(meta.creditsToAdd) || 0;
       }
+    } catch {
+      console.warn("⚠️ external_reference malformado:", payment.external_reference);
+    }
+
+    console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
+
+    // 🔹 Guardar registro del pago en Firestore
+    await db.collection("payments").doc(`payment_${payment.id}`).set({
+      id: payment.id,
+      status: payment.status,
+      userId: userId || null,
+      creditsToAdd,
+      amount: payment.transaction_amount || 0,
+      date: payment.date_created || new Date().toISOString(),
+    });
+
+    // 🔹 Si el pago está aprobado, actualizar créditos usando uid
+    if (payment.status === "approved" && userId && creditsToAdd > 0) {
+      try {
+        // Buscar el documento por el campo uid
+        const userSnapshot = await db.collection("users").where("uid", "==", userId).get();
+
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          await userDoc.ref.set({
+            creditos: admin.firestore.FieldValue.increment(creditsToAdd),
+            updatedAt: new Date().toISOString(),
+          }, { merge: true });
+
+          console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
+        } else {
+          console.warn(`⚠️ No se encontró documento de usuario con uid=${userId}`);
+        }
+      } catch (err) {
+        console.error(`❌ Error actualizando créditos para ${userId}:`, err);
+      }
+    } else {
+      console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
     }
 
     res.sendStatus(200);
   } catch (error) {
-    console.error("❌ Error procesando webhook:", error);
+    console.error("❌ Error general en webhook:", error);
     res.sendStatus(500);
   }
 });
 
-// ──────────────── Endpoint raíz ────────────────
-app.get("/", (req, res) => {
-  res.send("🚀 Quiniela360 backend funcionando correctamente");
-});
-
-// ──────────────── Iniciar servidor ────────────────
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Servidor escuchando en puerto ${PORT}`);
-});
+// ──────────────── SERVIDOR ────────────────
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
