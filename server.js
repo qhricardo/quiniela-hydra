@@ -81,17 +81,11 @@ app.post("/create-preference", async (req, res) => {
   }
 });
 
-// ──────────────── ENDPOINT: Webhook ────────────────
+// ──────────────── ENDPOINT: Webhook Mejorado ────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
-
-    // 🧪 Webhook de prueba
-    if (req.body.action === "payment.updated" && req.body.data.id === "123456") {
-      console.log("🧪 Webhook de prueba recibido correctamente");
-      return res.sendStatus(200);
-    }
 
     const topic = webhook.topic || webhook.type || webhook.action;
     if (!topic || !topic.includes("payment")) {
@@ -108,17 +102,24 @@ app.post("/webhook", async (req, res) => {
     // 🔍 Consultar el pago real desde Mercado Pago
     const payment = await new Payment(mpClient).get({ id: paymentId });
 
-    // 🔹 Leer datos del pago
-    let userId, creditsToAdd;
-    if (payment.external_reference) {
-      try {
+    // 🔹 Leer datos del pago y establecer fallback
+    let userId = null;
+    let creditsToAdd = 0;
+
+    try {
+      if (payment.external_reference) {
         const meta = JSON.parse(payment.external_reference);
-        userId = meta.userId;
+        userId = meta.userId || null;
         creditsToAdd = Number(meta.creditsToAdd) || 0;
-      } catch {
-        userId = payment.external_reference;
-        creditsToAdd = 0;
       }
+    } catch (err) {
+      console.warn("⚠️ external_reference malformado:", payment.external_reference);
+    }
+
+    // 🔹 Fallback: si userId no existe, usar metadata.user_id del pago
+    if (!userId && payment.metadata?.userId) {
+      userId = payment.metadata.userId;
+      creditsToAdd = Number(payment.metadata.creditsToAdd) || 0;
     }
 
     console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
@@ -133,24 +134,26 @@ app.post("/webhook", async (req, res) => {
       date: payment.date_created || new Date().toISOString(),
     });
 
-    // 🔹 Si el pago está aprobado, actualiza los créditos del usuario usando Admin SDK
+    // 🔹 Si el pago está aprobado, actualiza los créditos del usuario
     if (payment.status === "approved" && userId && creditsToAdd > 0) {
-      try {
-        const userRef = db.collection("users").doc(userId);
+      const userRef = db.collection("users").doc(userId);
 
-        // Incrementa los créditos sin bloquearse por reglas de seguridad
-        await userRef.set(
-          {
-            credits: admin.firestore.FieldValue.increment(creditsToAdd),
-            updatedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        );
-
-        console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
-      } catch (err) {
-        console.error(`❌ Error actualizando créditos para ${userId}:`, err);
+      // 🔹 Verificar que el documento exista
+      const userDoc = await userRef.get();
+      if (!userDoc.exists) {
+        console.warn(`⚠️ Documento de usuario no encontrado: ${userId} → Se creará uno nuevo.`);
       }
+
+      // 🔹 Incrementar créditos usando Admin SDK
+      await userRef.set(
+        {
+          credits: admin.firestore.FieldValue.increment(creditsToAdd),
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+
+      console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
     } else {
       console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
     }
