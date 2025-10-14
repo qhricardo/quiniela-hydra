@@ -470,14 +470,29 @@ document.getElementById('guardar-btn').addEventListener('click', async()=>{
             // Guarda los pronósticos en el grupo
             const pronRef = grupoRef.collection('pronosticos').doc();
 
-            tx.set(pronRef, {
+          tx.set(pronRef, {
                 userId: currentUser.uid,
-                grupoId: grupoActual,      // 👈 guardamos el ID
-                grupoNombre: grupoNombre,  // 👈 guardamos el nombre
-                fecha: firebase.firestore.FieldValue.serverTimestamp(),
-                partidos: partidos
+                grupoId: grupoActual,
+                grupoNombre: grupoNombre,
+                partidos: partidos,
+                fecha: firebase.firestore.Timestamp.now(),
+                nombreUsuario: uDoc.data().name || currentUser.displayName || "Usuario",
+                email: currentUser.email || "",
+                creditosRestantes: (uDoc.data().creditos ?? 0) - 1
             });
         });
+
+        alert("✅ Pronósticos guardados correctamente. Se descontó 1 crédito.");
+        location.reload();
+
+    } catch (error) {
+        console.error("🚨 Error al guardar pronósticos:", error);
+        alert("Error al guardar pronósticos: " + error.message);
+    } finally {
+        document.getElementById('loading').style.display='none';
+        document.getElementById('guardar-btn').disabled=false;
+    }
+});
 
          window.location.href = 'resultados.html';
 
@@ -569,6 +584,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
