@@ -92,7 +92,7 @@ app.post("/webhook", async (req, res) => {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // 🧪 Webhook de prueba (para simulaciones)
+    // 🧪 Webhook de prueba
     if (req.body.action === "payment.updated" && req.body.data?.id === "123456") {
       console.log("🧪 Webhook de prueba recibido correctamente");
       return res.sendStatus(200);
@@ -113,9 +113,16 @@ app.post("/webhook", async (req, res) => {
     // 🔍 Consultar el pago real desde Mercado Pago
     const paymentData = (await new Payment(mpClient).get({ id: paymentId })).body;
 
-    // 🔹 Leer datos del pago
+    // 🔹 Solo procesar pagos con estado final
+    if (!["approved", "pending", "rejected"].includes(paymentData.status)) {
+      console.log(`ℹ️ Pago ${paymentData.id} con status ${paymentData.status} ignorado`);
+      return res.sendStatus(200);
+    }
+
+    // 🔹 Leer external_reference de forma segura
     let userId = null;
     let creditsToAdd = 0;
+
     if (paymentData.external_reference) {
       try {
         const meta = JSON.parse(paymentData.external_reference);
@@ -125,13 +132,14 @@ app.post("/webhook", async (req, res) => {
         userId = paymentData.external_reference;
         creditsToAdd = 0;
       }
+    } else {
+      console.log(`ℹ️ Pago ${paymentData.id} sin external_reference, no se actualizarán créditos todavía`);
     }
 
     console.log(`💰 Pago recibido | Estado: ${paymentData.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
 
     // 🔹 Guardar registro del pago en Firestore
-    const paymentRef = db.collection("payments").doc(`payment_${paymentData.id}`);
-    await paymentRef.set({
+    await db.collection("payments").doc(`payment_${paymentData.id}`).set({
       id: paymentData.id,
       status: paymentData.status,
       userId: userId || null,
@@ -140,11 +148,10 @@ app.post("/webhook", async (req, res) => {
       date: paymentData.date_created || new Date().toISOString(),
     });
 
-    // 🔹 Incrementar creditos solo si el pago está aprobado y los datos existen
+    // 🔹 Incrementar creditos solo si está aprobado y hay datos
     if (paymentData.status === "approved" && userId && creditsToAdd > 0) {
       try {
         const userRef = db.collection("users").doc(userId);
-
         await userRef.set(
           {
             creditos: admin.firestore.FieldValue.increment(creditsToAdd),
