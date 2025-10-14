@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────
-// server.js | Webhook + Mercado Pago v2+ + Firebase + CORS
+// server.js | Webhook + Mercado Pago v2 + Firebase + CORS
 // Optimizado para Quiniela360
 // ────────────────────────────────────────────────
 
@@ -13,8 +13,9 @@ import mercadopago from "mercadopago";
 const app = express();
 app.use(bodyParser.json());
 
+// 🔹 Configurar CORS para tu frontend
 app.use(cors({
-  origin: "https://qhricardo.github.io",
+  origin: "https://qhricardo.github.io", // Ajusta según tu frontend
   methods: ["GET", "POST", "OPTIONS"],
 }));
 
@@ -26,6 +27,7 @@ if (!admin.apps.length) {
   }
 
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
@@ -40,7 +42,10 @@ if (!process.env.MP_ACCESS_TOKEN) {
   process.exit(1);
 }
 
-mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
+// Inicialización correcta para v2+ (ES Modules)
+mercadopago.configure({
+  access_token: process.env.MP_ACCESS_TOKEN
+});
 console.log("✅ Mercado Pago inicializado correctamente");
 
 // ──────────────── ENDPOINT: Crear preferencia ────────────────
@@ -87,7 +92,6 @@ app.post("/webhook", async (req, res) => {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // Validar que sea un pago
     const topic = webhook.topic || webhook.type || webhook.action;
     if (!topic || !topic.includes("payment")) {
       console.log("⚠️ Notificación ignorada (no es de pago)");
@@ -100,26 +104,25 @@ app.post("/webhook", async (req, res) => {
       return res.sendStatus(400);
     }
 
-    // Obtener pago de Mercado Pago
+    // 🔍 Consultar el pago real desde Mercado Pago
     const { body: payment } = await mercadopago.payment.get(paymentId);
 
-    // Leer external_reference
-    let userId = null;
-    let creditsToAdd = 0;
-
+    // 🔹 Leer datos del pago
+    let userId, creditsToAdd;
     if (payment.external_reference) {
       try {
         const meta = JSON.parse(payment.external_reference);
         userId = meta.userId;
         creditsToAdd = Number(meta.creditsToAdd) || 0;
       } catch {
-        console.warn("⚠️ External reference malformado:", payment.external_reference);
+        userId = payment.external_reference;
+        creditsToAdd = 0;
       }
     }
 
     console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
 
-    // Guardar pago en Firestore
+    // 🔹 Guardar registro del pago en Firestore
     await db.collection("payments").doc(`payment_${payment.id}`).set({
       id: payment.id,
       status: payment.status,
@@ -129,24 +132,20 @@ app.post("/webhook", async (req, res) => {
       date: payment.date_created || new Date().toISOString(),
     });
 
-    // Incrementar créditos si aprobado
+    // 🔹 Actualizar créditos si el pago está aprobado
     if (payment.status === "approved" && userId && creditsToAdd > 0) {
       const userRef = db.collection("users").doc(userId);
       const userDoc = await userRef.get();
 
       if (!userDoc.exists) {
-        console.warn(`⚠️ Documento de usuario no encontrado, se creará: uid=${userId}`);
-      }
-
-      await userRef.set(
-        {
+        console.warn(`⚠️ No se encontró documento de usuario con uid=${userId}`);
+      } else {
+        await userRef.update({
           creditos: admin.firestore.FieldValue.increment(creditsToAdd),
           updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
-
-      console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
+        });
+        console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
+      }
     } else {
       console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
     }
