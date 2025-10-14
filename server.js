@@ -111,11 +111,24 @@ app.post("/webhook", async (req, res) => {
     }
 
     // 🔍 Consultar el pago real desde Mercado Pago
-    const paymentData = (await new Payment(mpClient).get({ id: paymentId })).body;
+    let paymentResponse;
+    try {
+      paymentResponse = await new Payment(mpClient).get({ id: paymentId });
+    } catch (err) {
+      console.error(`❌ No se pudo obtener información del pago ${paymentId}:`, err);
+      return res.sendStatus(200); // ignorar para no romper webhook
+    }
+
+    const paymentData = paymentResponse?.body || paymentResponse;
+
+    if (!paymentData) {
+      console.warn(`⚠️ Pago ${paymentId} no tiene datos válidos todavía`);
+      return res.sendStatus(200);
+    }
 
     // 🔹 Solo procesar pagos con estado final
     if (!["approved", "pending", "rejected"].includes(paymentData.status)) {
-      console.log(`ℹ️ Pago ${paymentData.id} con status ${paymentData.status} ignorado`);
+      console.log(`ℹ️ Pago ${paymentId} con status ${paymentData.status || "undefined"} ignorado`);
       return res.sendStatus(200);
     }
 
@@ -133,7 +146,7 @@ app.post("/webhook", async (req, res) => {
         creditsToAdd = 0;
       }
     } else {
-      console.log(`ℹ️ Pago ${paymentData.id} sin external_reference, no se actualizarán créditos todavía`);
+      console.log(`ℹ️ Pago ${paymentId} sin external_reference, no se actualizarán créditos todavía`);
     }
 
     console.log(`💰 Pago recibido | Estado: ${paymentData.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
@@ -164,8 +177,10 @@ app.post("/webhook", async (req, res) => {
       } catch (err) {
         console.error(`❌ Error actualizando creditos para ${userId}:`, err);
       }
+    } else if (paymentData.status !== "approved") {
+      console.log(`ℹ️ Pago ${paymentId} con status ${paymentData.status}, créditos no actualizados`);
     } else {
-      console.log("ℹ️ No se actualizan creditos (pago no aprobado o datos faltantes)");
+      console.log("ℹ️ No se actualizan creditos (datos faltantes)");
     }
 
     res.sendStatus(200);
