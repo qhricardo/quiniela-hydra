@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────
-// server.js | Webhook + Mercado Pago v2 + Firebase + CORS
+// server.js | Webhook + Mercado Pago v2 + Firebase + CORS + Retry
 // Optimizado para Quiniela360
 // ────────────────────────────────────────────────
 
@@ -13,7 +13,6 @@ import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 const app = express();
 app.use(bodyParser.json());
 
-// 🔹 Configurar CORS para tu frontend
 app.use(cors({
   origin: "https://qhricardo.github.io",
   methods: ["GET", "POST", "OPTIONS"],
@@ -36,15 +35,23 @@ const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
 // ──────────────── MERCADO PAGO ────────────────
-if (!process.env.MP_ACCESS_TOKEN) {
-  console.error("❌ No se encontró la variable MP_ACCESS_TOKEN");
-  process.exit(1);
-}
-
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN,
 });
 console.log("✅ Mercado Pago inicializado correctamente");
+
+// ──────────────── Función de retry genérica ────────────────
+async function retry(fn, retries = 3, delay = 1000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      console.warn(`⚠️ Intento ${i + 1} fallido:`, err);
+      if (i < retries - 1) await new Promise(res => setTimeout(res, delay));
+      else throw err;
+    }
+  }
+}
 
 // ──────────────── ENDPOINT: Crear preferencia ────────────────
 app.post("/create-preference", async (req, res) => {
@@ -55,12 +62,7 @@ app.post("/create-preference", async (req, res) => {
     const preference = await new Preference(mpClient).create({
       body: {
         items: [
-          {
-            title: `Créditos Quiniela360 (${creditsToAdd})`,
-            quantity: 1,
-            currency_id: "MXN",
-            unit_price: Number(amount),
-          },
+          { title: `Créditos Quiniela360 (${creditsToAdd})`, quantity: 1, currency_id: "MXN", unit_price: Number(amount) },
         ],
         payer: { name, email },
         external_reference: JSON.stringify({ userId, creditsToAdd }),
@@ -74,113 +76,64 @@ app.post("/create-preference", async (req, res) => {
     });
 
     console.log(`🧾 Preferencia creada para ${name}: $${amount} MXN`);
-
-    res.json({
-      id: preference.id,
-      init_point: preference.init_point,
-      sandbox_init_point: preference.sandbox_init_point,
-    });
+    res.json({ id: preference.id, init_point: preference.init_point, sandbox_init_point: preference.sandbox_init_point });
   } catch (error) {
     console.error("❌ Error creando preferencia:", error);
     res.status(500).json({ error: "No se pudo generar la preferencia de pago" });
   }
 });
 
-// ──────────────── ENDPOINT: Webhook ────────────────
+// ──────────────── ENDPOINT: Webhook con retry ────────────────
 app.post("/webhook", async (req, res) => {
   try {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
-    // 🧪 Webhook de prueba
-    if (req.body.action === "payment.updated" && req.body.data?.id === "123456") {
-      console.log("🧪 Webhook de prueba recibido correctamente");
-      return res.sendStatus(200);
-    }
-
     const topic = webhook.topic || webhook.type || webhook.action;
-    if (!topic || !topic.includes("payment")) {
-      console.log("⚠️ Notificación ignorada (no es de pago)");
-      return res.sendStatus(200);
-    }
+    if (!topic || !topic.includes("payment")) return res.sendStatus(200);
 
     const paymentId = webhook.data?.id || webhook.resource;
-    if (!paymentId) {
-      console.error("❌ No se encontró ID de pago");
-      return res.sendStatus(400);
-    }
+    if (!paymentId) return res.sendStatus(400);
 
-    // 🔍 Consultar el pago real desde Mercado Pago
-    let paymentResponse;
+    const payment = await retry(() => new Payment(mpClient).get({ id: paymentId }), 3, 1000);
+
+    let userId = null, creditsToAdd = 0;
     try {
-      paymentResponse = await new Payment(mpClient).get({ id: paymentId });
-    } catch (err) {
-      console.error(`❌ No se pudo obtener información del pago ${paymentId}:`, err);
-      return res.sendStatus(200); // ignorar para no romper webhook
-    }
-
-    const paymentData = paymentResponse?.body || paymentResponse;
-
-    if (!paymentData) {
-      console.warn(`⚠️ Pago ${paymentId} no tiene datos válidos todavía`);
-      return res.sendStatus(200);
-    }
-
-    // 🔹 Solo procesar pagos con estado final
-    if (!["approved", "pending", "rejected"].includes(paymentData.status)) {
-      console.log(`ℹ️ Pago ${paymentId} con status ${paymentData.status || "undefined"} ignorado`);
-      return res.sendStatus(200);
-    }
-
-    // 🔹 Leer external_reference de forma segura
-    let userId = null;
-    let creditsToAdd = 0;
-
-    if (paymentData.external_reference) {
-      try {
-        const meta = JSON.parse(paymentData.external_reference);
+      if (payment.external_reference) {
+        const meta = JSON.parse(payment.external_reference);
         userId = meta.userId;
         creditsToAdd = Number(meta.creditsToAdd) || 0;
-      } catch {
-        userId = paymentData.external_reference;
-        creditsToAdd = 0;
       }
-    } else {
-      console.log(`ℹ️ Pago ${paymentId} sin external_reference, no se actualizarán créditos todavía`);
-    }
+    } catch { userId = null; creditsToAdd = 0; }
 
-    console.log(`💰 Pago recibido | Estado: ${paymentData.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
+    console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
 
-    // 🔹 Guardar registro del pago en Firestore
-    await db.collection("payments").doc(`payment_${paymentData.id}`).set({
-      id: paymentData.id,
-      status: paymentData.status,
+    await retry(() => db.collection("payments").doc(`payment_${payment.id}`).set({
+      id: payment.id,
+      status: payment.status,
       userId: userId || null,
       creditsToAdd,
-      amount: paymentData.transaction_amount || 0,
-      date: paymentData.date_created || new Date().toISOString(),
-    });
+      amount: payment.transaction_amount || 0,
+      date: payment.date_created || new Date().toISOString(),
+    }), 3, 500);
 
-    // 🔹 Incrementar creditos solo si está aprobado y hay datos
-    if (paymentData.status === "approved" && userId && creditsToAdd > 0) {
-      try {
-        const userRef = db.collection("users").doc(userId);
-        await userRef.set(
-          {
-            creditos: admin.firestore.FieldValue.increment(creditsToAdd),
-            updatedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        );
+    if (payment.status === "approved" && userId && creditsToAdd > 0) {
+      const userRef = db.collection("users").doc(userId);
 
-        console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
-      } catch (err) {
-        console.error(`❌ Error actualizando creditos para ${userId}:`, err);
+      // Crear documento si no existe
+      const userDoc = await retry(() => userRef.get(), 3, 500);
+      if (!userDoc.exists) {
+        console.log(`⚠️ Documento no existe, creando usuario ${userId}`);
+        await retry(() => userRef.set({ creditos: 0, createdAt: new Date().toISOString() }, { merge: true }), 3, 500);
       }
-    } else if (paymentData.status !== "approved") {
-      console.log(`ℹ️ Pago ${paymentId} con status ${paymentData.status}, créditos no actualizados`);
-    } else {
-      console.log("ℹ️ No se actualizan creditos (datos faltantes)");
+
+      // Incrementar créditos con retry
+      await retry(() => userRef.set({
+        creditos: admin.firestore.FieldValue.increment(creditsToAdd),
+        updatedAt: new Date().toISOString(),
+      }, { merge: true }), 3, 500);
+
+      console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
     }
 
     res.sendStatus(200);
