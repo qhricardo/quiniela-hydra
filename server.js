@@ -133,10 +133,12 @@ app.post("/webhook", async (req, res) => {
       date: payment.date_created || new Date().toISOString(),
     });
 
-    // 🔹 Si el pago está aprobado, actualiza los créditos del usuario
+    // 🔹 Si el pago está aprobado, actualiza los créditos del usuario usando Admin SDK
     if (payment.status === "approved" && userId && creditsToAdd > 0) {
       try {
         const userRef = db.collection("users").doc(userId);
+
+        // Incrementa los créditos sin bloquearse por reglas de seguridad
         await userRef.set(
           {
             credits: admin.firestore.FieldValue.increment(creditsToAdd),
@@ -144,6 +146,7 @@ app.post("/webhook", async (req, res) => {
           },
           { merge: true }
         );
+
         console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
       } catch (err) {
         console.error(`❌ Error actualizando créditos para ${userId}:`, err);
