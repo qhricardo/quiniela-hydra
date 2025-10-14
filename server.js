@@ -7,15 +7,14 @@ import express from "express";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
 import cors from "cors";
-import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
+import mercadopago from "mercadopago";
 
 // ──────────────── CONFIGURACIONES BASE ────────────────
 const app = express();
 app.use(bodyParser.json());
 
-// 🔹 Configurar CORS para tu frontend
 app.use(cors({
-  origin: "https://qhricardo.github.io",
+  origin: "https://qhricardo.github.io", // tu frontend
   methods: ["GET", "POST", "OPTIONS"],
 }));
 
@@ -25,7 +24,6 @@ if (!admin.apps.length) {
     console.error("❌ No se encontró la variable FIREBASE_SERVICE_ACCOUNT");
     process.exit(1);
   }
-
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -36,9 +34,12 @@ const db = admin.firestore();
 console.log("✅ Firebase inicializado correctamente");
 
 // ──────────────── MERCADO PAGO ────────────────
-const mpClient = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN,
-});
+if (!process.env.MP_ACCESS_TOKEN) {
+  console.error("❌ No se encontró la variable MP_ACCESS_TOKEN");
+  process.exit(1);
+}
+
+mercadopago.configurations.setAccessToken(process.env.MP_ACCESS_TOKEN);
 console.log("✅ Mercado Pago inicializado correctamente");
 
 // ──────────────── ENDPOINT: Crear preferencia ────────────────
@@ -47,33 +48,28 @@ app.post("/create-preference", async (req, res) => {
     const { amount, userId, name, email, creditsToAdd } = req.body;
     console.log("📤 Creando preferencia:", req.body);
 
-    const preference = await new Preference(mpClient).create({
-      body: {
-        items: [
-          {
-            title: `Créditos Quiniela360 (${creditsToAdd})`,
-            quantity: 1,
-            currency_id: "MXN",
-            unit_price: Number(amount),
-          },
-        ],
-        payer: { name, email },
-        external_reference: JSON.stringify({ userId, creditsToAdd }),
-        back_urls: {
-          success: "https://qhricardo.github.io/quiniela-hydra/success.html",
-          failure: "https://qhricardo.github.io/quiniela-hydra/index.html",
-          pending: "https://qhricardo.github.io/quiniela-hydra/index.html",
-        },
-        auto_return: "approved",
+    const preference = await mercadopago.preferences.create({
+      items: [{
+        title: `Créditos Quiniela360 (${creditsToAdd})`,
+        quantity: 1,
+        currency_id: "MXN",
+        unit_price: Number(amount),
+      }],
+      payer: { name, email },
+      external_reference: JSON.stringify({ userId, creditsToAdd }),
+      back_urls: {
+        success: "https://qhricardo.github.io/quiniela-hydra/success.html",
+        failure: "https://qhricardo.github.io/quiniela-hydra/index.html",
+        pending: "https://qhricardo.github.io/quiniela-hydra/index.html",
       },
+      auto_return: "approved",
     });
 
     console.log(`🧾 Preferencia creada para ${name}: $${amount} MXN`);
-
     res.json({
-      id: preference.id,
-      init_point: preference.init_point,
-      sandbox_init_point: preference.sandbox_init_point,
+      id: preference.body.id,
+      init_point: preference.body.init_point,
+      sandbox_init_point: preference.body.sandbox_init_point,
     });
   } catch (error) {
     console.error("❌ Error creando preferencia:", error);
@@ -87,64 +83,53 @@ app.post("/webhook", async (req, res) => {
     const webhook = req.body;
     console.log("📩 Webhook recibido:", webhook);
 
+    // Ignorar si no es de pago
     const topic = webhook.topic || webhook.type || webhook.action;
-    if (!topic || !topic.includes("payment")) {
-      console.log("⚠️ Notificación ignorada (no es de pago)");
-      return res.sendStatus(200);
-    }
+    if (!topic || !topic.includes("payment")) return res.sendStatus(200);
 
     const paymentId = webhook.data?.id || webhook.resource;
-    if (!paymentId) {
-      console.error("❌ No se encontró ID de pago");
-      return res.sendStatus(400);
-    }
+    if (!paymentId) return res.sendStatus(400);
 
-    // 🔍 Consultar el pago real desde Mercado Pago
-    const payment = await new Payment(mpClient).get({ id: paymentId });
+    // 🔍 Consultar pago real
+    const payment = await mercadopago.payment.get(paymentId);
+    const paymentData = payment.body || payment.response;
 
-    // 🔹 Leer datos del pago desde external_reference
     let userId = null;
     let creditsToAdd = 0;
 
-    try {
-      if (payment.external_reference) {
-        const meta = JSON.parse(payment.external_reference);
-        userId = meta.userId; // Esto debe coincidir con el ID del documento en Firestore
+    // Leer datos desde external_reference
+    if (paymentData.external_reference) {
+      try {
+        const meta = JSON.parse(paymentData.external_reference);
+        userId = meta.userId;
         creditsToAdd = Number(meta.creditsToAdd) || 0;
+      } catch {
+        console.warn("⚠️ external_reference malformado:", paymentData.external_reference);
       }
-    } catch {
-      console.warn("⚠️ external_reference malformado:", payment.external_reference);
     }
 
-    console.log(`💰 Pago recibido | Estado: ${payment.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
+    console.log(`💰 Pago recibido | Estado: ${paymentData.status} | Usuario: ${userId} | Créditos: ${creditsToAdd}`);
 
-    // 🔹 Guardar registro del pago en Firestore
-    await db.collection("payments").doc(`payment_${payment.id}`).set({
-      id: payment.id,
-      status: payment.status,
+    // Guardar registro del pago
+    await db.collection("payments").doc(`payment_${paymentData.id}`).set({
+      id: paymentData.id,
+      status: paymentData.status,
       userId: userId || null,
       creditsToAdd,
-      amount: payment.transaction_amount || 0,
-      date: payment.date_created || new Date().toISOString(),
+      amount: paymentData.transaction_amount || 0,
+      date: paymentData.date_created || new Date().toISOString(),
     });
 
-    // 🔹 Si el pago está aprobado, actualiza los créditos directamente usando el ID del documento
-    if (payment.status === "approved" && userId && creditsToAdd > 0) {
-      try {
-        const userRef = db.collection("users").doc(userId); // <-- ID directo del documento
+    // Incrementar créditos en Firestore si aprobado
+    if (paymentData.status === "approved" && userId && creditsToAdd > 0) {
+      const userRef = db.collection("users").doc(userId);
 
-        // Incrementa los créditos
-        await userRef.set({
-          creditos: admin.firestore.FieldValue.increment(creditsToAdd),
-          updatedAt: new Date().toISOString(),
-        }, { merge: true });
+      await userRef.set({
+        creditos: admin.firestore.FieldValue.increment(creditsToAdd),
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
 
-        console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
-      } catch (err) {
-        console.error(`❌ Error actualizando créditos para ${userId}:`, err);
-      }
-    } else {
-      console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
+      console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
     }
 
     res.sendStatus(200);
@@ -153,7 +138,6 @@ app.post("/webhook", async (req, res) => {
     res.sendStatus(500);
   }
 });
-
 
 // ──────────────── SERVIDOR ────────────────
 const PORT = process.env.PORT || 10000;
