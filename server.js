@@ -134,30 +134,29 @@ app.post("/webhook", async (req, res) => {
       date: payment.date_created || new Date().toISOString(),
     });
 
-    // 🔹 Si el pago está aprobado, actualizar créditos usando uid
-    if (payment.status === "approved" && userId && creditsToAdd > 0) {
-      try {
-        // Buscar el documento por el campo uid
-        const userSnapshot = await db.collection("users").where("uid", "==", userId).get();
+   // 🔹 Si el pago está aprobado, actualizar créditos
+if (payment.status === "approved" && userId && creditsToAdd > 0) {
+  try {
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
 
-        if (!userSnapshot.empty) {
-          const userDoc = userSnapshot.docs[0];
-          await userDoc.ref.set({
-            creditos: admin.firestore.FieldValue.increment(creditsToAdd),
-            updatedAt: new Date().toISOString(),
-          }, { merge: true });
+    if (userDoc.exists) {
+      await userRef.set({
+        creditos: admin.firestore.FieldValue.increment(creditsToAdd),
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
 
-          console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
-        } else {
-          console.warn(`⚠️ No se encontró documento de usuario con uid=${userId}`);
-        }
-      } catch (err) {
-        console.error(`❌ Error actualizando créditos para ${userId}:`, err);
-      }
+      console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
     } else {
-      console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
+      console.warn(`⚠️ No se encontró usuario con ID ${userId}`);
     }
-
+  } catch (err) {
+    console.error(`❌ Error actualizando créditos para ${userId}:`, err);
+  }
+} else {
+  console.log("ℹ️ No se actualizan créditos (pago no aprobado o datos faltantes)");
+}
+    
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error general en webhook:", error);
