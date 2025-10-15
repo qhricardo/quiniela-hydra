@@ -64,6 +64,22 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
 #countdown span { font-weight: bold; }
 #recuadro-derecho { float: right; width: 300px; margin: -300px 10px; }
 #recuadro-derecho img { display: block; width: 100%; height: auto; border-radius: 5px; }
+  #comprarCreditos {
+    padding: 10px 20px;
+    background-color: #006847;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+
+  #comprarCreditos:hover {
+    background-color: #008f5a;
+    transform: scale(1.05);
+  }
+    
 </style>
 </head>
 <body>
@@ -136,7 +152,7 @@ function invitarMessengerIndex() {
      <li>💰 1 creditos = $25.00mxn.</li>
   </ul>
 
-<button id="comprarCreditos">Comprar 3 Créditos</button>
+<button id="comprarCreditos">Comprar 1 Créditos</button>
 
 <script>
 document.getElementById("comprarCreditos").addEventListener("click", async () => {
@@ -615,6 +631,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
