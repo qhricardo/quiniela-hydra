@@ -146,16 +146,21 @@ app.post("/webhook", async (req, res) => {
         const userRef = db.collection("users").doc(userId);
         const userDoc = await userRef.get();
 
-        if (userDoc.exists) {
-          await userRef.set({
-            creditos: admin.firestore.FieldValue.increment(creditsToAdd),
-            updatedAt: new Date().toISOString(),
-          }, { merge: true });
+       if (userDoc.exists) {
+        const currentData = userDoc.data();
+        const currentCredits = Number(currentData.creditos || 0);
+        const newCredits = currentCredits + creditsToAdd;
+      
+        await userRef.update({
+          creditos: newCredits,
+          updatedAt: new Date().toISOString(),
+        });
+      
+        console.log(`✅ Créditos actualizados correctamente para ${userId}: ${currentCredits} → ${newCredits}`);
+      } else {
+        console.warn(`⚠️ No se encontró documento de usuario con ID = ${userId}`);
+      }
 
-          console.log(`✅ Créditos incrementados correctamente para ${userId}: +${creditsToAdd}`);
-        } else {
-          console.warn(`⚠️ No se encontró documento de usuario con ID = ${userId}`);
-        }
       } catch (err) {
         console.error(`❌ Error actualizando créditos para ${userId}:`, err);
       }
