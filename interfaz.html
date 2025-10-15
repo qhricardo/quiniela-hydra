@@ -248,7 +248,7 @@
     // 🔹 Programa de invitaciones (moderno)
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const link = `https://quiniela360.com/register.html?invited_by=${user.uid}`;
+        const link = `https://qhricardo.github.io/quiniela-hydra/login.html?invited_by=${user.uid}`;
         document.getElementById("link-invitacion").innerHTML =
           `Tu enlace personal:<br><a href="${link}" target="_blank">${link}</a>`;
 
@@ -283,3 +283,4 @@
   </script>
 </body>
 </html>
+
