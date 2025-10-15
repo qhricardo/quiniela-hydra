@@ -145,75 +145,122 @@
 
   <!-- Lógica de autenticación -->
   <script>
-    const db = firebase.firestore();
+   const db = firebase.firestore();
 
-    // Login con correo y contraseña
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
+// Detectar parámetro ref del URL (ID del invitador)
+const urlParams = new URLSearchParams(window.location.search);
+const referrerId = urlParams.get("ref");
 
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const messageDiv = document.getElementById('form-message');
+// ─────────────── LOGIN POR CORREO/PASSWORD ───────────────
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-      try {
-        await firebase.auth().signInWithEmailAndPassword(email, password);
-        window.location.href = "interfaz.html";
-      } catch (error) {
-        let errorMessage;
-        switch(error.code) {
-          case 'auth/invalid-email':
-            errorMessage = 'Correo electrónico inválido';
-            break;
-          case 'auth/user-not-found':
-            errorMessage = 'Usuario no registrado';
-            break;
-          case 'auth/wrong-password':
-            errorMessage = 'Contraseña incorrecta';
-            break;
-          case 'auth/too-many-requests':
-            errorMessage = 'Demasiados intentos. Intenta más tarde.';
-            break;
-          default:
-            errorMessage = 'Error al iniciar sesión';
-        }
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const messageDiv = document.getElementById('form-message');
 
-        messageDiv.textContent = errorMessage;
-        messageDiv.style.display = 'block';
-      }
-    });
+  try {
+    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+    const user = userCredential.user;
 
-    // Login con Google y registro automático en Firestore
-    document.getElementById('google-login').addEventListener('click', async () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
+    // Guardar usuario en Firestore si es nuevo
+    const userRef = db.collection('users').doc(user.uid);
+    const doc = await userRef.get();
+    if (!doc.exists) {
+      await userRef.set({
+        uid: user.uid,
+        creditos: 1,
+        name: user.displayName || null,
+        email: user.email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
 
-      try {
-        const result = await firebase.auth().signInWithPopup(provider);
-        const user = result.user;
-
-        // Referencia al documento del usuario
-        const userRef = db.collection('users').doc(user.uid);
-        const doc = await userRef.get();
-
-        if (!doc.exists) {
-          // Guardar datos si es nuevo
-          await userRef.set({
-            uid: user.uid,
-            creditos: 1,
-            name: user.displayName || null,
-            email: user.email,
-            photoURL: user.photoURL || null,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      // Registrar crédito al invitador si existe ref
+      if (referrerId) {
+        try {
+          await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
           });
+          console.log(`✅ Créditos de invitación enviados a ${referrerId}`);
+        } catch (err) {
+          console.error("❌ Error enviando créditos de invitación:", err);
         }
-
-        window.location.href = "interfaz.html";
-      } catch (error) {
-        alert("Error al iniciar sesión con Google: " + error.message);
       }
-    });
+    }
+
+    window.location.href = "interfaz.html";
+  } catch (error) {
+    let errorMessage;
+    switch(error.code) {
+      case 'auth/invalid-email':
+        errorMessage = 'Correo electrónico inválido';
+        break;
+      case 'auth/user-not-found':
+        errorMessage = 'Usuario no registrado';
+        break;
+      case 'auth/wrong-password':
+        errorMessage = 'Contraseña incorrecta';
+        break;
+      case 'auth/too-many-requests':
+        errorMessage = 'Demasiados intentos. Intenta más tarde.';
+        break;
+      default:
+        errorMessage = 'Error al iniciar sesión';
+    }
+
+    messageDiv.textContent = errorMessage;
+    messageDiv.style.display = 'block';
+  }
+});
+
+// ─────────────── LOGIN CON GOOGLE ───────────────
+document.getElementById('google-login').addEventListener('click', async () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  try {
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
+
+    // Guardar usuario en Firestore si es nuevo
+    const userRef = db.collection('users').doc(user.uid);
+    const doc = await userRef.get();
+    if (!doc.exists) {
+      await userRef.set({
+        uid: user.uid,
+        creditos: 1,
+        name: user.displayName || null,
+        email: user.email,
+        photoURL: user.photoURL || null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Registrar crédito al invitador si existe ref
+      if (referrerId) {
+        try {
+          await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
+          });
+          console.log(`✅ Créditos de invitación enviados a ${referrerId}`);
+        } catch (err) {
+          console.error("❌ Error enviando créditos de invitación:", err);
+        }
+      }
+    }
+
+    window.location.href = "interfaz.html";
+  } catch (error) {
+    alert("Error al iniciar sesión con Google: " + error.message);
+  }
+});
+
   </script>
 </body>
 </html>
+
 
 
 
