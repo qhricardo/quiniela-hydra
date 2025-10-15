@@ -29,6 +29,13 @@
       box-shadow:0 4px 10px rgba(0,0,0,0.3);
     }
     #closeModal { float:right; cursor:pointer; font-weight:bold; color:#333; }
+
+    #tabla-invitados tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+#tabla-invitados tr:hover {
+  background-color: #e8f5e9;
+}
   </style>
 </head>
 <body>
@@ -336,6 +343,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
   </script>
 </body>
 </html>
+
 
 
 
