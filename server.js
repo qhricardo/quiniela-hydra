@@ -178,10 +178,10 @@ app.post("/webhook", async (req, res) => {
 // ──────────────── ENDPOINT: Créditos por invitación ────────────────
 app.post("/credit-invite", async (req, res) => {
   try {
-    const { referrerId } = req.body;
+    const { referrerId, invitedUserId } = req.body;
 
-    if (!referrerId) {
-      return res.status(400).json({ error: "Falta referrerId" });
+    if (!referrerId || !invitedUserId) {
+      return res.status(400).json({ error: "Faltan parámetros" });
     }
 
     const userRef = db.collection("users").doc(referrerId);
@@ -191,6 +191,17 @@ app.post("/credit-invite", async (req, res) => {
       return res.status(404).json({ error: "Usuario que invitó no encontrado" });
     }
 
+    // Verificar si ya se registró esta invitación para evitar duplicados
+    const inviteQuery = await db.collection("invites")
+      .where("referrerId", "==", referrerId)
+      .where("invitedUserId", "==", invitedUserId)
+      .get();
+
+    if (!inviteQuery.empty) {
+      return res.status(200).json({ success: false, message: "Invitación ya registrada" });
+    }
+
+    // Incrementar créditos
     await userRef.set(
       {
         creditos: admin.firestore.FieldValue.increment(1),
@@ -199,8 +210,15 @@ app.post("/credit-invite", async (req, res) => {
       { merge: true }
     );
 
+    // Guardar registro de invitación
+    await db.collection("invites").add({
+      referrerId,
+      invitedUserId,
+      date: new Date().toISOString(),
+    });
+
     console.log(`🎉 Crédito de invitación agregado a ${referrerId}`);
-    return res.json({ success: true });
+    res.json({ success: true });
   } catch (error) {
     console.error("❌ Error en /credit-invite:", error);
     res.status(500).json({ error: "Error interno" });
