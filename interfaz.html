@@ -22,14 +22,12 @@
     input { padding:8px; width:100%; margin:5px 0; border:1px solid #ccc; border-radius:5px; }
     button { background:#006847; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; }
     button:hover { background:#004d33; }
-
     #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); }
     #modalContent {
       background:white; width:400px; margin:10% auto; padding:20px; border-radius:10px;
       box-shadow:0 4px 10px rgba(0,0,0,0.3);
     }
     #closeModal { float:right; cursor:pointer; font-weight:bold; color:#333; }
-
     #tabla-invitados tr:nth-child(even) { background-color: #f9f9f9; }
     #tabla-invitados tr:hover { background-color: #e8f5e9; }
   </style>
@@ -61,6 +59,7 @@
     </table>
   </section>
 
+  <!-- Crear Grupo -->
   <div class="card">
     <h3>Crear Nuevo Grupo</h3>
     <input type="text" id="nombreGrupo" placeholder="Nombre del grupo">
@@ -92,7 +91,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, getCountFromServer } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, getCountFromServer, updateDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
@@ -113,6 +112,7 @@
     let grupoSeleccionado = null;
     let grupoPassword = null;
 
+    // 🔹 Login con Google
     async function login() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -120,25 +120,92 @@
 
     // 🔹 Estado de autenticación
     onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        usuarioActual = user;
-        const nombreUsuario = user.displayName || user.email.split("@")[0];
-        document.getElementById("usuario").innerText = `Bienvenido, ${nombreUsuario}`;
+      if (!user) return login();
+      usuarioActual = user;
+      const nombreUsuario = user.displayName || user.email.split("@")[0];
+      document.getElementById("usuario").innerText = `Bienvenido, ${nombreUsuario}`;
 
-        // Créditos desde Firestore
-        const docUser = await getDoc(doc(db, "users", user.uid));
-        if (docUser.exists()) {
-          document.getElementById("creditos").innerText = docUser.data().creditos ?? 0;
-        } else {
-          await setDoc(doc(db, "users", user.uid), { nombre: nombreUsuario, creditos: 0 });
-          document.getElementById("creditos").innerText = 0;
-        }
-
-        cargarGrupos();
-      } else {
-        login();
+      // Crear doc si no existe
+      const userRef = doc(db, "users", user.uid);
+      const docUser = await getDoc(userRef);
+      if (!docUser.exists()) {
+        await setDoc(userRef, { nombre: nombreUsuario, creditos: 0 });
       }
+
+      // Mostrar créditos
+      const updatedUserDoc = await getDoc(userRef);
+      document.getElementById("creditos").innerText = updatedUserDoc.data().creditos ?? 0;
+
+      // 🔹 Manejar invitación si viene por link
+      handleInvitation();
+
+      // 🔹 Cargar tabla de invitados del usuario
+      cargarTablaInvitados();
+
+      // 🔹 Cargar grupos disponibles
+      cargarGrupos();
+
+      // 🔹 Generar link de invitación
+      const link = `https://qhricardo.github.io/quiniela-hydra/login.html?invited_by=${user.uid}`;
+      document.getElementById("link-invitacion").innerHTML =
+        `Tu enlace personal:<br><a href="${link}" target="_blank">${link}</a>`;
+      document.getElementById("btn-copiar-link").onclick = async () => {
+        await navigator.clipboard.writeText(link);
+        alert("✅ Enlace copiado:\n" + link);
+      };
     });
+
+    // 🔹 Función para manejar invitación desde el link
+    async function handleInvitation() {
+      const params = new URLSearchParams(window.location.search);
+      const invitedBy = params.get("invited_by");
+      if (!invitedBy || !usuarioActual) return;
+
+      const inviteRef = doc(db, "invitations", invitedBy);
+      const inviteSnap = await getDoc(inviteRef);
+
+      const invitedUserData = { invitedUserId: usuarioActual.uid, date: serverTimestamp() };
+
+      if (inviteSnap.exists()) {
+        await updateDoc(inviteRef, { invitedUsers: arrayUnion(invitedUserData) });
+      } else {
+        await setDoc(inviteRef, { invitedUsers: [invitedUserData] });
+      }
+
+      // 🔹 Incrementar créditos del invitador
+      const referrerRef = doc(db, "users", invitedBy);
+      const referrerSnap = await getDoc(referrerRef);
+      const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
+      await updateDoc(referrerRef, { creditos: nuevosCreditos });
+
+      alert("🎉 Se registró la invitación correctamente y se sumó un crédito al invitador.");
+    }
+
+    // 🔹 Cargar tabla de invitados del usuario actual
+    async function cargarTablaInvitados() {
+      if (!usuarioActual) return;
+      const invitesRef = doc(db, "invitations", usuarioActual.uid);
+      const snap = await getDoc(invitesRef);
+      const tbody = document.querySelector("#tabla-invitados tbody");
+      const contador = document.getElementById("contador-invitados");
+      tbody.innerHTML = "";
+
+      if (snap.exists()) {
+        const invitedUsers = snap.data().invitedUsers || [];
+        contador.textContent = invitedUsers.length;
+        invitedUsers.forEach((inv, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td style="padding:6px; text-align:center;">${index + 1}</td>
+            <td style="padding:6px;">${inv.invitedUserId}</td>
+            <td style="padding:6px;">${new Date(inv.date.toMillis()).toLocaleString("es-MX")}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } else {
+        contador.textContent = "0";
+      }
+    }
 
     // 🔹 Crear grupo
     async function crearGrupo() {
@@ -244,43 +311,6 @@
         }
       }
     };
-
-    // 🔹 Programa de invitaciones (moderno)
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const link = `https://qhricardo.github.io/quiniela-hydra/login.html?invited_by=${user.uid}`;
-        document.getElementById("link-invitacion").innerHTML =
-          `Tu enlace personal:<br><a href="${link}" target="_blank">${link}</a>`;
-
-        document.getElementById("btn-copiar-link").addEventListener("click", async () => {
-          await navigator.clipboard.writeText(link);
-          alert("✅ Enlace copiado:\n" + link);
-        });
-
-        const invitRef = doc(db, "invitations", user.uid);
-        const invitSnap = await getDoc(invitRef);
-        if (invitSnap.exists()) {
-          const data = invitSnap.data();
-          const invitados = data.invitedUsers || [];
-          const tbody = document.querySelector("#tabla-invitados tbody");
-          const contador = document.getElementById("contador-invitados");
-          contador.textContent = invitados.length;
-          tbody.innerHTML = "";
-          invitados.forEach((inv, index) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td style="padding:6px; text-align:center;">${index + 1}</td>
-              <td style="padding:6px;">${inv.invitedId}</td>
-              <td style="padding:6px;">${new Date(inv.date).toLocaleString("es-MX")}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        } else {
-          document.getElementById("contador-invitados").textContent = "0";
-        }
-      }
-    });
   </script>
 </body>
 </html>
-
