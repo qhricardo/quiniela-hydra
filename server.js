@@ -205,13 +205,10 @@ app.post("/credit-invite", async (req, res) => {
     }
 
     // Incrementar créditos
-    await userRef.set(
-      {
-        creditos: admin.firestore.FieldValue.increment(1),
-        lastInviteBonus: new Date().toISOString(),
-      },
-      { merge: true }
-    );
+     await userRef.update({
+      creditos: admin.firestore.FieldValue.increment(1),
+      lastInviteBonus: new Date().toISOString(),
+    });
 
     // Guardar registro de invitación
     await db.collection("invites").add({
