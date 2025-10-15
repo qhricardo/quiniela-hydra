@@ -35,7 +35,28 @@
   <header>
     <h2 id="usuario">Cargando...</h2>
     <div class="info">Créditos: <span id="creditos">0</span></div>
+    <button id="btn-invitar">🔗 Invitar amigos</button>
   </header>
+
+  <!-- Panel de Invitaciones -->
+<section id="panel-invitaciones" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 10px rgba(0,0,0,0.1); padding: 20px; margin: 20px auto; width: 90%; max-width: 600px;">
+  <h2 style="color:#006847; text-align:center;">🎁 Programa de Invitaciones</h2>
+  <p id="link-invitacion" style="text-align:center; margin:10px 0; font-weight:bold;">Cargando tu link...</p>
+  <button id="btn-copiar-link" style="background:#006847; color:white; border:none; border-radius:5px; padding:10px 15px; cursor:pointer; display:block; margin:0 auto 20px;">📋 Copiar enlace</button>
+
+  <p style="text-align:center;">Has invitado a: <strong id="contador-invitados">0</strong> usuarios</p>
+  
+  <table id="tabla-invitados" style="width:100%; border-collapse:collapse; margin-top:15px;">
+    <thead>
+      <tr style="background:#006847; color:white;">
+        <th style="padding:8px;">#</th>
+        <th style="padding:8px;">Invitado</th>
+        <th style="padding:8px;">Fecha</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
 
   <div class="card">
     <h3>Crear Nuevo Grupo</h3>
@@ -255,9 +276,67 @@ document.getElementById("btnEntrar").onclick = async () => {
   }
 };
     window.crearGrupo = crearGrupo;
+
+    
+    firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    const link = `https://quiniela360.com/register.html?invited_by=${user.uid}`;
+    const btn = document.getElementById('btn-invitar');
+
+    btn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(link);
+      alert("✅ Link de invitación copiado:\n" + link);
+    });
+  }
+});
+
+
+    const db = firebase.firestore();
+
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (!user) return;
+
+  // 🔗 Generar link personal
+  const link = `https://quiniela360.com/register.html?invited_by=${user.uid}`;
+  document.getElementById("link-invitacion").innerHTML = `Tu enlace personal:<br><a href="${link}" target="_blank">${link}</a>`;
+
+  // 📋 Copiar link al portapapeles
+  document.getElementById("btn-copiar-link").addEventListener("click", async () => {
+    await navigator.clipboard.writeText(link);
+    alert("✅ Enlace copiado:\n" + link);
+  });
+
+  // 🔍 Consultar invitados registrados
+  const invitRef = db.collection("invitations").doc(user.uid);
+  const invitDoc = await invitRef.get();
+
+  if (invitDoc.exists) {
+    const data = invitDoc.data();
+    const invitados = data.invitedUsers || [];
+    const tbody = document.querySelector("#tabla-invitados tbody");
+    const contador = document.getElementById("contador-invitados");
+    contador.textContent = invitados.length;
+
+    tbody.innerHTML = "";
+
+    invitados.forEach((inv, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="padding:6px; text-align:center;">${index + 1}</td>
+        <td style="padding:6px;">${inv.invitedId}</td>
+        <td style="padding:6px;">${new Date(inv.date).toLocaleString("es-MX")}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } else {
+    document.getElementById("contador-invitados").textContent = "0";
+  }
+});
+
   </script>
 </body>
 </html>
+
 
 
 
