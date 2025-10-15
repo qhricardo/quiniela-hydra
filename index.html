@@ -97,7 +97,7 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
             </li>
          
     <li> </li>
-     <li>💰 3 creditos x $50.</li>
+     <li>💰 1 creditos = $25.00mxn.</li>
   </ul>
 
 <button id="comprarCreditos">Comprar 3 Créditos</button>
@@ -112,11 +112,11 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
 
   // Datos para enviar al backend
   const body = {
-    amount: 50, // precio en MXN
+    amount: 25, // precio en MXN
     userId: currentUser.uid,
     name: currentUser.displayName || "Usuario",
     email: currentUser.email || "",
-    creditsToAdd: 3, // créditos a sumar
+    creditsToAdd: 1, // créditos a sumar
   };
 
   try {
@@ -579,6 +579,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
