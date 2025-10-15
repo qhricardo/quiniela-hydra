@@ -175,6 +175,39 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
+// ──────────────── ENDPOINT: Créditos por invitación ────────────────
+app.post("/credit-invite", async (req, res) => {
+  try {
+    const { referrerId } = req.body;
+
+    if (!referrerId) {
+      return res.status(400).json({ error: "Falta referrerId" });
+    }
+
+    const userRef = db.collection("users").doc(referrerId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: "Usuario que invitó no encontrado" });
+    }
+
+    await userRef.set(
+      {
+        creditos: admin.firestore.FieldValue.increment(1),
+        lastInviteBonus: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+
+    console.log(`🎉 Crédito de invitación agregado a ${referrerId}`);
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("❌ Error en /credit-invite:", error);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
+
 // ──────────────── SERVIDOR ────────────────
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
