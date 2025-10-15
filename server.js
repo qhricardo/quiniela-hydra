@@ -185,15 +185,16 @@ app.post("/credit-invite", async (req, res) => {
       return res.status(400).json({ error: "Faltan parámetros" });
     }
 
-    const userRef = db.collection("users").doc(referrerId);
-    const userDoc = await userRef.get();
+    const referrerRef = db.collection("users").doc(referrerId);
+    const invitedRef = db.collection("users").doc(invitedUserId);
 
-    if (!userDoc.exists) {
-      console.log("⚠️ Referrer no encontrado en Firestore:", referrerId);
+    const [referrerDoc, invitedDoc] = await Promise.all([referrerRef.get(), invitedRef.get()]);
+
+    if (!referrerDoc.exists) {
       return res.status(404).json({ error: "Usuario que invitó no encontrado" });
     }
 
-    // Verificar duplicados
+    // Verificar que la invitación no se haya hecho antes
     const inviteQuery = await db.collection("invites")
       .where("referrerId", "==", referrerId)
       .where("invitedUserId", "==", invitedUserId)
@@ -203,23 +204,20 @@ app.post("/credit-invite", async (req, res) => {
       return res.status(200).json({ success: false, message: "Invitación ya registrada" });
     }
 
-    // Incrementar créditos correctamente
-    await userRef.update({
+    // Incrementar créditos del invitador
+    await referrerRef.update({
       creditos: admin.firestore.FieldValue.increment(1),
       lastInviteBonus: new Date().toISOString(),
     });
 
-    // Guardar registro de invitación
+    // Guardar la invitación
     await db.collection("invites").add({
       referrerId,
       invitedUserId,
       date: new Date().toISOString(),
     });
 
-    // Verificación
-    const updatedUser = await userRef.get();
-    console.log(`🎉 Créditos actualizados del invitador: ${updatedUser.data().creditos}`);
-
+    console.log(`🎉 Crédito de invitación agregado a ${referrerId}`);
     res.json({ success: true });
   } catch (error) {
     console.error("❌ Error en /credit-invite:", error);
