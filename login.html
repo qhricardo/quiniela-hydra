@@ -145,14 +145,11 @@
 
   <!-- Lógica de autenticación -->
   <script>
-   const db = firebase.firestore();
+const db = firebase.firestore();
 
 // Detectar parámetro ref del URL (ID del invitador)
 const urlParams = new URLSearchParams(window.location.search);
 const referrerId = urlParams.get("invited_by"); 
-console.log("🎯 Referrer detectado desde URL:", referrerId);
-
-    // Verificar que se detecte correctamente
 console.log("🎯 Referrer detectado desde URL:", referrerId);
 
 // ─────────────── LOGIN POR CORREO/PASSWORD ───────────────
@@ -179,20 +176,20 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      // Registrar crédito al invitador si existe ref
-          if (!doc.exists && referrerId) {
-      try {
-        const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
-        });
-        const data = await res.json();
-        console.log("📥 Respuesta del backend:", data);
-      } catch (err) {
-        console.error("❌ Error enviando créditos de invitación:", err);
-      }
-    }
+      // 👉 Enviar crédito al invitador (si hay referrerId)
+      if (referrerId) {
+        try {
+          const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
+          });
+          const data = await res.json();
+          console.log("📤 Request al backend enviado con referrerId:", referrerId);
+          console.log("📥 Respuesta del backend:", data);
+        } catch (err) {
+          console.error("❌ Error enviando créditos de invitación:", err);
+        }
       }
     }
 
@@ -242,20 +239,20 @@ document.getElementById('google-login').addEventListener('click', async () => {
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      // Registrar crédito al invitador si existe ref
+      // 👉 Enviar crédito al invitador (si hay referrerId)
       if (referrerId) {
-              try {
-        const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
-        });
-        const data = await res.json(); // Parseamos la respuesta
-        console.log("📤 Request al backend enviado con referrerId:", referrerId);
-        console.log("📥 Respuesta del backend:", data);
-      } catch (err) {
-        console.error("❌ Error enviando créditos de invitación:", err);
-      }
+        try {
+          const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
+          });
+          const data = await res.json();
+          console.log("📤 Request al backend enviado con referrerId:", referrerId);
+          console.log("📥 Respuesta del backend:", data);
+        } catch (err) {
+          console.error("❌ Error enviando créditos de invitación:", err);
+        }
       }
     }
 
@@ -264,10 +261,11 @@ document.getElementById('google-login').addEventListener('click', async () => {
     alert("Error al iniciar sesión con Google: " + error.message);
   }
 });
+</script>
 
-  </script>
 </body>
 </html>
+
 
 
 
