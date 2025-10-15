@@ -179,49 +179,60 @@ app.post("/webhook", async (req, res) => {
 app.post("/credit-invite", async (req, res) => {
   try {
     const { referrerId, invitedUserId } = req.body;
-    console.log("📥 /credit-invite llamado con:", req.body);
+    console.log("📩 /credit-invite recibido:", { referrerId, invitedUserId });
 
+    // Validar datos
     if (!referrerId || !invitedUserId) {
-      return res.status(400).json({ error: "Faltan parámetros" });
+      return res.status(400).json({ success: false, message: "Faltan parámetros" });
     }
 
+    // 🔹 Documento del invitador
     const referrerRef = db.collection("users").doc(referrerId);
-    const invitedRef = db.collection("users").doc(invitedUserId);
+    const referrerSnap = await referrerRef.get();
 
-    const [referrerDoc, invitedDoc] = await Promise.all([referrerRef.get(), invitedRef.get()]);
-
-    if (!referrerDoc.exists) {
-      return res.status(404).json({ error: "Usuario que invitó no encontrado" });
+    if (!referrerSnap.exists) {
+      return res.status(404).json({ success: false, message: "Usuario que invitó no encontrado" });
     }
 
-    // Verificar que la invitación no se haya hecho antes
-    const inviteQuery = await db.collection("invites")
-      .where("referrerId", "==", referrerId)
-      .where("invitedUserId", "==", invitedUserId)
-      .get();
+    // 🔹 Documento de invitaciones agrupadas por invitador
+    const invitesRef = db.collection("invites").doc(referrerId);
+    const invitesSnap = await invitesRef.get();
 
-    if (!inviteQuery.empty) {
-      return res.status(200).json({ success: false, message: "Invitación ya registrada" });
+    let invitedUsers = [];
+    if (invitesSnap.exists) {
+      invitedUsers = invitesSnap.data().invitedUsers || [];
+      const alreadyInvited = invitedUsers.some(u => u.invitedUserId === invitedUserId);
+      if (alreadyInvited) {
+        console.log("⚠️ Invitación duplicada, no se suman créditos.");
+        return res.json({ success: false, message: "Ya se registró esta invitación" });
+      }
     }
 
-    // Incrementar créditos del invitador
+    // 🔹 Agregar nuevo invitado
+    invitedUsers.push({
+      invitedUserId,
+      date: new Date().toISOString(),
+    });
+
+    await invitesRef.set({ invitedUsers }, { merge: true });
+
+    // 🔹 Sumar crédito al invitador
     await referrerRef.update({
       creditos: admin.firestore.FieldValue.increment(1),
       lastInviteBonus: new Date().toISOString(),
     });
 
-    // Guardar la invitación
-    await db.collection("invites").add({
+    console.log(`🎉 Crédito de invitación sumado a ${referrerId}`);
+    res.json({
+      success: true,
+      message: "Crédito agregado exitosamente",
       referrerId,
       invitedUserId,
-      date: new Date().toISOString(),
     });
 
-    console.log(`🎉 Crédito de invitación agregado a ${referrerId}`);
-    res.json({ success: true });
   } catch (error) {
     console.error("❌ Error en /credit-invite:", error);
-    res.status(500).json({ error: "Error interno" });
+    res.status(500).json({ success: false, message: "Error interno", error: error.message });
   }
 });
 
