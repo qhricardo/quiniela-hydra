@@ -141,16 +141,50 @@
                 return;
             }
 
+            // 🔹 Detectar si el usuario llegó con invitación
+            const urlParams = new URLSearchParams(window.location.search);
+            const invitedBy = urlParams.get("invited_by");
+            
             try {
                 // Crear usuario en Firebase Auth
                 const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
                 
-                // Guardar información adicional en Firestore
-                await firebase.firestore().collection('users').doc(userCredential.user.uid).set({
-                    name: name,
-                    email: email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+               const db = firebase.firestore();
+            const newUserRef = db.collection('users').doc(userCredential.user.uid);
+            
+            await newUserRef.set({
+                name: name,
+                email: email,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                creditos: 1
+            });
+            
+            // 🔹 Si fue invitado, registrar y dar crédito al que invitó
+            if (invitedBy && invitedBy !== userCredential.user.uid) {
+                const invitRef = db.collection('invitations').doc(invitedBy);
+                const invitDoc = await invitRef.get();
+                const data = invitDoc.exists ? invitDoc.data() : { invitedUsers: [] };
+                const yaInvitado = data.invitedUsers?.some(u => u.invitedId === userCredential.user.uid);
+            
+                if (!yaInvitado) {
+                    // Agrega el nuevo invitado a la lista
+                    await invitRef.set({
+                        invitedUsers: firebase.firestore.FieldValue.arrayUnion({
+                            invitedId: userCredential.user.uid,
+                            date: new Date().toISOString()
+                        })
+                    }, { merge: true });
+            
+                    // Aumenta 1 crédito al invitador
+                    const refInvitador = db.collection('users').doc(invitedBy);
+                    await refInvitador.update({
+                        creditos: firebase.firestore.FieldValue.increment(1)
+                    });
+            
+                    console.log(`🎁 +1 crédito otorgado a ${invitedBy} por invitar a ${userCredential.user.uid}`);
+                }
+            }
+
 
                 // Mensaje de éxito
                 messageDiv.textContent = '¡Cuenta creada con éxito! Redirigiendo...';
@@ -186,6 +220,7 @@
     </script>
 </body>
 </html>
+
 
 
 
