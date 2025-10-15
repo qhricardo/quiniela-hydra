@@ -179,6 +179,7 @@ app.post("/webhook", async (req, res) => {
 app.post("/credit-invite", async (req, res) => {
   try {
     const { referrerId, invitedUserId } = req.body;
+    console.log("📥 /credit-invite llamado con:", req.body);
 
     if (!referrerId || !invitedUserId) {
       return res.status(400).json({ error: "Faltan parámetros" });
@@ -188,9 +189,11 @@ app.post("/credit-invite", async (req, res) => {
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
+      console.log("⚠️ Referrer no encontrado en Firestore:", referrerId);
       return res.status(404).json({ error: "Usuario que invitó no encontrado" });
     }
 
+  
     // Verificar si ya se registró esta invitación para evitar duplicados
     const inviteQuery = await db.collection("invites")
       .where("referrerId", "==", referrerId)
