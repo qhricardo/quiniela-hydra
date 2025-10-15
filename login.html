@@ -180,16 +180,18 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
       // Registrar crédito al invitador si existe ref
       if (referrerId) {
-        try {
-          await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
-          });
-          console.log(`✅ Créditos de invitación enviados a ${referrerId}`);
-        } catch (err) {
-          console.error("❌ Error enviando créditos de invitación:", err);
-        }
+              try {
+        const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
+        });
+        const data = await res.json(); // Parseamos la respuesta
+        console.log("📤 Request al backend enviado con referrerId:", referrerId);
+        console.log("📥 Respuesta del backend:", data);
+      } catch (err) {
+        console.error("❌ Error enviando créditos de invitación:", err);
+      }
       }
     }
 
@@ -241,16 +243,18 @@ document.getElementById('google-login').addEventListener('click', async () => {
 
       // Registrar crédito al invitador si existe ref
       if (referrerId) {
-        try {
-          await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
-          });
-          console.log(`✅ Créditos de invitación enviados a ${referrerId}`);
-        } catch (err) {
-          console.error("❌ Error enviando créditos de invitación:", err);
-        }
+              try {
+        const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
+        });
+        const data = await res.json(); // Parseamos la respuesta
+        console.log("📤 Request al backend enviado con referrerId:", referrerId);
+        console.log("📥 Respuesta del backend:", data);
+      } catch (err) {
+        console.error("❌ Error enviando créditos de invitación:", err);
+      }
       }
     }
 
@@ -263,6 +267,7 @@ document.getElementById('google-login').addEventListener('click', async () => {
   </script>
 </body>
 </html>
+
 
 
 
