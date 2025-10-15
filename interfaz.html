@@ -182,30 +182,31 @@
     }
 
     // 🔹 Cargar tabla de invitados del usuario actual
-    async function cargarTablaInvitados() {
-      if (!usuarioActual) return;
-      const invitesRef = doc(db, "invitations", usuarioActual.uid);
-      const snap = await getDoc(invitesRef);
-      const tbody = document.querySelector("#tabla-invitados tbody");
-      const contador = document.getElementById("contador-invitados");
-      tbody.innerHTML = "";
+   async function cargarTablaInvitados() {
+  if (!usuarioActual) return;
+  const invitesRef = doc(db, "invites", usuarioActual.uid);
+  const snap = await getDoc(invitesRef);
+  const tbody = document.querySelector("#tabla-invitados tbody");
+  tbody.innerHTML = "";
 
-      if (snap.exists()) {
-        const invitedUsers = snap.data().invitedUsers || [];
-        contador.textContent = invitedUsers.length;
-        invitedUsers.forEach((inv, index) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td style="padding:6px; text-align:center;">${index + 1}</td>
-            <td style="padding:6px;">${inv.invitedUserId}</td>
-            <td style="padding:6px;">${new Date(inv.date.toMillis()).toLocaleString("es-MX")}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      } else {
-        contador.textContent = "0";
-      }
-    }
+  if (snap.exists()) {
+    const invitedUsers = snap.data().invitedUsers || [];
+    document.getElementById("contador-invitados").textContent = invitedUsers.length;
+
+    invitedUsers.forEach((inv, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="padding:6px; text-align:center;">${index + 1}</td>
+        <td style="padding:6px;">${inv.invitedUserId}</td>
+        <td style="padding:6px;">${new Date(inv.date.toMillis()).toLocaleString("es-MX")}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } else {
+    document.getElementById("contador-invitados").textContent = "0";
+  }
+}
+
 
     // 🔹 Crear grupo
     async function crearGrupo() {
@@ -314,3 +315,4 @@
   </script>
 </body>
 </html>
+
