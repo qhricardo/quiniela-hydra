@@ -151,6 +151,9 @@
 const urlParams = new URLSearchParams(window.location.search);
 const referrerId = urlParams.get("ref");
 
+    // Verificar que se detecte correctamente
+console.log("🎯 Referrer detectado desde URL:", referrerId);
+
 // ─────────────── LOGIN POR CORREO/PASSWORD ───────────────
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -260,6 +263,7 @@ document.getElementById('google-login').addEventListener('click', async () => {
   </script>
 </body>
 </html>
+
 
 
 
