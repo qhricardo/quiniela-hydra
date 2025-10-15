@@ -45,6 +45,31 @@
     <p id="link-invitacion" style="text-align:center; margin:10px 0; font-weight:bold;">Cargando tu link...</p>
     <button id="btn-copiar-link" style="background:#006847; color:white; border:none; border-radius:5px; padding:10px 15px; cursor:pointer; display:block; margin:0 auto 20px;">📋 Copiar enlace</button>
 
+<div style="margin-top:20px; text-align:center;">
+  <button id="btnWhatsApp" style="
+    background-color:#25D366;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-right:10px;
+    font-size:16px;">
+    📲 Invitar por WhatsApp
+  </button>
+
+  <button id="btnMessenger" style="
+    background-color:#0084FF;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;">
+    💬 Invitar por Messenger
+  </button>
+</div>
+    
     <p style="text-align:center;">Has invitado a: <strong id="contador-invitados">0</strong> usuarios</p>
 
     <table id="tabla-invitados" style="width:100%; border-collapse:collapse; margin-top:15px;">
@@ -313,6 +338,37 @@
       }
     };
   </script>
+
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  // 🧾 Obtén el link desde Firebase o variable ya definida
+  const linkInvitacion = window.linkInvitacion || "";
+
+  // ─── 📱 Compartir por WhatsApp ─────────────────────────────
+  document.getElementById("btnWhatsApp").addEventListener("click", () => {
+    if (!linkInvitacion) {
+      alert("El link de invitación no está disponible.");
+      return;
+    }
+    const mensaje = encodeURIComponent(`Únete a mi grupo en Quiniela360 👉 ${linkInvitacion}`);
+    const url = `https://wa.me/?text=${mensaje}`;
+    window.open(url, "_blank");
+  });
+
+  // ─── 💬 Compartir por Messenger ────────────────────────────
+  document.getElementById("btnMessenger").addEventListener("click", () => {
+    if (!linkInvitacion) {
+      alert("El link de invitación no está disponible.");
+      return;
+    }
+    const appId = "1234567890"; // ⚠️ reemplázalo por tu app_id de Facebook si tienes uno
+    const url = `fb-messenger://share?link=${encodeURIComponent(linkInvitacion)}&app_id=${appId}`;
+    // En móviles abrirá Messenger directamente
+    window.open(url, "_blank");
+  });
+});
+</script>
 </body>
 </html>
+
 
