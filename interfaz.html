@@ -39,51 +39,33 @@
     <button id="btn-invitar">🔗 Invitar amigos</button>
   </header>
 
-  <!-- Panel de Invitaciones -->
-  <section id="panel-invitaciones" style="background:#fff; border-radius:10px; box-shadow:0 5px 10px rgba(0,0,0,0.1); padding:20px; margin:20px auto; width:90%; max-width:600px;">
-    <h2 style="color:#006847; text-align:center;">🎁 Programa de Invitaciones</h2>
-    <p id="link-invitacion" style="text-align:center; margin:10px 0; font-weight:bold;">Cargando tu link...</p>
-    <button id="btn-copiar-link" style="background:#006847; color:white; border:none; border-radius:5px; padding:10px 15px; cursor:pointer; display:block; margin:0 auto 20px;">📋 Copiar enlace</button>
+  <!-- 🟢 SECCIÓN DE INVITACIONES -->
+<section id="invitaciones" style="margin-top:30px; text-align:center;">
+  <h2 style="color:#006847;">Invita a tus amigos y gana créditos</h2>
+  <p>Comparte tu enlace y recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
 
-<div style="margin-top:20px; text-align:center;">
-  <button id="btnWhatsApp" style="
-    background-color:#25D366;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    border-radius:8px;
-    cursor:pointer;
-    margin-right:10px;
-    font-size:16px;">
-    📲 Invitar por WhatsApp
-  </button>
+  <!-- Botones de invitación -->
+  <div style="margin-top:20px;">
+    <button id="invitarWhatsApp"
+      style="padding:10px 20px; background-color:#25D366; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
+      📱 Invitar por WhatsApp
+    </button>
 
-  <button id="btnMessenger" style="
-    background-color:#0084FF;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:16px;">
-    💬 Invitar por Messenger
-  </button>
-</div>
-    
-    <p style="text-align:center;">Has invitado a: <strong id="contador-invitados">0</strong> usuarios</p>
+    <button id="invitarMessenger"
+      style="padding:10px 20px; background-color:#0084FF; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
+      💬 Invitar por Messenger
+    </button>
 
-    <table id="tabla-invitados" style="width:100%; border-collapse:collapse; margin-top:15px;">
-      <thead>
-        <tr style="background:#006847; color:white;">
-          <th style="padding:8px;">#</th>
-          <th style="padding:8px;">Invitado</th>
-          <th style="padding:8px;">Fecha</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
+    <button id="copiarLink"
+      style="padding:10px 20px; background-color:#006847; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
+      📋 Copiar mi link
+    </button>
+  </div>
+     <!-- Mostrar el link personalizado -->
+  <p style="margin-top:20px;">Tu enlace de invitación:</p>
+  <div id="miLink" style="color:#006847; font-weight:bold;"></div>
+</section>
+ 
   <!-- Crear Grupo -->
   <div class="card">
     <h3>Crear Nuevo Grupo</h3>
@@ -339,36 +321,66 @@
     };
   </script>
 
-  <script>
-document.addEventListener("DOMContentLoaded", () => {
-  // 🧾 Obtén el link desde Firebase o variable ya definida
-  const linkInvitacion = window.linkInvitacion || "";
+   // ───────────────────────────────
+  // FUNCIONES DE INVITACIÓN
+  // ──────────────────────────
 
-  // ─── 📱 Compartir por WhatsApp ─────────────────────────────
-  document.getElementById("btnWhatsApp").addEventListener("click", () => {
-    if (!linkInvitacion) {
-      alert("El link de invitación no está disponible.");
-      return;
+ <script type="module">
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { app } from "./firebase-config.js"; // Ajusta si tu archivo está en otra carpeta
+
+  const auth = getAuth(app);
+
+  // Detectar si hay usuario logueado
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      const userId = user.uid;
+      const linkInvitacion = `https://quiniela360.com/?ref=${userId}`;
+      console.log("🔗 Link de invitación generado:", linkInvitacion);
+
+      // Mostrar link en pantalla
+      const linkDiv = document.getElementById("miLink");
+      linkDiv.textContent = linkInvitacion;
+
+      // Asignar funciones a botones
+      document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
+      document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
+      document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
+    } else {
+      console.log("⚠️ No hay usuario logueado, no se puede generar link de invitación");
     }
-    const mensaje = encodeURIComponent(`Únete a mi grupo en Quiniela360 👉 ${linkInvitacion}`);
-    const url = `https://wa.me/?text=${mensaje}`;
-    window.open(url, "_blank");
   });
 
-  // ─── 💬 Compartir por Messenger ────────────────────────────
-  document.getElementById("btnMessenger").addEventListener("click", () => {
-    if (!linkInvitacion) {
-      alert("El link de invitación no está disponible.");
-      return;
-    }
-    const appId = "1234567890"; // ⚠️ reemplázalo por tu app_id de Facebook si tienes uno
-    const url = `fb-messenger://share?link=${encodeURIComponent(linkInvitacion)}&app_id=${appId}`;
-    // En móviles abrirá Messenger directamente
+  // ───────────────────────────────
+  // FUNCIONES DE INVITACIÓN
+  // ───────────────────────────────
+
+  // WhatsApp
+  function invitarWhatsApp(link) {
+    const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Gana premios acertando los resultados cada semana. Regístrate aquí 👉 ${link}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
     window.open(url, "_blank");
-  });
-});
+  }
+
+  // Messenger
+  function invitarMessenger(link) {
+    const mensaje = `⚽ ¡Te invito a jugar en Quiniela360! Regístrate aquí 👉 ${link}`;
+    const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
+    window.open(url, "_blank");
+  }
+
+  // Copiar al portapapeles
+  function copiarLink(link) {
+    navigator.clipboard.writeText(link).then(() => {
+      alert("✅ Link copiado al portapapeles:\n" + link);
+    }).catch(() => {
+      alert("⚠️ No se pudo copiar el link, cópialo manualmente.");
+    });
+  }
 </script>
+
 </body>
 </html>
+
 
 
