@@ -22,7 +22,7 @@
     input { padding:8px; width:100%; margin:5px 0; border:1px solid #ccc; border-radius:5px; }
     button { background:#006847; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; }
     button:hover { background:#004d33; }
-    /* 🔹 Modal flotante */
+
     #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); }
     #modalContent {
       background:white; width:400px; margin:10% auto; padding:20px; border-radius:10px;
@@ -30,12 +30,8 @@
     }
     #closeModal { float:right; cursor:pointer; font-weight:bold; color:#333; }
 
-    #tabla-invitados tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-#tabla-invitados tr:hover {
-  background-color: #e8f5e9;
-}
+    #tabla-invitados tr:nth-child(even) { background-color: #f9f9f9; }
+    #tabla-invitados tr:hover { background-color: #e8f5e9; }
   </style>
 </head>
 <body>
@@ -46,24 +42,24 @@
   </header>
 
   <!-- Panel de Invitaciones -->
-<section id="panel-invitaciones" style="background: #fff; border-radius: 10px; box-shadow: 0 5px 10px rgba(0,0,0,0.1); padding: 20px; margin: 20px auto; width: 90%; max-width: 600px;">
-  <h2 style="color:#006847; text-align:center;">🎁 Programa de Invitaciones</h2>
-  <p id="link-invitacion" style="text-align:center; margin:10px 0; font-weight:bold;">Cargando tu link...</p>
-  <button id="btn-copiar-link" style="background:#006847; color:white; border:none; border-radius:5px; padding:10px 15px; cursor:pointer; display:block; margin:0 auto 20px;">📋 Copiar enlace</button>
+  <section id="panel-invitaciones" style="background:#fff; border-radius:10px; box-shadow:0 5px 10px rgba(0,0,0,0.1); padding:20px; margin:20px auto; width:90%; max-width:600px;">
+    <h2 style="color:#006847; text-align:center;">🎁 Programa de Invitaciones</h2>
+    <p id="link-invitacion" style="text-align:center; margin:10px 0; font-weight:bold;">Cargando tu link...</p>
+    <button id="btn-copiar-link" style="background:#006847; color:white; border:none; border-radius:5px; padding:10px 15px; cursor:pointer; display:block; margin:0 auto 20px;">📋 Copiar enlace</button>
 
-  <p style="text-align:center;">Has invitado a: <strong id="contador-invitados">0</strong> usuarios</p>
-  
-  <table id="tabla-invitados" style="width:100%; border-collapse:collapse; margin-top:15px;">
-    <thead>
-      <tr style="background:#006847; color:white;">
-        <th style="padding:8px;">#</th>
-        <th style="padding:8px;">Invitado</th>
-        <th style="padding:8px;">Fecha</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</section>
+    <p style="text-align:center;">Has invitado a: <strong id="contador-invitados">0</strong> usuarios</p>
+
+    <table id="tabla-invitados" style="width:100%; border-collapse:collapse; margin-top:15px;">
+      <thead>
+        <tr style="background:#006847; color:white;">
+          <th style="padding:8px;">#</th>
+          <th style="padding:8px;">Invitado</th>
+          <th style="padding:8px;">Fecha</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
 
   <div class="card">
     <h3>Crear Nuevo Grupo</h3>
@@ -75,24 +71,11 @@
   <h3>Grupos Disponibles</h3>
   <div id="gruposContainer"></div>
 
-  <div id="modalExito" style="
-  display:none;
-  position:fixed;
-  top:20%;
-  left:50%;
-  transform:translateX(-50%);
-  background:#006847;
-  color:white;
-  padding:20px 30px;
-  border-radius:10px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.3);
-  font-size:16px;
-  z-index:1000;
-">
-  ✅ Grupo creado con éxito
-</div>
+  <div id="modalExito" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#006847; color:white; padding:20px 30px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.3); font-size:16px; z-index:1000;">
+    ✅ Grupo creado con éxito
+  </div>
 
-  <!-- 🔹 Modal para detalle de grupo -->
+  <!-- Modal Detalle Grupo -->
   <div id="modal">
     <div id="modalContent">
       <span id="closeModal">&times;</span>
@@ -130,12 +113,12 @@
     let grupoSeleccionado = null;
     let grupoPassword = null;
 
-    // 🔹 Iniciar sesión automática (Google)
     async function login() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     }
 
+    // 🔹 Estado de autenticación
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         usuarioActual = user;
@@ -145,7 +128,10 @@
         // Créditos desde Firestore
         const docUser = await getDoc(doc(db, "users", user.uid));
         if (docUser.exists()) {
-          document.getElementById("creditos").innerText = docUser.data().creditos || 0;
+          document.getElementById("creditos").innerText = docUser.data().creditos ?? 0;
+        } else {
+          await setDoc(doc(db, "users", user.uid), { nombre: nombreUsuario, creditos: 0 });
+          document.getElementById("creditos").innerText = 0;
         }
 
         cargarGrupos();
@@ -156,206 +142,144 @@
 
     // 🔹 Crear grupo
     async function crearGrupo() {
-  const nombre = document.getElementById("nombreGrupo").value;
-  const pass = document.getElementById("passwordGrupo").value || null;
-  if (!nombre || !usuarioActual) return alert("Debes poner un nombre y estar logueado");
+      const nombre = document.getElementById("nombreGrupo").value;
+      const pass = document.getElementById("passwordGrupo").value || null;
+      if (!nombre || !usuarioActual) return alert("Debes poner un nombre y estar logueado");
 
-  const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0];
+      const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0];
 
-  try {
-    // Crear el grupo
-    const docRef = await addDoc(collection(db, "grupos"), {
-      nombre: nombre,
-      creadoPor: usuarioActual.uid,
-      creadorNombre: nombreCreador,
-      password: pass,
-      creadoEn: new Date()
-    });
+      try {
+        const docRef = await addDoc(collection(db, "grupos"), {
+          nombre,
+          creadoPor: usuarioActual.uid,
+          creadorNombre: nombreCreador,
+          password: pass,
+          creadoEn: new Date()
+        });
 
-    // Entrar automáticamente como miembro
-    await setDoc(
-      doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid),
-      {
-        nombre: nombreCreador,
-        agregadoPor: usuarioActual.uid,
-        fechaIngreso: new Date()
-      },
-      { merge: true }
-    );
+        await setDoc(doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid), {
+          nombre: nombreCreador,
+          agregadoPor: usuarioActual.uid,
+          fechaIngreso: new Date()
+        }, { merge: true });
 
-    // Limpiar inputs
-    document.getElementById("nombreGrupo").value = "";
-    document.getElementById("passwordGrupo").value = "";
+        document.getElementById("nombreGrupo").value = "";
+        document.getElementById("passwordGrupo").value = "";
 
-    // Mostrar modal flotante
-    const modalExito = document.getElementById("modalExito");
-    modalExito.style.display = "block";
-
-    setTimeout(() => {
-      modalExito.style.display = "none";
-      location.reload();
-    }, 1500);
-
-  } catch (e) {
-    console.error("Error al crear grupo:", e);
-    alert("❌ Error al crear el grupo: " + e.message);
-  }
-}
+        const modalExito = document.getElementById("modalExito");
+        modalExito.style.display = "block";
+        setTimeout(() => {
+          modalExito.style.display = "none";
+          location.reload();
+        }, 1500);
+      } catch (e) {
+        console.error("Error al crear grupo:", e);
+        alert("❌ Error al crear el grupo: " + e.message);
+      }
+    }
+    window.crearGrupo = crearGrupo;
 
     // 🔹 Listar grupos
-   async function cargarGrupos() {
-     const contenedor = document.getElementById("gruposContainer");
-     contenedor.innerHTML = "";
+    async function cargarGrupos() {
+      const contenedor = document.getElementById("gruposContainer");
+      contenedor.innerHTML = "";
 
-     const querySnapshot = await getDocs(collection(db, "grupos"));
-     querySnapshot.forEach(async (docSnap) => {
-       const grupo = docSnap.data();
+      const querySnapshot = await getDocs(collection(db, "grupos"));
+      querySnapshot.forEach(async (docSnap) => {
+        const grupo = docSnap.data();
 
-       // contar participantes
-       const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
-       const countSnap = await getCountFromServer(miembrosRef);
-       const numParticipantes = countSnap.data().count;
+        const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
+        const countSnap = await getCountFromServer(miembrosRef);
+        const numParticipantes = countSnap.data().count;
 
-       const div = document.createElement("div");
-       div.className = "grupo-card";
-       div.innerHTML = `
-         <h3>${grupo.nombre}</h3>
-         <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
-         <small>Participantes: ${numParticipantes}</small>
-       `;
-       div.onclick = () => abrirModal(docSnap.id, grupo);
-       contenedor.appendChild(div);
-     }); // 🔹 aquí cierro bien el forEach
-   }
+        const div = document.createElement("div");
+        div.className = "grupo-card";
+        div.innerHTML = `
+          <h3>${grupo.nombre}</h3>
+          <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
+          <small>Participantes: ${numParticipantes}</small>
+        `;
+        div.onclick = () => abrirModal(docSnap.id, grupo);
+        contenedor.appendChild(div);
+      });
+    }
+
     // 🔹 Modal detalle grupo
     function abrirModal(grupoId, grupo) {
       grupoSeleccionado = grupoId;
       grupoPassword = grupo.password || null;
-
       document.getElementById("modalTitulo").innerText = grupo.nombre;
-      document.getElementById("modalInfo").innerText =
-        `Creado por: ${grupo.creadorNombre || "Sin nombre"}`;
-
+      document.getElementById("modalInfo").innerText = `Creado por: ${grupo.creadorNombre || "Sin nombre"}`;
       document.getElementById("passwordDiv").style.display = grupoPassword ? "block" : "none";
       document.getElementById("modal").style.display = "block";
     }
 
-    // 🔹 Cerrar modal
     document.getElementById("closeModal").onclick = () => {
       document.getElementById("modal").style.display = "none";
     };
 
+    document.getElementById("btnEntrar").onclick = async () => {
+      if (!usuarioActual) return alert("Debes iniciar sesión primero.");
+      if (grupoSeleccionado) {
+        if (grupoPassword) {
+          const passIngresada = document.getElementById("passwordInput").value;
+          if ((passIngresada || "").trim() !== (grupoPassword || "").trim()) {
+            alert("Contraseña incorrecta ❌");
+            return;
+          }
+        }
+        const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
+        try {
+          await setDoc(doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid), {
+            nombre: nombreUsuario,
+            agregadoPor: usuarioActual.uid,
+            fechaIngreso: new Date()
+          }, { merge: true });
 
-// 🔹 Entrar al grupo
-document.getElementById("btnEntrar").onclick = async () => {
-  if (!usuarioActual) {
-    alert("Debes iniciar sesión primero.");
-    return;
-  }
-
-  if (grupoSeleccionado) {
-    if (grupoPassword) {
-      const passIngresada = document.getElementById("passwordInput").value;
-      if ((passIngresada || "").trim() !== (grupoPassword || "").trim()) {
-        alert("Contraseña incorrecta ❌");
-        return;
+          localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+          window.location.href = "index.html";
+        } catch (error) {
+          console.error("Error al entrar al grupo:", error);
+          alert("No se pudo entrar al grupo. Revisa permisos en Firestore.");
+        }
       }
-    }
-    // // 👤 Registrar al usuario como miembro del grupo
-    const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
-    try {
-     await setDoc(
-  doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid),
-  {
-    nombre: nombreUsuario,
-    agregadoPor: usuarioActual.uid,
-    fechaIngreso: new Date()
-  },
-  { merge: true }
-);
+    };
 
-      localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
-      window.location.href = "index.html";
-    } catch (error) {
-      console.error("Error al entrar al grupo:", error);
-      alert("No se pudo entrar al grupo. Revisa permisos en Firestore.");
-    }
-  }
-};
-    window.crearGrupo = crearGrupo;
+    // 🔹 Programa de invitaciones (moderno)
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const link = `https://quiniela360.com/register.html?invited_by=${user.uid}`;
+        document.getElementById("link-invitacion").innerHTML =
+          `Tu enlace personal:<br><a href="${link}" target="_blank">${link}</a>`;
 
-    
-    firebase.auth().onAuthStateChanged((user) => {
-  if (user) {
-    const link = `https://quiniela360.com/register.html?invited_by=${user.uid}`;
-    const btn = document.getElementById('btn-invitar');
+        document.getElementById("btn-copiar-link").addEventListener("click", async () => {
+          await navigator.clipboard.writeText(link);
+          alert("✅ Enlace copiado:\n" + link);
+        });
 
-    btn.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(link);
-      alert("✅ Link de invitación copiado:\n" + link);
+        const invitRef = doc(db, "invitations", user.uid);
+        const invitSnap = await getDoc(invitRef);
+        if (invitSnap.exists()) {
+          const data = invitSnap.data();
+          const invitados = data.invitedUsers || [];
+          const tbody = document.querySelector("#tabla-invitados tbody");
+          const contador = document.getElementById("contador-invitados");
+          contador.textContent = invitados.length;
+          tbody.innerHTML = "";
+          invitados.forEach((inv, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td style="padding:6px; text-align:center;">${index + 1}</td>
+              <td style="padding:6px;">${inv.invitedId}</td>
+              <td style="padding:6px;">${new Date(inv.date).toLocaleString("es-MX")}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        } else {
+          document.getElementById("contador-invitados").textContent = "0";
+        }
+      }
     });
-  }
-});
-
-
-    const db = firebase.firestore();
-
-firebase.auth().onAuthStateChanged(async (user) => {
-  if (!user) return;
-
-  // 🔗 Generar link personal
-  const link = `https://quiniela360.com/register.html?invited_by=${user.uid}`;
-  document.getElementById("link-invitacion").innerHTML = `Tu enlace personal:<br><a href="${link}" target="_blank">${link}</a>`;
-
-  // 📋 Copiar link al portapapeles
-  document.getElementById("btn-copiar-link").addEventListener("click", async () => {
-    await navigator.clipboard.writeText(link);
-    alert("✅ Enlace copiado:\n" + link);
-  });
-
-  // 🔍 Consultar invitados registrados
-  const invitRef = db.collection("invitations").doc(user.uid);
-  const invitDoc = await invitRef.get();
-
-  if (invitDoc.exists) {
-    const data = invitDoc.data();
-    const invitados = data.invitedUsers || [];
-    const tbody = document.querySelector("#tabla-invitados tbody");
-    const contador = document.getElementById("contador-invitados");
-    contador.textContent = invitados.length;
-
-    tbody.innerHTML = "";
-
-    invitados.forEach((inv, index) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td style="padding:6px; text-align:center;">${index + 1}</td>
-        <td style="padding:6px;">${inv.invitedId}</td>
-        <td style="padding:6px;">${new Date(inv.date).toLocaleString("es-MX")}</td>
-      `;
-      tbody.appendChild(row);
-    });
-  } else {
-    document.getElementById("contador-invitados").textContent = "0";
-  }
-});
-
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
