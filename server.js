@@ -193,8 +193,7 @@ app.post("/credit-invite", async (req, res) => {
       return res.status(404).json({ error: "Usuario que invitó no encontrado" });
     }
 
-  
-    // Verificar si ya se registró esta invitación para evitar duplicados
+    // Verificar duplicados
     const inviteQuery = await db.collection("invites")
       .where("referrerId", "==", referrerId)
       .where("invitedUserId", "==", invitedUserId)
@@ -204,8 +203,8 @@ app.post("/credit-invite", async (req, res) => {
       return res.status(200).json({ success: false, message: "Invitación ya registrada" });
     }
 
-    // Incrementar créditos
-     await userRef.update({
+    // Incrementar créditos correctamente
+    await userRef.update({
       creditos: admin.firestore.FieldValue.increment(1),
       lastInviteBonus: new Date().toISOString(),
     });
@@ -217,7 +216,10 @@ app.post("/credit-invite", async (req, res) => {
       date: new Date().toISOString(),
     });
 
-    console.log(`🎉 Crédito de invitación agregado a ${referrerId}`);
+    // Verificación
+    const updatedUser = await userRef.get();
+    console.log(`🎉 Créditos actualizados del invitador: ${updatedUser.data().creditos}`);
+
     res.json({ success: true });
   } catch (error) {
     console.error("❌ Error en /credit-invite:", error);
