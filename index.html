@@ -635,12 +635,12 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
     /* 📲 Invitaciones */
 function invitarWhatsAppIndex() {
-  const link = "https://quiniela360.com";
+  const link = "https://qhricardo.github.io/quiniela-hydra/index.html";
   const mensaje = encodeURIComponent(`Te invito a jugar en Quiniela360 ⚽ entra aquí 👉 ${link}`);
   window.open(`https://wa.me/?text=${mensaje}`, "_blank");
 }
 function invitarMessengerIndex() {
-  const link = "https://quiniela360.com";
+  const link = "https://qhricardo.github.io/quiniela-hydra/index.html";
   const appId = "1234567890";
   window.open(`fb-messenger://share?link=${encodeURIComponent(link)}&app_id=${appId}`, "_blank");
 }
@@ -664,6 +664,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
