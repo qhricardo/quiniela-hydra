@@ -634,26 +634,22 @@ firebase.auth().onAuthStateChanged(async (user) => {
 });
 
     /* 📲 Invitaciones */
-  const link = "https://qhricardo.github.io/quiniela-hydra/index.html";
+ // 🔹 ID del usuario invitador
+  // Si tienes sesión o guardas ID en localStorage
+  const invitadorId = localStorage.getItem("userId") || "invitadoAnonimo";
 
-  // Función genérica para WhatsApp
-function invitarWhatsAppIndex() {
-  const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
-}
+  // 🔹 Link dinámico con tracking de invitación
+  const link = `https://qhricardo.github.io/quiniela-hydra/index.html?invitado=${invitadorId}`;
 
-function invitarMessengerIndex() {
-  const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
-  window.open(url, "_blank");
-}
-
-  // Opcional: funciones "alias" para mantener tu HTML actual
+  // 🔹 Funciones de invitación
   function invitarWhatsAppIndex() {
-    invitarWhatsApp(link);
+    const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
   }
 
   function invitarMessengerIndex() {
-    invitarMessenger(link);
+    const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
+    window.open(url, "_blank");
   }
 </script>
 
@@ -677,6 +673,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
