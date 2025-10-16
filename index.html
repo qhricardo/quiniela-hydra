@@ -95,49 +95,58 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
                     <span id="seconds">00</span>
                 </div>
             </li>
-         
-   <div style="margin-top:25px; text-align:center;">
-         <button onclick="invitarWhatsAppIndex()" 
-  style="
-    background-color:#25D366; 
-    color:white; 
-    border:none; 
-    width:60px; 
-    height:60px; 
-    border-radius:50%; 
-    cursor:pointer; 
-    display:flex; 
-    align-items:center; 
-    justify-content:center; 
-    box-shadow:0 4px 8px rgba(0,0,0,0.2);
-    transition:transform 0.2s ease, box-shadow 0.2s ease;
-  "
-  onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.3)';"
-  onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';"
->
-  <img src="img/whatsapp.png" alt="WhatsApp" width="32" height="32">
-</button>
-          <button onclick="invitarMessengerIndex()" 
-  style="
-    background-color:#0084FF; 
-    color:white; 
-    border:none; 
-    width:60px; 
-    height:60px; 
-    border-radius:50%; 
-    cursor:pointer; 
-    display:flex; 
-    align-items:center; 
-    justify-content:center; 
-    box-shadow:0 4px 8px rgba(0,0,0,0.2);
-    transition:transform 0.2s ease, box-shadow 0.2s ease;
-  "
-  onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.3)';"
-  onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';"
->
-  <img src="img/messenger.png" alt="Messenger" width="32" height="32">
-</button>
-        </div>
+         <li style="margin-top:20px;">Invita a tus amigoS y gana 1 Credito GRATIS</li>
+<div style="
+  margin-top:25px; 
+  display:flex; 
+  justify-content:center; 
+  align-items:center; 
+  gap:15px;
+">
+  <!-- Botón WhatsApp -->
+  <button onclick="invitarWhatsAppIndex()" 
+    style="
+      background-color:#25D366; 
+      color:white; 
+      border:none; 
+      width:60px; 
+      height:60px; 
+      border-radius:50%; 
+      cursor:pointer; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      box-shadow:0 4px 8px rgba(0,0,0,0.2);
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    "
+    onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.3)';"
+    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';"
+  >
+    <img src="img/whatsapp.png" alt="WhatsApp" width="32" height="32">
+  </button>
+
+  <!-- Botón Messenger -->
+  <button onclick="invitarMessengerIndex()" 
+    style="
+      background-color:#0084FF; 
+      color:white; 
+      border:none; 
+      width:60px; 
+      height:60px; 
+      border-radius:50%; 
+      cursor:pointer; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      box-shadow:0 4px 8px rgba(0,0,0,0.2);
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    "
+    onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.3)';"
+    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';"
+  >
+    <img src="img/messenger.png" alt="Messenger" width="32" height="32">
+  </button>
+</div>
         <li style="margin-top:20px;">💰 1 crédito = $25.00 MXN</li>
         <button id="comprarCreditos">Comprar 1 Crédito</button>
     </div>
@@ -641,6 +650,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
