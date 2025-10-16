@@ -664,34 +664,6 @@ firebase.auth().onAuthStateChanged(async (user) => {
     }
 });
 
-/ Función para mostrar cuántos pronósticos ha hecho el usuario en el grupo actual
-async function actualizarContadorPronosticos() {
-    const grupoActual = localStorage.getItem('grupoSeleccionado');
-    if (!grupoActual || !currentUser) return;
-
-    const grupoRef = db.collection('grupos').doc(grupoActual);
-    const pronSnapshot = await grupoRef.collection('pronosticos')
-        .where('userId', '==', currentUser.uid)
-        .get();
-
-    const usados = pronSnapshot.size;
-    const limite = 3;
-    const contadorEl = document.getElementById('contadorPronosticos');
-    contadorEl.textContent = `Pronósticos usados: ${usados} / ${limite}`;
-
-    // Si ya llegó al límite, desactiva el botón
-    const btn = document.getElementById('guardar-btn');
-    if (usados >= limite) {
-        btn.disabled = true;
-        btn.style.backgroundColor = '#999';
-        btn.style.cursor = 'not-allowed';
-    } else {
-        btn.disabled = false;
-        btn.style.backgroundColor = '#006847';
-        btn.style.cursor = 'pointer';
-    }
-}
-    
 
 // Logout
 document.getElementById('logout-btn').addEventListener('click', ()=>firebase.auth().signOut());
@@ -712,6 +684,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
