@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -30,6 +30,11 @@
     #closeModal { float:right; cursor:pointer; font-weight:bold; color:#333; }
     #tabla-invitados tr:nth-child(even) { background-color: #f9f9f9; }
     #tabla-invitados tr:hover { background-color: #e8f5e9; }
+
+    /* 🔹 Estilos de invitación */
+    #invitarWhatsApp { background-color:#25D366; }
+    #invitarMessenger { background-color:#0084FF; }
+    #copiarLink { background-color:#006847; }
   </style>
 </head>
 <body>
@@ -47,25 +52,26 @@
   <!-- Botones de invitación -->
   <div style="margin-top:20px;">
     <button id="invitarWhatsApp"
-      style="padding:10px 20px; background-color:#25D366; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
+      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
       📱 Invitar por WhatsApp
     </button>
 
     <button id="invitarMessenger"
-      style="padding:10px 20px; background-color:#0084FF; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
+      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
       💬 Invitar por Messenger
     </button>
 
     <button id="copiarLink"
-      style="padding:10px 20px; background-color:#006847; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
+      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
       📋 Copiar mi link
     </button>
   </div>
-     <!-- Mostrar el link personalizado -->
+
+  <!-- Mostrar el link personalizado -->
   <p style="margin-top:20px;">Tu enlace de invitación:</p>
   <div id="miLink" style="color:#006847; font-weight:bold;"></div>
 </section>
- 
+
   <!-- Crear Grupo -->
   <div class="card">
     <h3>Crear Nuevo Grupo</h3>
@@ -94,7 +100,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- 🔹 Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
@@ -103,7 +109,6 @@
     const firebaseConfig = {
       apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
       authDomain: "quiniela-hydra.firebaseapp.com",
-      databaseURL: "https://quieniela-hydra-default-rtdb.firebaseio.com",
       projectId: "quiniela-hydra",
       storageBucket: "quiniela-hydra.firebasestorage.app",
       messagingSenderId: "329849216739",
@@ -119,101 +124,54 @@
     let grupoSeleccionado = null;
     let grupoPassword = null;
 
-    // 🔹 Login con Google
     async function login() {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     }
 
-    // 🔹 Estado de autenticación
     onAuthStateChanged(auth, async (user) => {
       if (!user) return login();
       usuarioActual = user;
+
       const nombreUsuario = user.displayName || user.email.split("@")[0];
       document.getElementById("usuario").innerText = `Bienvenido, ${nombreUsuario}`;
 
-      // Crear doc si no existe
       const userRef = doc(db, "users", user.uid);
       const docUser = await getDoc(userRef);
       if (!docUser.exists()) {
         await setDoc(userRef, { nombre: nombreUsuario, creditos: 0 });
       }
 
-      // Mostrar créditos
       const updatedUserDoc = await getDoc(userRef);
       document.getElementById("creditos").innerText = updatedUserDoc.data().creditos ?? 0;
 
-      // 🔹 Manejar invitación si viene por link
       handleInvitation();
-
-      // 🔹 Cargar tabla de invitados del usuario
-      cargarTablaInvitados();
-
-      // 🔹 Cargar grupos disponibles
       cargarGrupos();
 
       // 🔹 Generar link de invitación
-      const link = `https://qhricardo.github.io/quiniela-hydra/login.html?invited_by=${user.uid}`;
-      document.getElementById("link-invitacion").innerHTML =
-        `Tu enlace personal:<br><a href="${link}" target="_blank">${link}</a>`;
-      document.getElementById("btn-copiar-link").onclick = async () => {
-        await navigator.clipboard.writeText(link);
-        alert("✅ Enlace copiado:\n" + link);
-      };
+      const linkInvitacion = `https://quiniela360.com/?ref=${user.uid}`;
+      document.getElementById("miLink").textContent = linkInvitacion;
+
+      // Asignar botones
+      document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
+      document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
+      document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
     });
 
-    // 🔹 Función para manejar invitación desde el link
+    // 🔹 Procesar invitaciones
     async function handleInvitation() {
       const params = new URLSearchParams(window.location.search);
-      const invitedBy = params.get("invited_by");
+      const invitedBy = params.get("ref");
       if (!invitedBy || !usuarioActual) return;
 
-      const inviteRef = doc(db, "invitations", invitedBy);
-      const inviteSnap = await getDoc(inviteRef);
-
-      const invitedUserData = { invitedUserId: usuarioActual.uid, date: serverTimestamp() };
-
-      if (inviteSnap.exists()) {
-        await updateDoc(inviteRef, { invitedUsers: arrayUnion(invitedUserData) });
-      } else {
-        await setDoc(inviteRef, { invitedUsers: [invitedUserData] });
-      }
-
-      // 🔹 Incrementar créditos del invitador
       const referrerRef = doc(db, "users", invitedBy);
       const referrerSnap = await getDoc(referrerRef);
-      const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
-      await updateDoc(referrerRef, { creditos: nuevosCreditos });
-
-      alert("🎉 Se registró la invitación correctamente y se sumó un crédito al invitador.");
+      if (referrerSnap.exists()) {
+        const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
+        await updateDoc(referrerRef, { creditos: nuevosCreditos });
+        alert("🎉 Se registró tu invitación correctamente.");
+      }
     }
-
-    // 🔹 Cargar tabla de invitados del usuario actual
-   async function cargarTablaInvitados() {
-  if (!usuarioActual) return;
-  const invitesRef = doc(db, "invites", usuarioActual.uid);
-  const snap = await getDoc(invitesRef);
-  const tbody = document.querySelector("#tabla-invitados tbody");
-  tbody.innerHTML = "";
-
-  if (snap.exists()) {
-    const invitedUsers = snap.data().invitedUsers || [];
-    document.getElementById("contador-invitados").textContent = invitedUsers.length;
-
-    invitedUsers.forEach((inv, index) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td style="padding:6px; text-align:center;">${index + 1}</td>
-        <td style="padding:6px;">${inv.invitedUserId}</td>
-        <td style="padding:6px;">${new Date(inv.date.toMillis()).toLocaleString("es-MX")}</td>
-      `;
-      tbody.appendChild(row);
-    });
-  } else {
-    document.getElementById("contador-invitados").textContent = "0";
-  }
-}
-
 
     // 🔹 Crear grupo
     async function crearGrupo() {
@@ -258,11 +216,9 @@
     async function cargarGrupos() {
       const contenedor = document.getElementById("gruposContainer");
       contenedor.innerHTML = "";
-
       const querySnapshot = await getDocs(collection(db, "grupos"));
       querySnapshot.forEach(async (docSnap) => {
         const grupo = docSnap.data();
-
         const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
         const countSnap = await getCountFromServer(miembrosRef);
         const numParticipantes = countSnap.data().count;
@@ -279,7 +235,6 @@
       });
     }
 
-    // 🔹 Modal detalle grupo
     function abrirModal(grupoId, grupo) {
       grupoSeleccionado = grupoId;
       grupoPassword = grupo.password || null;
@@ -319,68 +274,21 @@
         }
       }
     };
-  </script>
 
-   // ───────────────────────────────
-  // FUNCIONES DE INVITACIÓN
-  // ──────────────────────────
-
- <script type="module">
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { app } from "./firebase-config.js"; // Ajusta si tu archivo está en otra carpeta
-
-  const auth = getAuth(app);
-
-  // Detectar si hay usuario logueado
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      const userId = user.uid;
-      const linkInvitacion = `https://quiniela360.com/?ref=${userId}`;
-      console.log("🔗 Link de invitación generado:", linkInvitacion);
-
-      // Mostrar link en pantalla
-      const linkDiv = document.getElementById("miLink");
-      linkDiv.textContent = linkInvitacion;
-
-      // Asignar funciones a botones
-      document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
-      document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
-      document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
-    } else {
-      console.log("⚠️ No hay usuario logueado, no se puede generar link de invitación");
+    // 🔹 Funciones de invitación
+    function invitarWhatsApp(link) {
+      const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
     }
-  });
-
-  // ───────────────────────────────
-  // FUNCIONES DE INVITACIÓN
-  // ───────────────────────────────
-
-  // WhatsApp
-  function invitarWhatsApp(link) {
-    const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Gana premios acertando los resultados cada semana. Regístrate aquí 👉 ${link}`;
-    const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
-    window.open(url, "_blank");
-  }
-
-  // Messenger
-  function invitarMessenger(link) {
-    const mensaje = `⚽ ¡Te invito a jugar en Quiniela360! Regístrate aquí 👉 ${link}`;
-    const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
-    window.open(url, "_blank");
-  }
-
-  // Copiar al portapapeles
-  function copiarLink(link) {
-    navigator.clipboard.writeText(link).then(() => {
-      alert("✅ Link copiado al portapapeles:\n" + link);
-    }).catch(() => {
-      alert("⚠️ No se pudo copiar el link, cópialo manualmente.");
-    });
-  }
-</script>
-
+    function invitarMessenger(link) {
+      const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
+      window.open(url, "_blank");
+    }
+    function copiarLink(link) {
+      navigator.clipboard.writeText(link)
+        .then(() => alert("✅ Link copiado al portapapeles:\n" + link))
+        .catch(() => alert("⚠️ No se pudo copiar el link, cópialo manualmente."));
+    }
+  </script>
 </body>
 </html>
-
-
-
