@@ -64,21 +64,24 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
 #countdown span { font-weight: bold; }
 #recuadro-derecho { float: right; width: 300px; margin: -300px 10px; }
 #recuadro-derecho img { display: block; width: 100%; height: auto; border-radius: 5px; }
-  #comprarCreditos {
-    padding: 10px 20px;
-    background-color: #006847;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-  }
+ #comprarCreditos {
+  display: block;               /* Para poder centrarlo */
+  margin: 30px auto;            /* Centrado horizontal y con margen arriba y abajo */
+  padding: 15px 30px;           /* Más grande que antes */
+  font-size: 18px;              /* Texto más grande */
+  background-color: #006847;
+  color: white;
+  border: none;
+  border-radius: 8px;           /* Bordes más redondeados */
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
 
-  #comprarCreditos:hover {
-    background-color: #008f5a;
-    transform: scale(1.05);
-  }
+#comprarCreditos:hover {
+  background-color: #004d33;
+  transform: scale(1.05);       /* Efecto de “zoom” al pasar el mouse */
+}
     
 </style>
 </head>
@@ -130,11 +133,11 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
 
   
   </div>
-</section>
-  <!-- Mostrar el link personalizado -->
-  <!-- <p style="margin-top:20px;">Tu enlace de invitación:</p>
- <div id="miLink" style="color:#006847; font-weight:bold;">Cargando...</div>
 
+  <!-- Mostrar el link personalizado -->
+   <p style="margin-top:20px;">Tu enlace de invitación:</p>
+ <div id="miLink" style="color:#006847; font-weight:bold;">Cargando...</div>
+</section>
 
 <!-- 🔹 Firebase Auth y lógica de invitación -->
 <script type="module">
@@ -668,6 +671,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
