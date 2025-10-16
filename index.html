@@ -96,19 +96,51 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
                 </div>
             </li>
          
-   <div style="margin-top:25px; text-align:center;">
-          <button onclick="invitarWhatsAppIndex()" style="background-color:#25D366; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; margin-right:10px;">
-            📲 WhatsApp
-          </button>
-          <button onclick="invitarMessengerIndex()" style="background-color:#0084FF; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
-            💬 Messenger
-          </button>
-        </div>
-        <li style="margin-top:20px;">💰 1 crédito = $25.00 MXN</li>
-        <button id="comprarCreditos">Comprar 1 Crédito</button>
-       <li>💰 1 creditos = $25.00mxn.</li>
-  </ul>
-  </div>
+   <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
+
+  <!-- WhatsApp -->
+  <button onclick="invitarWhatsAppIndex()" 
+    style="
+      background-color:#25D366; 
+      width:60px; 
+      height:60px; 
+      border:none; 
+      border-radius:50%; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      box-shadow:0 4px 8px rgba(0,0,0,0.2); 
+      cursor:pointer;
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    "
+    onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.3)';"
+    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';"
+  >
+    <img src="img/whatsapp.png" alt="WhatsApp" width="35" height="35">
+  </button>
+
+  <!-- Messenger -->
+  <button onclick="invitarMessengerIndex()" 
+    style="
+      background-color:#0084FF; 
+      width:60px; 
+      height:60px; 
+      border:none; 
+      border-radius:50%; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      box-shadow:0 4px 8px rgba(0,0,0,0.2); 
+      cursor:pointer;
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    "
+    onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.3)';"
+    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)';"
+  >
+    <img src="img/messenger.png" alt="Messenger" width="35" height="35">
+  </button>
+
+</div>
 
 <script>
 document.getElementById("comprarCreditos").addEventListener("click", async () => {
@@ -609,6 +641,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
