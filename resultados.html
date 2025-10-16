@@ -148,19 +148,19 @@
         <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
         <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th>
       </tr>
-      <tr id="input-resultados">
-        <td colspan="3">Ingresar Resultados</td>
-        <td><input type="L" maxlength="1" size="1" id="res-1" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-2" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-3" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-4" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-5" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-6" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-7" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-8" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-9" /></td>
-        <td><input type="text" maxlength="1" size="1" id="res-10" /></td>
-      </tr>
+     <tr id="input-resultados">
+  <td colspan="3" style="font-weight:bold; color:#006847;">Ingresar Resultados</td>
+  <td><input type="text" maxlength="1" size="1" id="res-1" value="L" oninput="cargarResultados()" /></td>
+  <td><input type="text" maxlength="1" size="1" id="res-2" oninput="cargarResultados()" /></td>
+  <td><input type="text" maxlength="1" size="1" id="res-3" oninput="cargarResultados()" /></td>
+  <td><input type="text" maxlength="1" size="1" id="res-4" oninput="cargarResultados()" /></td>
+  <td><input type="text" maxlength="1" size="1" id="res-5" oninput="cargarResultados()" /></td>
+  <td><input type="text" maxlength="1" size="1" id="res-6" oninput="cargarResultados()" /></td>
+  <td><input type="text" maxlength="1" size="1" id="res-7" oninput="cargarResultados()" /></td>
+  <td><input type="text" maxlength="1" size="1" id="res-8" oninput="cargarResultados()" /></td>
+  <td><input type="text" maxlength="1" size="1" id="res-9" oninput="cargarResultados()" /></td>
+  <td><input type="text" maxlength="1" size="1" id="res-10" oninput="cargarResultados()" /></td>
+</tr>
       <tr>
         <th>Usuario</th>
         <th>Fecha</th>
@@ -355,6 +355,7 @@ const snapshot = await db.collection("grupos")
 </footer>
 </body>
 </html>
+
 
 
 
