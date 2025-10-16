@@ -414,6 +414,9 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
 
         <div class="actions">
             <button id="guardar-btn">Guardar Pronósticos</button>
+            <div id="contadorPronosticos" style="margin-top: 10px; font-weight: bold; color: #006847;">
+              Pronósticos usados: 0 / 3
+            </div>
         </div>
         <div id="loading" class="loading">Guardando tus pronósticos...</div>
     </div>
@@ -498,7 +501,7 @@ document.querySelectorAll('.opcion').forEach(el=>{
 });
 
 
-// Guardar pronósticos
+// Guardar pronósticos (limitado a 3 por usuario por grupo con contador visible)
 document.getElementById('guardar-btn').addEventListener('click', async () => {
     if (userCredits <= 0) {
         alert('No tienes créditos suficientes');
@@ -546,15 +549,21 @@ document.getElementById('guardar-btn').addEventListener('click', async () => {
                 throw new Error("Créditos insuficientes");
             }
 
-            // Traer el nombre del grupo
             const grupoRef = db.collection('grupos').doc(grupoActual);
             const grupoDoc = await tx.get(grupoRef);
-
             if (!grupoDoc.exists) {
                 throw new Error("El grupo no existe");
             }
 
-            const grupoNombre = grupoDoc.data().nombre || grupoActual;
+            const pronSnapshot = await grupoRef.collection('pronosticos')
+                .where('userId', '==', currentUser.uid)
+                .get();
+
+            const pronCount = pronSnapshot.size;
+
+            if (pronCount >= 3) {
+                throw new Error("Solo puedes realizar 3 pronósticos por grupo");
+            }
 
             // 🔹 Descuenta 1 crédito
             tx.update(userRef, {
@@ -566,7 +575,7 @@ document.getElementById('guardar-btn').addEventListener('click', async () => {
             tx.set(pronRef, {
                 userId: currentUser.uid,
                 grupoId: grupoActual,
-                grupoNombre: grupoNombre,
+                grupoNombre: grupoDoc.data().nombre || grupoActual,
                 userName: currentUser.displayName || userDoc.data().name || "Usuario",
                 partidos: partidos,
                 fecha: firebase.firestore.Timestamp.now(),
@@ -574,17 +583,21 @@ document.getElementById('guardar-btn').addEventListener('click', async () => {
             });
         });
 
-        alert("✅ Pronósticos guardados correctamente. Se descontó 1 crédito.");
+        alert("✅ Pronóstico guardado correctamente. Se descontó 1 crédito.");
         document.getElementById('loading').style.display = 'none';
         document.getElementById('guardar-btn').disabled = false;
 
-        // Actualiza los créditos visibles
+        // 🔹 Actualiza créditos
         userCredits--;
         document.getElementById('username').textContent =
             `${currentUser.displayName || currentUser.email} | Créditos: ${userCredits}`;
+
+        // 🔹 Refresca contador
+        actualizarContadorPronosticos();
+
     } catch (error) {
         console.error("❌ Error al guardar pronósticos:", error);
-        alert("Ocurrió un error al guardar los pronósticos. " + error.message);
+        alert(error.message);
         document.getElementById('loading').style.display = 'none';
         document.getElementById('guardar-btn').disabled = false;
     }
@@ -671,6 +684,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
