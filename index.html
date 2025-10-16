@@ -113,41 +113,16 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
             </li>
          
    <div style="margin-top:25px; text-align:center;">
-  <button onclick="invitarWhatsAppIndex()" style="
-    background-color:#25D366;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    border-radius:8px;
-    cursor:pointer;
-    margin-right:10px;">
-    📲 Compartir por WhatsApp
-  </button>
-
-  <button onclick="invitarMessengerIndex()" style="
-    background-color:#0084FF;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    border-radius:8px;
-    cursor:pointer;">
-    💬 Compartir por Messenger
-  </button>
-</div>
-
-<script>
-function invitarWhatsAppIndex() {
-  const link = "https://quiniela360.com";
-  const mensaje = encodeURIComponent(`Te invito a jugar en Quiniela360 ⚽ entra aquí 👉 ${link}`);
-  window.open(`https://wa.me/?text=${mensaje}`, "_blank");
-}
-
-function invitarMessengerIndex() {
-  const link = "https://quiniela360.com";
-  const appId = "1234567890"; // opcional
-  window.open(`fb-messenger://share?link=${encodeURIComponent(link)}&app_id=${appId}`, "_blank");
-}
-</script>
+          <button onclick="invitarWhatsAppIndex()" style="background-color:#25D366; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; margin-right:10px;">
+            📲 WhatsApp
+          </button>
+          <button onclick="invitarMessengerIndex()" style="background-color:#0084FF; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">
+            💬 Messenger
+          </button>
+        </div>
+        <li style="margin-top:20px;">💰 1 crédito = $25.00 MXN</li>
+        <button id="comprarCreditos">Comprar 1 Crédito</button>
+    </div>
 
      <li>💰 1 creditos = $25.00mxn.</li>
   </ul>
@@ -426,6 +401,17 @@ firebase.auth().onAuthStateChanged(async(user)=>{
         document.getElementById('username').textContent = `${userData.name||user.email} | Créditos: ${userCredits}`;
     }
 
+        /* ✅ Limitar a 3 registros */
+        async function puedeGuardarPronostico(grupo){
+          const snapshot = await db.collection('grupos')
+            .doc(grupo)
+            .collection('pronosticos')
+            .where('userId', '==', currentUser.uid)
+            .where('jornada', '==', jornadaActual)
+            .get();
+          return snapshot.size < 3;
+        }
+    
     // Obtener grupo actual
     const grupoActual = localStorage.getItem('grupoSeleccionado');
     if(!grupoActual){ alert("Debes seleccionar un grupo"); return; }
@@ -611,6 +597,17 @@ firebase.auth().onAuthStateChanged(async (user) => {
     }
 });
 
+    /* 📲 Invitaciones */
+function invitarWhatsAppIndex() {
+  const link = "https://quiniela360.com";
+  const mensaje = encodeURIComponent(`Te invito a jugar en Quiniela360 ⚽ entra aquí 👉 ${link}`);
+  window.open(`https://wa.me/?text=${mensaje}`, "_blank");
+}
+function invitarMessengerIndex() {
+  const link = "https://quiniela360.com";
+  const appId = "1234567890";
+  window.open(`fb-messenger://share?link=${encodeURIComponent(link)}&app_id=${appId}`, "_blank");
+}
 
 // Logout
 document.getElementById('logout-btn').addEventListener('click', ()=>firebase.auth().signOut());
@@ -631,6 +628,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
