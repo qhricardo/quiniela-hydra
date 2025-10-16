@@ -634,10 +634,10 @@ firebase.auth().onAuthStateChanged(async (user) => {
 });
 
     /* 📲 Invitaciones */
-// 🔹 ID del usuario invitador desde sesión (igual que interfaz)
+// 🔹 Obtener ID real del usuario invitador
 const invitadorId = localStorage.getItem("userId") || "invitadoAnonimo";
 
-// 🔹 Link con el mismo formato que interfaz
+// 🔹 Link correcto como interfaz
 const link = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${invitadorId}`;
 
 function invitarWhatsAppIndex() {
@@ -649,6 +649,7 @@ function invitarMessengerIndex() {
   const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
   window.open(url, "_blank");
 }
+
 </script>
 
 
@@ -671,6 +672,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
