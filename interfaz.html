@@ -159,20 +159,40 @@
     });
 
     // 🔹 Procesar invitaciones
-    async function handleInvitation() {
-      const params = new URLSearchParams(window.location.search);
-      const invitedBy = params.get("ref");
-      if (!invitedBy || !usuarioActual) return;
+   async function handleInvitation() {
+  const params = new URLSearchParams(window.location.search);
+  const invitedBy = params.get("ref");
+  if (!invitedBy || !usuarioActual) return;
 
-      const referrerRef = doc(db, "users", invitedBy);
-      const referrerSnap = await getDoc(referrerRef);
-      if (referrerSnap.exists()) {
-        const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
-        await updateDoc(referrerRef, { creditos: nuevosCreditos });
-        alert("🎉 Se registró tu invitación correctamente.");
-      }
-    }
+  // Evitar autoinvitación
+  if (invitedBy === usuarioActual.uid) return;
 
+  const referrerRef = doc(db, "users", invitedBy);
+  const referrerSnap = await getDoc(referrerRef);
+  if (!referrerSnap.exists()) return;
+
+  // Colección para invitados
+  const invitedUsersRef = doc(db, "invites", invitedBy);
+  const invitedSnap = await getDoc(invitedUsersRef);
+  let invitedUsers = [];
+  if (invitedSnap.exists()) invitedUsers = invitedSnap.data().invitedUsers || [];
+
+  // Verificar si ya fue invitado
+  if (!invitedUsers.includes(usuarioActual.uid)) {
+    // Guardar invitado
+    invitedUsers.push(usuarioActual.uid);
+    await setDoc(invitedUsersRef, { invitedUsers }, { merge: true });
+
+    // Sumar crédito
+    const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
+    await updateDoc(referrerRef, { creditos: nuevosCreditos });
+
+    // 🔹 Actualizar UI
+    document.getElementById("creditos").innerText = nuevosCreditos;
+
+    alert("🎉 Se registró tu invitación correctamente.");
+  }
+}
     // 🔹 Crear grupo
     async function crearGrupo() {
       const nombre = document.getElementById("nombreGrupo").value;
@@ -292,5 +312,6 @@
   </script>
 </body>
 </html>
+
 
 
