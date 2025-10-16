@@ -82,9 +82,10 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
     </button>
 </header>
 
-<div style="display: flex; flex-wrap: wrap; align-items: flex-start;">
-    <div style="flex: 1 1 250px; max-width: 300px; background-color: #fff; border: 2px solid #006847; border-radius: 10px; padding: 15px; margin: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-        <h3 style="color: #006847; text-align: center;">📢 Avisos</h3>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 30px;">
+    <!-- Cuadro de Avisos centrado -->
+    <div style="width: 300px; background-color: #fff; border: 2px solid #006847; border-radius: 10px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); text-align: center;">
+        <h3 style="color: #006847;">📢 Avisos</h3>
         <ul id="avisos-lista" style="list-style-type: none; padding-left: 0; font-size: 14px;">
             <li>🎯 Cierre de Pronósticos</li>
             <li>
@@ -657,6 +658,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
