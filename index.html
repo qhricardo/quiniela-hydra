@@ -580,19 +580,19 @@ document.getElementById('guardar-btn').addEventListener('click', async () => {
                 estado: "pendiente"
             });
         });
-
-        alert("✅ Pronóstico guardado correctamente. Se descontó 1 crédito.");
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('guardar-btn').disabled = false;
+        
+      alert("✅ Pronósticos guardados y 1 crédito descontado correctamente.");
+        // 🔹 Espera breve para que el usuario lea el mensaje
+        setTimeout(() => {
+          window.location.href = "resultados.html";
+        }, 1000);
 
         // 🔹 Actualiza créditos
         userCredits--;
         document.getElementById('username').textContent =
             `${currentUser.displayName || currentUser.email} | Créditos: ${userCredits}`;
 
-        // 🔹 Refresca contador
-        actualizarContadorPronosticos();
-
+    
     } catch (error) {
         console.error("❌ Error al guardar pronósticos:", error);
         alert(error.message);
@@ -682,6 +682,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
