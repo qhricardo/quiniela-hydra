@@ -112,45 +112,85 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
                 </div>
             </li>
          
-   <div style="margin-top:25px; text-align:center;">
-  <button onclick="invitarWhatsAppIndex()" style="
-    background-color:#25D366;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    border-radius:8px;
-    cursor:pointer;
-    margin-right:10px;">
-    📲 Compartir por WhatsApp
-  </button>
+   <section id="invitaciones" style="margin-top:30px; text-align:center;">
+  <h2 style="color:#006847;">Invita a tus amigos y gana créditos</h2>
+  <p>Comparte tu enlace y recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
 
-  <button onclick="invitarMessengerIndex()" style="
-    background-color:#0084FF;
-    color:white;
-    border:none;
-    padding:10px 20px;
-    border-radius:8px;
-    cursor:pointer;">
-    💬 Compartir por Messenger
-  </button>
-</div>
+  <!-- Botones de invitación -->
+  <div style="margin-top:20px;">
+    <button id="invitarWhatsApp"
+      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px; background-color:#25D366;">
+      📱 Invitar por WhatsApp
+    </button>
 
-<script>
-function invitarWhatsAppIndex() {
-  const link = "https://quiniela360.com";
-  const mensaje = encodeURIComponent(`Te invito a jugar en Quiniela360 ⚽ entra aquí 👉 ${link}`);
-  window.open(`https://wa.me/?text=${mensaje}`, "_blank");
-}
+    <button id="invitarMessenger"
+      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px; background-color:#0084FF;">
+      💬 Invitar por Messenger
+    </button>
 
-function invitarMessengerIndex() {
-  const link = "https://quiniela360.com";
-  const appId = "1234567890"; // opcional
-  window.open(`fb-messenger://share?link=${encodeURIComponent(link)}&app_id=${appId}`, "_blank");
-}
+    <button id="copiarLink"
+      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px; background-color:#006847;">
+      📋 Copiar mi link
+    </button>
+  </div>
+
+  <!-- Mostrar el link personalizado -->
+  <p style="margin-top:20px;">Tu enlace de invitación:</p>
+  <div id="miLink" style="color:#006847; font-weight:bold;">Cargando...</div>
+</section>
+
+<!-- 🔹 Firebase Auth y lógica de invitación -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
+    authDomain: "quiniela-hydra.firebaseapp.com",
+    projectId: "quiniela-hydra",
+    storageBucket: "quiniela-hydra.firebasestorage.app",
+    messagingSenderId: "329849216739",
+    appId: "1:329849216739:web:83d23ff1424eb167172fd6",
+    measurementId: "G-FWDDQ5HQYV"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  async function login() {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return login(); // Si no hay sesión, login con Google
+    const uid = user.uid;
+    const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${uid}`;
+    document.getElementById("miLink").textContent = linkInvitacion;
+
+    // Funciones independientes
+    function invitarWhatsApp(link) {
+      const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
+    }
+
+    function invitarMessenger(link) {
+      const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
+      window.open(url, "_blank");
+    }
+
+    function copiarLink(link) {
+      navigator.clipboard.writeText(link)
+        .then(() => alert("✅ Link copiado al portapapeles:\n" + link))
+        .catch(() => alert("⚠️ No se pudo copiar el link, cópialo manualmente."));
+    }
+
+    // Asignar eventos
+    document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
+    document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
+    document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
+  });
 </script>
-
-     <li>💰 1 creditos = $25.00mxn.</li>
-  </ul>
 
 <button id="comprarCreditos">Comprar 1 Créditos</button>
 
@@ -631,6 +671,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
