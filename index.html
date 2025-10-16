@@ -96,14 +96,9 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
                 </div>
             </li>
          <li style="margin-top:20px;">Invita a tus Amigos y Gana 1 Credito GRATIS</li>
-<div style="
-  margin-top:25px; 
-  display:flex; 
-  justify-content:center; 
-  align-items:center; 
-  gap:15px;
-">
- <button id="btnWhatsAppIndex">📱 Invitar por WhatsApp</button>
+ <div style="margin-top:25px; display:flex; justify-content:center; gap:15px;">
+            <button id="btnWhatsAppIndex">📱 Invitar por WhatsApp</button>
+        </div>
 
 <script type="module">
   // Asegúrate de importar Firebase y obtener usuarioActual como en la interfaz
@@ -632,6 +627,16 @@ firebase.auth().onAuthStateChanged(async (user) => {
     }
 });
 
+    // Función WhatsApp
+    function invitarWhatsApp(link){
+    const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
+
+        // WhatsApp
+    const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${user.uid}`;
+    document.getElementById("btnWhatsAppIndex").onclick = ()=>invitarWhatsApp(linkInvitacion);
+
+});
 
 // Logout
 document.getElementById('logout-btn').addEventListener('click', ()=>firebase.auth().signOut());
@@ -652,6 +657,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
