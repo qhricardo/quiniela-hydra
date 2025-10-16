@@ -637,16 +637,15 @@ firebase.auth().onAuthStateChanged(async (user) => {
   const link = "https://qhricardo.github.io/quiniela-hydra/index.html";
 
   // Función genérica para WhatsApp
-  function invitarWhatsApp(link) {
-    const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
-  }
+function invitarWhatsAppIndex() {
+  const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
+}
 
-  // Función genérica para Messenger
-  function invitarMessenger(link) {
-    const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
-    window.open(url, "_blank");
-  }
+function invitarMessengerIndex() {
+  const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
+  window.open(url, "_blank");
+}
 
   // Opcional: funciones "alias" para mantener tu HTML actual
   function invitarWhatsAppIndex() {
@@ -678,6 +677,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
