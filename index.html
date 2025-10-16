@@ -639,7 +639,7 @@ function invitarWhatsAppIndex() {
   const mensaje = encodeURIComponent(`Te invito a jugar en Quiniela360 ⚽ entra aquí 👉 ${link}`);
   window.open(`https://wa.me/?text=${mensaje}`, "_blank");
 }
- function invitarMessenger(link) {
+ function invitarMessengerIndex() {
       const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
       window.open(url, "_blank");
     }
@@ -663,6 +663,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
