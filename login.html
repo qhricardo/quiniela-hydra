@@ -7,17 +7,17 @@
   <style>
     body {
         font-family: 'Arial', sans-serif;
-            background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Cambia esta URL por la tuya */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
     }
-      .login-container {
+    .login-container {
       background: white;
       padding: 2rem;
       border-radius: 10px;
@@ -125,9 +125,9 @@
 
     <!-- Botón de login con Google -->
     <button id="google-login" style="background-color: #4285F4; color: white; font-weight: bold; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; border-radius: 5px;">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png" alt="Google" style="width: 20px; height: 20px;">
-  Entrar con Google
-</button>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png" alt="Google" style="width: 20px; height: 20px;">
+      Entrar con Google
+    </button>
 
     <!-- Enlace de registro -->
     <div class="register-link">
@@ -149,7 +149,7 @@ const db = firebase.firestore();
 
 // Detectar parámetro ref del URL (ID del invitador)
 const urlParams = new URLSearchParams(window.location.search);
-const referrerId = urlParams.get("invited_by"); 
+const referrerId = urlParams.get("ref"); // 🔹 Cambio realizado
 console.log("🎯 Referrer detectado desde URL:", referrerId);
 
 // ─────────────── LOGIN POR CORREO/PASSWORD ───────────────
@@ -177,7 +177,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
       });
 
       // 👉 Enviar crédito al invitador (si hay referrerId)
-      if (referrerId) {
+      if (referrerId && referrerId !== user.uid) { // 🔹 Previene auto-créditos
         try {
           const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
             method: "POST",
@@ -240,7 +240,7 @@ document.getElementById('google-login').addEventListener('click', async () => {
       });
 
       // 👉 Enviar crédito al invitador (si hay referrerId)
-      if (referrerId) {
+      if (referrerId && referrerId !== user.uid) { // 🔹 Previene auto-créditos
         try {
           const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
             method: "POST",
@@ -265,13 +265,3 @@ document.getElementById('google-login').addEventListener('click', async () => {
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
