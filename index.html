@@ -148,7 +148,21 @@ h1 { color: var(--verde); text-align: center; margin-bottom: 30px; }
   </button>
 </div>
         <li style="margin-top:20px;">💰 1 crédito = $25.00 MXN</li>
-        <button id="comprarCreditos">Comprar 1 Crédito</button>
+        <button id="comprarCreditos" 
+style="
+  background: linear-gradient(90deg, #00C851, #007E33);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+">
+  💰 Comprar 1 Crédito
+</button>
     </div>
 
 <script>
@@ -650,6 +664,7 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
+
 
 
 
