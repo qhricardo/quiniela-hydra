@@ -4,48 +4,154 @@
   <meta charset="UTF-8">
   <title>Quiniela360 | Interfaz</title>
   <style>
-      body {
+    /* 🔹 Fondo con imagen y desenfoque */
+    body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
-
-      /* 🔹 Fondo personalizado */
       background-image: url('img/equipos.jpg'); /* Cambia el nombre si tu archivo se llama diferente */
-      background-size: cover;       /* La imagen cubre toda la pantalla */
-      background-position: center;  /* Centrada */
-      background-attachment: fixed; /* No se mueve al hacer scroll */
-      background-repeat: no-repeat; /* No se repite */
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      height: 100vh;
+      overflow-x: hidden;
     }
-    header { background:#006847; color:white; padding:15px; border-radius:8px; margin-bottom:20px; }
-    h2 { margin:0; }
-    .info { margin-top:8px; font-size:14px; }
-    .grupo-card {
-      background:white; border-radius:10px; padding:15px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.15);
-      margin:10px; display:inline-block; width:220px; vertical-align:top;
-      cursor:pointer; transition:transform 0.2s;
-    }
-    .grupo-card:hover { transform:scale(1.05); }
-    .grupo-card h3 { margin:0 0 10px; color:#006847; }
-    .grupo-card small { color:#555; }
-    #gruposContainer { display:flex; flex-wrap:wrap; justify-content:flex-start; }
-    .card { background:#fff; padding:15px; border-radius:8px; margin-bottom:20px; }
-    input { padding:8px; width:100%; margin:5px 0; border:1px solid #ccc; border-radius:5px; }
-    button { background:#006847; color:white; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; }
-    button:hover { background:#004d33; }
-    #modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); }
-    #modalContent {
-      background:white; width:400px; margin:10% auto; padding:20px; border-radius:10px;
-      box-shadow:0 4px 10px rgba(0,0,0,0.3);
-    }
-    #closeModal { float:right; cursor:pointer; font-weight:bold; color:#333; }
-    #tabla-invitados tr:nth-child(even) { background-color: #f9f9f9; }
-    #tabla-invitados tr:hover { background-color: #e8f5e9; }
 
-    /* 🔹 Estilos de invitación */
-    #invitarWhatsApp { background-color:#25D366; }
-    #invitarMessenger { background-color:#0084FF; }
-    #copiarLink { background-color:#006847; }
+    /* 🔹 Capa de desenfoque */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.4); /* oscurece un poco */
+      backdrop-filter: blur(8px); /* desenfoque */
+      z-index: -1;
+    }
+
+    header {
+      background: rgba(0, 104, 71, 0.9);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+
+    h2 { margin: 0; }
+
+    .info { margin-top: 8px; font-size: 14px; }
+
+    /* 🔹 Tarjetas de grupos */
+    .grupo-card {
+      background: rgba(255,255,255,0.85);
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      margin: 10px;
+      display: inline-block;
+      width: 230px;
+      vertical-align: top;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    .grupo-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+
+    .grupo-card h3 {
+      margin: 0 0 10px;
+      color: #006847;
+    }
+
+    .grupo-card small { color: #333; }
+    #gruposContainer { display: flex; flex-wrap: wrap; justify-content: center; }
+
+    /* 🔹 Paneles */
+    .card {
+      background: rgba(255,255,255,0.88);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    input {
+      padding: 10px;
+      width: 100%;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    /* 🔹 Botones */
+    button {
+      background: #006847;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #004d33;
+      transform: scale(1.08);
+    }
+
+    /* 🔹 Botones de invitación */
+    #invitarWhatsApp {
+      background-color: #25D366;
+    }
+
+    #invitarMessenger {
+      background-color: #0084FF;
+    }
+
+    #copiarLink {
+      background-color: #006847;
+    }
+
+    /* 🔹 Modal */
+    #modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(5px);
+    }
+
+    #modalContent {
+      background: rgba(255,255,255,0.95);
+      width: 420px;
+      margin: 10% auto;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    #closeModal {
+      float: right;
+      cursor: pointer;
+      font-weight: bold;
+      color: #444;
+    }
+
+    /* 🔹 Tabla de invitados */
+    #tabla-invitados tr:nth-child(even) {
+      background-color: rgba(245, 245, 245, 0.8);
+    }
+
+    #tabla-invitados tr:hover {
+      background-color: rgba(232, 245, 233, 0.9);
+    }
   </style>
 </head>
 <body>
@@ -323,6 +429,7 @@
   </script>
 </body>
 </html>
+
 
 
 
