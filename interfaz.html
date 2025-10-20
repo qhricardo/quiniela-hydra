@@ -3,230 +3,275 @@
 <head>
   <meta charset="UTF-8">
   <title>Quiniela360 | Interfaz</title>
- <style>
-    /* 🌆 Fondo general */
+<style>
+    /* 🌍 Fondo principal */
     body {
-      font-family: "Segoe UI", Arial, sans-serif;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(145deg, #001f12 0%, #004d2a 100%);
+      background-attachment: fixed;
       margin: 0;
       padding: 0;
-      background: url("img/equipos.jpg") no-repeat center center fixed;
-      background-size: cover;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      overflow-x: hidden;
       color: #fff;
+      overflow-x: hidden;
     }
 
-    /* 🔹 Capa de desenfoque sobre el fondo */
+    /* 🏟️ Capa superior con efecto de iluminación */
     body::before {
       content: "";
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(6px);
+      background: radial-gradient(circle at top center, rgba(0,255,150,0.15), rgba(0,0,0,0.8));
       z-index: -1;
     }
 
-    /* 🔹 Encabezado */
+    /* 🔹 Header estilo deportivo */
     header {
-      background: linear-gradient(135deg, #006847, #004d33);
-      color: #fff;
-      width: 90%;
-      max-width: 950px;
-      margin-top: 30px;
+      background: linear-gradient(90deg, #007a33, #00c853);
+      box-shadow: 0 5px 25px rgba(0,0,0,0.5);
       padding: 25px;
-      border-radius: 18px;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border-radius: 0 0 25px 25px;
+      animation: glowHeader 3s infinite alternate;
+    }
+
+    @keyframes glowHeader {
+      from { box-shadow: 0 0 15px #00e676; }
+      to { box-shadow: 0 0 25px #b2ff59; }
     }
 
     header h2 {
+      margin: 0;
       font-size: 36px;
-      margin-bottom: 10px;
-      text-shadow: 0 3px 8px rgba(0,0,0,0.5);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.6);
     }
 
     .info {
       font-size: 18px;
-      margin-bottom: 10px;
-      color: #baf3c0;
+      margin-top: 10px;
+      color: #e0ffe0;
     }
 
-    /* 🔹 Card general */
-    .card {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 20px;
-      padding: 35px;
-      width: 90%;
-      max-width: 950px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-      backdrop-filter: blur(12px);
-      margin-top: 30px;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
-    }
-
-    /* 🔹 Botones */
-    button {
-      color: white;
+    /* 💬 Botón invitar */
+    #btn-invitar {
+      background: linear-gradient(135deg, #ffcc00, #ff8800);
+      color: #222;
       font-weight: bold;
       border: none;
       border-radius: 50px;
-      padding: 14px 28px;
+      padding: 12px 25px;
+      margin-top: 15px;
       cursor: pointer;
-      margin: 10px;
       font-size: 16px;
-      letter-spacing: 0.5px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.4);
       transition: all 0.25s ease;
     }
 
-    button:hover {
+    #btn-invitar:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
     }
 
-    #invitarWhatsApp {
-      background: linear-gradient(135deg, #25D366, #128C7E);
+    /* 🎯 Card general */
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(0,255,150,0.3);
+      border-radius: 18px;
+      padding: 30px;
+      width: 90%;
+      max-width: 900px;
+      margin: 30px auto;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,255,150,0.1);
+      transition: 0.3s ease;
     }
 
-    #invitarMessenger {
-      background: linear-gradient(135deg, #0084FF, #005FCC);
+    .card:hover {
+      box-shadow: 0 0 25px rgba(0,255,150,0.3);
+      transform: translateY(-5px);
     }
 
-    #copiarLink {
-      background: linear-gradient(135deg, #FFD700, #E6B800);
-      color: #333;
+    .card h3 {
+      color: #00ff99;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 15px;
     }
 
-    /* 🔹 Contenedor de grupos */
+    input[type="text"], input[type="password"] {
+      width: 80%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      margin: 8px 0;
+      font-size: 15px;
+      text-align: center;
+      color: #fff;
+      background: rgba(0,255,150,0.1);
+      border: 1px solid rgba(0,255,150,0.3);
+      transition: 0.3s ease;
+    }
+
+    input:focus {
+      background: rgba(0,255,150,0.2);
+      box-shadow: 0 0 10px rgba(0,255,150,0.5);
+    }
+
+    button {
+      border: none;
+      border-radius: 50px;
+      padding: 12px 25px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-size: 15px;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      box-shadow: 0 5px 12px rgba(0,0,0,0.3);
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    /* 🟩 Botones específicos */
+    #invitarWhatsApp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; }
+    #invitarMessenger { background: linear-gradient(135deg, #0084FF, #005FCC); color: white; }
+    #copiarLink { background: linear-gradient(135deg, #FFD700, #FFB300); color: #222; }
+
+    /* 🏆 Grupos */
     #gruposContainer {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 25px;
-      margin: 35px 0;
-      width: 95%;
+      margin: 40px 0;
     }
 
-    /* 🟢 Tarjetas de grupo */
     .grupo-card {
-      background: linear-gradient(145deg, rgba(0,104,71,0.8), rgba(0,200,100,0.3));
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 20px;
-      padding: 25px;
       width: 260px;
-      height: 200px;
-      color: #fff;
-      cursor: pointer;
+      height: 210px;
+      background: linear-gradient(145deg, rgba(0,104,71,0.9), rgba(0,200,100,0.4));
+      border-radius: 18px;
+      padding: 25px;
       text-align: center;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      cursor: pointer;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.15);
     }
 
     .grupo-card:hover {
       transform: scale(1.07);
-      box-shadow: 0 12px 28px rgba(0,0,0,0.5);
-      background: linear-gradient(145deg, rgba(0,150,100,0.9), rgba(0,255,160,0.4));
+      background: linear-gradient(145deg, rgba(0,255,150,0.9), rgba(0,150,80,0.4));
+      box-shadow: 0 12px 30px rgba(0,255,100,0.3);
     }
 
     .grupo-card h3 {
-      margin: 10px 0 5px 0;
       font-size: 22px;
-      font-weight: bold;
-      text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      margin-bottom: 10px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
     }
 
     .grupo-card small {
-      color: #d8ffd8;
-      font-size: 15px;
-      margin-top: 5px;
+      color: #b2ffd6;
     }
 
-    .grupo-card::after {
+    .grupo-card::before {
       content: "⚽";
       position: absolute;
-      font-size: 60px;
-      color: rgba(255,255,255,0.1);
-      right: 10px;
+      font-size: 70px;
+      color: rgba(255,255,255,0.08);
+      right: 15px;
       bottom: 10px;
       transform: rotate(-10deg);
     }
 
-    /* 🔹 Modal */
+    /* 💫 Modal contraseña */
     #modal {
       display: none;
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.75);
       backdrop-filter: blur(6px);
-      z-index: 10;
+      z-index: 1000;
     }
 
     #modalContent {
-      background: rgba(255, 255, 255, 0.95);
-      width: 420px;
-      margin: 10% auto;
-      padding: 30px;
-      border-radius: 18px;
+      background: linear-gradient(160deg, #002f1a, #004d2a);
+      border: 2px solid rgba(0,255,150,0.4);
+      box-shadow: 0 0 25px rgba(0,255,150,0.3);
+      width: 380px;
+      margin: 12% auto;
+      padding: 25px;
+      border-radius: 20px;
+      color: #fff;
       text-align: center;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-      color: #333;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #modalContent::before {
+      content: "";
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(0,255,150,0.15) 10%, transparent 70%);
+      animation: pulse 3s infinite;
+      z-index: 0;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.4); opacity: 0.2; }
+    }
+
+    #modalContent h3 {
+      position: relative;
+      z-index: 1;
+      text-transform: uppercase;
+      color: #00ff99;
+    }
+
+    #modalContent p, #passwordInput, #btnEntrar {
+      position: relative;
+      z-index: 1;
     }
 
     #closeModal {
-      float: right;
-      font-weight: bold;
+      position: absolute;
+      right: 15px;
+      top: 10px;
       cursor: pointer;
-      color: #666;
+      font-size: 20px;
+      font-weight: bold;
+      color: #00ff99;
     }
 
     #closeModal:hover {
-      color: #000;
+      color: #fff;
     }
 
-    /* 🔹 Input estilizado */
-    input[type="text"], input[type="password"] {
-      width: 80%;
-      padding: 12px 15px;
-      border-radius: 10px;
-      border: none;
-      margin: 8px 0;
-      outline: none;
-      font-size: 15px;
+    #btnEntrar {
+      background: linear-gradient(135deg, #00ff99, #00b36b);
+      color: #111;
+      font-weight: bold;
+      margin-top: 15px;
     }
 
-    /* Responsive */
+    /* 📱 Responsive */
     @media (max-width: 768px) {
-      .grupo-card {
-        width: 90%;
-        height: 180px;
-      }
-
-      header h2 {
-        font-size: 28px;
-      }
-
-      .card {
-        padding: 25px;
-      }
+      .grupo-card { width: 90%; height: 180px; }
+      header h2 { font-size: 28px; }
+      .card { padding: 20px; }
+      #modalContent { width: 90%; }
     }
   </style>
 </head>
@@ -505,6 +550,7 @@
   </script>
 </body>
 </html>
+
 
 
 
