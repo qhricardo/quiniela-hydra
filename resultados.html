@@ -4,182 +4,206 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Resultados 360</title>
-   <style>
+    <style>
+    /* ───────────── Fondo general ───────────── */
     body {
       font-family: 'Poppins', Arial, sans-serif;
-      background: linear-gradient(135deg, #002b20 0%, #004d3a 50%, #001a12 100%);
+      background: radial-gradient(circle at top, #002b20 0%, #001a12 90%);
       background-image: url('https://www.transparenttextures.com/patterns/football-no-lines.png');
-      color: #fff;
+      color: #f4f4f4;
       margin: 0;
       padding: 0;
     }
 
     /* ───────────── Header ───────────── */
     .header {
-      background: rgba(0, 104, 71, 0.95);
+      background: linear-gradient(90deg, #006847, #009f6b);
       color: #fff;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 25px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      padding: 18px 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
       border-bottom: 3px solid #FFD700;
     }
+
     .header h2 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 600;
+      font-size: 24px;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
     }
 
     #logout-btn {
       background-color: #ce1126;
       color: white;
-      padding: 10px 18px;
+      padding: 10px 20px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
     }
+
     #logout-btn:hover {
       background-color: #a00d1c;
       transform: scale(1.05);
     }
 
-    /* ───────────── Botón regresar ───────────── */
+    /* ───────────── Botón Regresar ───────────── */
     .btn-regresar {
-      margin: 25px auto;
       display: inline-block;
-      padding: 12px 25px;
-      background-color: #FFD700;
+      background: #FFD700;
       color: #004d3a;
-      border: none;
-      border-radius: 6px;
       font-weight: bold;
-      cursor: pointer;
       text-decoration: none;
+      border-radius: 8px;
+      padding: 12px 30px;
+      margin: 25px auto;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      transition: all 0.3s;
+      transition: all 0.3s ease;
     }
+
     .btn-regresar:hover {
-      background-color: #ffea70;
+      background-color: #fff176;
       transform: translateY(-3px);
     }
 
-    /* ───────────── Cuadro del Premio ───────────── */
+    /* ───────────── Cuadro Premio ───────────── */
     #premio-box {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
       border: 2px solid #FFD700;
       border-radius: 15px;
       text-align: center;
       padding: 25px;
-      margin: 20px auto;
+      margin: 30px auto;
       width: 90%;
       max-width: 700px;
-      box-shadow: 0 0 20px rgba(255,215,0,0.4);
+      box-shadow: 0 0 25px rgba(255,215,0,0.4);
+      backdrop-filter: blur(4px);
     }
+
     #premio-box h3 {
       color: #FFD700;
       font-size: 22px;
+      font-weight: 700;
       margin-bottom: 10px;
-    }
-    #premio-total {
-      font-size: 28px;
-      font-weight: bold;
-      color: #00ffcc;
+      text-shadow: 1px 1px 8px rgba(255,255,255,0.2);
     }
 
-    /* ───────────── Tabla general ───────────── */
+    #premio-total {
+      font-size: 32px;
+      font-weight: 800;
+      color: #00ffcc;
+      text-shadow: 0 0 12px #00ffcc;
+    }
+
+    /* ───────────── Tabla principal ───────────── */
     table {
       width: 95%;
       margin: 25px auto;
       border-collapse: collapse;
-      background: rgba(255,255,255,0.05);
-      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 15px;
       overflow: hidden;
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
     }
+
     th, td {
       padding: 12px;
       text-align: center;
       border-bottom: 1px solid rgba(255,255,255,0.2);
     }
+
     th {
-      background: #006847;
+      background: #009f6b;
       color: #fff;
-      font-weight: bold;
       text-transform: uppercase;
+      font-weight: bold;
       font-size: 13px;
+      letter-spacing: 1px;
     }
+
     td {
       font-size: 14px;
       color: #e6e6e6;
     }
 
-    /* ───────────── Resaltados ───────────── */
+    /* ───────────── Resaltado de aciertos ───────────── */
     .highlight {
-      background-color: rgba(255, 255, 0, 0.3) !important;
+      background-color: rgba(255, 215, 0, 0.3) !important;
       font-weight: bold;
       color: #fff !important;
+      text-shadow: 0 0 8px #FFD700;
     }
 
-    /* ───────────── Tarjeta Partidos ───────────── */
+    /* ───────────── Partidos ───────────── */
     .partidos-cuadro {
-      background: rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.25);
       border: 1px solid #00ffcc;
-      border-radius: 10px;
+      border-radius: 15px;
       width: 90%;
       max-width: 600px;
       margin: 25px auto;
-      padding: 15px;
+      padding: 20px;
       text-align: center;
-      box-shadow: 0 0 10px rgba(0,255,204,0.2);
+      box-shadow: 0 0 20px rgba(0,255,204,0.25);
     }
+
     .partidos-cuadro h3 {
-      margin-top: 0;
       color: #00ffcc;
-      font-size: 20px;
+      font-size: 22px;
+      margin-bottom: 12px;
+      text-shadow: 0 0 10px #00ffcc;
     }
+
     .partidos-cuadro li {
       list-style: none;
       padding: 6px 0;
+      font-size: 15px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
     /* ───────────── Tabla Ganadores ───────────── */
     #tablaGanadores {
-      width: 350px;
-      margin: 20px auto;
+      width: 380px;
+      margin: 25px auto;
       border-collapse: collapse;
       background: rgba(255,255,255,0.08);
       border-radius: 10px;
       overflow: hidden;
+      box-shadow: 0 0 15px rgba(255,255,255,0.15);
     }
+
     #tablaGanadores th {
-      background: #006847;
+      background: #004d3a;
     }
+
     #tablaGanadores tr.primer-lugar {
-      background: linear-gradient(90deg, #FFD700, #ffef99);
+      background: linear-gradient(90deg, #FFD700, #fff3a0);
       color: #000;
       font-weight: bold;
+      text-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
+
     #tablaGanadores tr.segundo-lugar {
-      background: linear-gradient(90deg, #cfe2f3, #e0ebff);
+      background: linear-gradient(90deg, #C0C0C0, #f0f0f0);
       color: #000;
+      font-weight: bold;
     }
 
     /* ───────────── Inputs Resultados ───────────── */
     input[readonly] {
       text-align: center;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.15);
       border: 1px solid #00ffcc;
       color: #fff;
       font-weight: bold;
       border-radius: 5px;
-      width: 30px;
-      height: 30px;
+      width: 35px;
+      height: 35px;
+      box-shadow: 0 0 5px rgba(0,255,204,0.3);
     }
 
     /* ───────────── Footer ───────────── */
@@ -187,10 +211,11 @@
       background-color: #001a12;
       color: #ccc;
       text-align: center;
-      padding: 30px 10px;
+      padding: 40px 20px;
       font-size: 14px;
       border-top: 2px solid #00ffcc;
     }
+
     footer h2 {
       color: #00ffcc;
       margin: 0 0 10px 0;
@@ -477,6 +502,7 @@ const snapshot = await db.collection("grupos")
 </footer>
 </body>
 </html>
+
 
 
 
