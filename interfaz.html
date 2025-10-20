@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Quiniela360 | Interfaz</title>
-  <style>
+ <style>
     /* 🌆 Fondo general */
     body {
       font-family: "Segoe UI", Arial, sans-serif;
@@ -26,47 +26,54 @@
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(5px);
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
       z-index: -1;
     }
 
     /* 🔹 Encabezado */
     header {
-      background: rgba(0, 104, 71, 0.8);
+      background: linear-gradient(135deg, #006847, #004d33);
       color: #fff;
       width: 90%;
-      max-width: 900px;
+      max-width: 950px;
       margin-top: 30px;
-      padding: 20px;
-      border-radius: 16px;
+      padding: 25px;
+      border-radius: 18px;
       text-align: center;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
-    header h1 {
-      font-size: 32px;
-      margin-bottom: 8px;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    header h2 {
+      font-size: 36px;
+      margin-bottom: 10px;
+      text-shadow: 0 3px 8px rgba(0,0,0,0.5);
     }
 
-    header p {
-      font-size: 15px;
-      color: #e2e2e2;
+    .info {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #baf3c0;
     }
 
-    /* 🔹 Contenedor principal */
+    /* 🔹 Card general */
     .card {
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 16px;
-      padding: 25px;
+      border-radius: 20px;
+      padding: 35px;
       width: 90%;
-      max-width: 900px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      max-width: 950px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       backdrop-filter: blur(12px);
-      margin-top: 25px;
+      margin-top: 30px;
       text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
     }
 
     /* 🔹 Botones */
@@ -75,18 +82,18 @@
       font-weight: bold;
       border: none;
       border-radius: 50px;
-      padding: 12px 24px;
+      padding: 14px 28px;
       cursor: pointer;
       margin: 10px;
-      font-size: 15px;
+      font-size: 16px;
       letter-spacing: 0.5px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
       transition: all 0.25s ease;
     }
 
     button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.4);
     }
 
     #invitarWhatsApp {
@@ -98,45 +105,68 @@
     }
 
     #copiarLink {
-      background: linear-gradient(135deg, #006847, #004d33);
+      background: linear-gradient(135deg, #FFD700, #E6B800);
+      color: #333;
     }
 
-    /* 🔹 Cuadro de grupos */
+    /* 🔹 Contenedor de grupos */
     #gruposContainer {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 15px;
-      margin-top: 25px;
+      gap: 25px;
+      margin: 35px 0;
+      width: 95%;
     }
 
+    /* 🟢 Tarjetas de grupo */
     .grupo-card {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 16px;
-      padding: 15px;
-      width: 220px;
+      background: linear-gradient(145deg, rgba(0,104,71,0.8), rgba(0,200,100,0.3));
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 25px;
+      width: 260px;
+      height: 200px;
       color: #fff;
       cursor: pointer;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
       text-align: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
     }
 
     .grupo-card:hover {
-      transform: scale(1.05);
-      background: rgba(255, 255, 255, 0.25);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      transform: scale(1.07);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+      background: linear-gradient(145deg, rgba(0,150,100,0.9), rgba(0,255,160,0.4));
     }
 
     .grupo-card h3 {
-      margin: 5px 0;
-      font-size: 18px;
-      color: #fff;
+      margin: 10px 0 5px 0;
+      font-size: 22px;
+      font-weight: bold;
+      text-shadow: 0 3px 6px rgba(0,0,0,0.3);
     }
 
     .grupo-card small {
-      color: #e2e2e2;
+      color: #d8ffd8;
+      font-size: 15px;
+      margin-top: 5px;
+    }
+
+    .grupo-card::after {
+      content: "⚽";
+      position: absolute;
+      font-size: 60px;
+      color: rgba(255,255,255,0.1);
+      right: 10px;
+      bottom: 10px;
+      transform: rotate(-10deg);
     }
 
     /* 🔹 Modal */
@@ -151,13 +181,13 @@
     }
 
     #modalContent {
-      background: rgba(255, 255, 255, 0.9);
-      width: 400px;
+      background: rgba(255, 255, 255, 0.95);
+      width: 420px;
       margin: 10% auto;
-      padding: 25px;
-      border-radius: 16px;
+      padding: 30px;
+      border-radius: 18px;
       text-align: center;
-      box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
       color: #333;
     }
 
@@ -172,25 +202,32 @@
       color: #000;
     }
 
-    /* 🔹 Tablas */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      font-size: 14px;
-      color: #fff;
+    /* 🔹 Input estilizado */
+    input[type="text"], input[type="password"] {
+      width: 80%;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: none;
+      margin: 8px 0;
+      outline: none;
+      font-size: 15px;
     }
 
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-      text-align: center;
-    }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .grupo-card {
+        width: 90%;
+        height: 180px;
+      }
 
-    tr:hover {
-      background: rgba(255,255,255,0.1);
-    }
+      header h2 {
+        font-size: 28px;
+      }
 
+      .card {
+        padding: 25px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -468,6 +505,7 @@
   </script>
 </body>
 </html>
+
 
 
 
