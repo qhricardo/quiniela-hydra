@@ -4,50 +4,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Resultados 360</title>
-    <style>
-    /* ───────────── Fondo general ───────────── */
+  <style>
+    /* ───────────── Fondo General ───────────── */
     body {
-      font-family: 'Poppins', Arial, sans-serif;
-      background: radial-gradient(circle at top, #002b20 0%, #001a12 90%);
+      font-family: 'Teko', 'Poppins', sans-serif;
+      background: radial-gradient(circle at top, #001a12 0%, #000 100%);
       background-image: url('https://www.transparenttextures.com/patterns/football-no-lines.png');
-      color: #f4f4f4;
+      color: #fff;
       margin: 0;
       padding: 0;
     }
 
     /* ───────────── Header ───────────── */
     .header {
-      background: linear-gradient(90deg, #006847, #009f6b);
+      background: linear-gradient(90deg, #007a3d, #00a86b);
       color: #fff;
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 18px 30px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      border-bottom: 3px solid #FFD700;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      border-bottom: 4px solid #FFD700;
     }
 
     .header h2 {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
-      text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.6);
     }
 
     #logout-btn {
-      background-color: #ce1126;
+      background: #d90429;
       color: white;
-      padding: 10px 20px;
+      padding: 12px 22px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
+      font-size: 14px;
       transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(217, 4, 41, 0.5);
     }
 
     #logout-btn:hover {
-      background-color: #a00d1c;
+      background: #9b021e;
       transform: scale(1.05);
     }
 
@@ -72,123 +74,123 @@
 
     /* ───────────── Cuadro Premio ───────────── */
     #premio-box {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.6);
       border: 2px solid #FFD700;
       border-radius: 15px;
       text-align: center;
-      padding: 25px;
-      margin: 30px auto;
+      padding: 30px;
+      margin: 35px auto;
       width: 90%;
       max-width: 700px;
       box-shadow: 0 0 25px rgba(255,215,0,0.4);
-      backdrop-filter: blur(4px);
     }
 
     #premio-box h3 {
       color: #FFD700;
-      font-size: 22px;
+      font-size: 26px;
       font-weight: 700;
       margin-bottom: 10px;
-      text-shadow: 1px 1px 8px rgba(255,255,255,0.2);
+      text-shadow: 0 0 10px #FFD700;
     }
 
     #premio-total {
-      font-size: 32px;
+      font-size: 34px;
       font-weight: 800;
       color: #00ffcc;
       text-shadow: 0 0 12px #00ffcc;
     }
 
-    /* ───────────── Tabla principal ───────────── */
+    /* ───────────── Tabla Principal ───────────── */
     table {
       width: 95%;
       margin: 25px auto;
       border-collapse: collapse;
-      background: rgba(255,255,255,0.08);
+      background: rgba(0, 0, 0, 0.6);
       border-radius: 15px;
       overflow: hidden;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      box-shadow: 0 0 25px rgba(0,255,204,0.2);
     }
 
     th, td {
       padding: 12px;
       text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
+      border-bottom: 1px solid rgba(255,255,255,0.15);
     }
 
     th {
-      background: #009f6b;
+      background: linear-gradient(90deg, #007a3d, #00a86b);
       color: #fff;
       text-transform: uppercase;
       font-weight: bold;
-      font-size: 13px;
+      font-size: 14px;
       letter-spacing: 1px;
     }
 
     td {
-      font-size: 14px;
-      color: #e6e6e6;
+      font-size: 16px;
+      color: #f2f2f2;
+      font-weight: 500;
     }
 
-    /* ───────────── Resaltado de aciertos ───────────── */
+    /* ───────────── Resaltado de Aciertos ───────────── */
     .highlight {
-      background-color: rgba(255, 215, 0, 0.3) !important;
+      background: radial-gradient(circle, #FFD700 0%, #b89b00 90%);
+      color: #000 !important;
       font-weight: bold;
-      color: #fff !important;
-      text-shadow: 0 0 8px #FFD700;
+      border-radius: 5px;
     }
 
     /* ───────────── Partidos ───────────── */
     .partidos-cuadro {
-      background: rgba(0,0,0,0.25);
-      border: 1px solid #00ffcc;
+      background: rgba(0,0,0,0.7);
+      border: 2px solid #00ffcc;
       border-radius: 15px;
       width: 90%;
-      max-width: 600px;
-      margin: 25px auto;
-      padding: 20px;
+      max-width: 650px;
+      margin: 30px auto;
+      padding: 25px;
       text-align: center;
-      box-shadow: 0 0 20px rgba(0,255,204,0.25);
+      box-shadow: 0 0 25px rgba(0,255,204,0.3);
     }
 
     .partidos-cuadro h3 {
       color: #00ffcc;
-      font-size: 22px;
+      font-size: 26px;
       margin-bottom: 12px;
       text-shadow: 0 0 10px #00ffcc;
     }
 
     .partidos-cuadro li {
       list-style: none;
-      padding: 6px 0;
-      font-size: 15px;
+      padding: 8px 0;
+      font-size: 16px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
     /* ───────────── Tabla Ganadores ───────────── */
     #tablaGanadores {
-      width: 380px;
+      width: 420px;
       margin: 25px auto;
       border-collapse: collapse;
-      background: rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.7);
       border-radius: 10px;
       overflow: hidden;
       box-shadow: 0 0 15px rgba(255,255,255,0.15);
     }
 
     #tablaGanadores th {
-      background: #004d3a;
+      background: linear-gradient(90deg, #00a86b, #007a3d);
+      color: #fff;
     }
 
     #tablaGanadores tr.primer-lugar {
       background: linear-gradient(90deg, #FFD700, #fff3a0);
       color: #000;
       font-weight: bold;
-      text-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
 
     #tablaGanadores tr.segundo-lugar {
-      background: linear-gradient(90deg, #C0C0C0, #f0f0f0);
+      background: linear-gradient(90deg, #C0C0C0, #f5f5f5);
       color: #000;
       font-weight: bold;
     }
@@ -201,9 +203,9 @@
       color: #fff;
       font-weight: bold;
       border-radius: 5px;
-      width: 35px;
-      height: 35px;
-      box-shadow: 0 0 5px rgba(0,255,204,0.3);
+      width: 38px;
+      height: 38px;
+      box-shadow: 0 0 6px rgba(0,255,204,0.4);
     }
 
     /* ───────────── Footer ───────────── */
@@ -218,7 +220,7 @@
 
     footer h2 {
       color: #00ffcc;
-      margin: 0 0 10px 0;
+      margin-bottom: 8px;
     }
   </style>
 </head>
@@ -502,6 +504,7 @@ const snapshot = await db.collection("grupos")
 </footer>
 </body>
 </html>
+
 
 
 
