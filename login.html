@@ -263,7 +263,7 @@ async function cargarNoticias() {
 // ─────────── Tabla General (API alternativa FootballStandings) ───────────
 async function cargarTabla() {
   try {
-    const res = await fetch("https://api-football-standings.azharimm.dev/leagues/mex.1/standings");
+    const res = await fetch("tabla_proxy.php");
     const data = await res.json();
 
     if (!data.data?.standings) throw new Error();
@@ -271,11 +271,12 @@ async function cargarTabla() {
     const tbody = document.querySelector("#tablaGeneral tbody");
     tbody.innerHTML = "";
     data.data.standings.slice(0, 18).forEach((t, i) => {
+      const puntos = t.stats.find(s => s.name.toLowerCase().includes("points"))?.value || 0;
       tbody.innerHTML += `
         <tr>
           <td>${i + 1}</td>
           <td>${t.team.name}</td>
-          <td>${t.stats[6].value}</td>
+          <td>${puntos}</td>
         </tr>`;
     });
   } catch (err) {
@@ -291,6 +292,7 @@ cargarTabla();
   </script>
 </body>
 </html>
+
 
 
 
