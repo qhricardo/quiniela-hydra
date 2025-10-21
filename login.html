@@ -1,69 +1,55 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quiniela 360</title>
+  <title>Quiniela 360 - Login</title>
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
-      background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop');
-      background-size: cover;
-      background-position: center;
-      margin: 0;
-      color: #fff;
+        font-family: 'Arial', sans-serif;
+        background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
     }
-
-    header {
-      background: rgba(0, 104, 71, 0.95);
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    header h1 {
-      font-size: 26px;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    header img.logo {
-      width: 40px;
-      height: auto;
-    }
-
     .login-container {
       background: white;
-      color: black;
-      padding: 1.5rem;
-      border-radius: 8px;
-      width: 320px;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 350px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-
-    .login-container label {
+    h1 {
+      color: #006847;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 500;
     }
-    .login-container input {
+    .form-group input {
       width: 100%;
       padding: 10px;
-      margin-bottom: 1rem;
-      border-radius: 5px;
       border: 1px solid #ddd;
+      border-radius: 5px;
       font-size: 16px;
     }
-    .login-container button, .login-container #google-login {
+    button, #google-login {
       width: 100%;
       padding: 12px;
+      background: #006847;
+      color: white;
       border: none;
       border-radius: 5px;
       font-size: 16px;
@@ -71,31 +57,36 @@
       transition: background 0.3s;
       margin-top: 10px;
     }
-    .login-container button {
-      background: #006847;
-      color: white;
-    }
-    .login-container button:hover {
+    button:hover, #google-login:hover {
       background: #004d33;
     }
-    .login-container #google-login {
-      background: #4285F4;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
+    #form-message {
+      margin-top: 1rem;
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+      text-align: center;
     }
-    .login-container #google-login:hover {
-      background: #3367d6;
+    .error {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .register-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .register-link a {
+      color: #006847;
+      text-decoration: none;
+      font-weight: 500;
     }
     .divider {
       text-align: center;
       margin: 1.5rem 0;
       position: relative;
-      color: #555;
     }
-    .divider::before, .divider::after {
+    .divider::before,
+    .divider::after {
       content: '';
       position: absolute;
       top: 50%;
@@ -103,230 +94,185 @@
       height: 1px;
       background: #ccc;
     }
-    .divider::before { left: 0; }
-    .divider::after { right: 0; }
-
-    /* Noticias */
-    #noticias {
-      width: 90%;
-      max-width: 800px;
-      margin: 30px auto;
+    .divider::before {
+      left: 0;
     }
-    #noticias .nota {
-      display: flex;
-      background: rgba(0,0,0,0.6);
-      border-radius: 8px;
-      margin-bottom: 20px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    #noticias .nota img {
-      width: 120px;
-      object-fit: cover;
-      border-right: 1px solid #444;
-    }
-    #noticias .nota .texto {
-      padding: 15px;
-      flex: 1;
-    }
-    #noticias .nota .texto h3 {
-      margin: 0 0 10px;
-      color: #00ff99;
-      font-size: 18px;
-    }
-    #noticias .nota .texto p a {
-      color: #ffd700;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    /* Tabla general */
-    #tablaGeneral {
-      width: 90%;
-      max-width: 600px;
-      margin: 30px auto 50px;
-      border-collapse: collapse;
-      background: rgba(0,0,0,0.7);
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 15px rgba(255,255,255,0.2);
-    }
-    #tablaGeneral th {
-      background: linear-gradient(90deg, #00a86b, #007a3d);
-      color: #fff;
-      font-size: 16px;
-      padding: 12px;
-      text-transform: uppercase;
-    }
-    #tablaGeneral td {
-      color: #fff;
-      font-size: 15px;
-      text-align: center;
-      padding: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    #tablaGeneral tr:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    footer {
-      text-align: center;
-      padding: 20px;
-      background: rgba(0,0,0,0.7);
-      color: #ccc;
+    .divider::after {
+      right: 0;
     }
   </style>
 </head>
 <body>
+ 
+  <div class="login-container">
+    <h1>Quiniela 360<img src="img/hidra.png" width="40"></h1>
 
-  <header>
-    <h1>
-      <img class="logo" src="img/hidra.png" alt="Quiniela360 Logo">
-      Quiniela 360
-    </h1>
-    <div class="login-container">
-      <form id="login-form">
-        <label for="email">Correo electrónico</label>
+    <!-- Formulario de login por correo -->
+    <form id="login-form">
+   <div class="form-group">
+     <!--    <label for="email">Correo electrónico</label>
         <input type="email" id="email" required>
+      </div>
+       <div class="form-group">
         <label for="password">Contraseña</label>
         <input type="password" id="password" required>
-        <button type="submit">Entrar</button>
-        <div id="form-message" class="error" style="display:none;"></div>
-      </form>
-      <div class="divider">o</div>
-      <button id="google-login">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/20px-Google_%22G%22_logo.svg.png" alt="Google">
-        Entrar con Google
-      </button>
+      </div>
+   <button type="submit">Iniciar sesión</button>
+      <div id="form-message" class="error"></div>
+    </form> 
+
+    <!-- División -->
+    <div class="divider">o</div>
+
+    <!-- Botón de login con Google -->
+    <button id="google-login" style="background-color: #4285F4; color: white; font-weight: bold; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; border-radius: 5px;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png" alt="Google" style="width: 20px; height: 20px;">
+      Entrar con Google
+    </button>
+
+    <!-- Enlace de registro -->
+    <div class="register-link">
+      ¿No tienes cuenta? <a href="login.html">Regístrate aquí</a>
     </div>
-  </header>
-
-  <main>
-    <h2 style="text-align:center; margin-top:30px; color:#fff; text-shadow:1px1px4px rgba(0,0,0,0.4);">📰 Últimas Noticias de Fútbol</h2>
-    <div id="noticias">Cargando noticias...</div>
-
-    <h2 style="text-align:center; color:#fff; text-shadow:1px1px4px rgba(0,0,0,0.4);">⚽ Tabla General Liga MX</h2>
-    <table id="tablaGeneral">
-      <thead>
-        <tr><th>Pos</th><th>Equipo</th><th>Puntos</th></tr>
-      </thead>
-      <tbody><tr><td colspan="3">Cargando...</td></tr></tbody>
-    </table>
-  </main>
-
-  <footer>© 2025 Quiniela360 - Todos los derechos reservados</footer>
+  </div>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+
+  <!-- Configuración de Firebase -->
   <script src="js/firebase-config.js"></script>
 
+  <!-- Lógica de autenticación -->
   <script>
-    // Variables
-    const db = firebase.firestore();
-    const urlParams = new URLSearchParams(window.location.search);
-    const referrerId = urlParams.get("ref");
+const db = firebase.firestore();
 
-    // Login form
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const messageDiv = document.getElementById('form-message');
-      messageDiv.style.display = 'none';
+// Detectar parámetro ref del URL (ID del invitador)
+const urlParams = new URLSearchParams(window.location.search);
+const referrerId = urlParams.get("ref"); // 🔹 Cambio realizado
+console.log("🎯 Referrer detectado desde URL:", referrerId);
 
-      try {
-        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-        // Aquí puedes manejar invitación, etc...
-        window.location.href = "interfaz.html";
-      } catch (error) {
-        let errorMessage = 'Error al iniciar sesión';
-        if (error.code === 'auth/invalid-email') errorMessage = 'Correo inválido';
-        else if (error.code === 'auth/user-not-found') errorMessage = 'Usuario no registrado';
-        else if (error.code === 'auth/wrong-password') errorMessage = 'Contraseña incorrecta';
-        messageDiv.textContent = errorMessage;
-        messageDiv.style.display = 'block';
-      }
-    });
+// ─────────────── LOGIN POR CORREO/PASSWORD ───────────────
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-    // Google login
-    document.getElementById('google-login').addEventListener('click', async () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-        const result = await firebase.auth().signInWithPopup(provider);
-        window.location.href = "interfaz.html";
-      } catch (error) {
-        alert("Error al iniciar sesión con Google: " + error.message);
-      }
-    });
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const messageDiv = document.getElementById('form-message');
 
-    // Cargar noticias con imágenes
-    async function cargarNoticias() {
-      const rssUrl = 'https://www.espn.com.mx/espn/rss/news';
-      try {
-        const resp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
-        const data = await resp.json();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(data.contents, "text/xml");
-        const items = xml.querySelectorAll("item");
-        let html = '';
-        items.forEach((item, i) => {
-          if (i < 5) {
-            const title = item.querySelector("title").textContent;
-            const link = item.querySelector("link").textContent;
-            // Suponiendo que hay imagen en media:thumbnail
-            const media = item.querySelector("media\\:thumbnail, thumbnail");
-            const imgUrl = media ? media.getAttribute('url') : 'https://via.placeholder.com/120x80?text=Fútbol';
-            html += `
-              <div class="nota">
-                <img src="${imgUrl}" alt="imagen noticia">
-                <div class="texto">
-                  <h3>${title}</h3>
-                  <p><a href="${link}" target="_blank">Ver noticia completa</a></p>
-                </div>
-              </div>`;
-          }
-        });
-        document.getElementById('noticias').innerHTML = html;
-      } catch (err) {
-        document.getElementById('noticias').innerHTML = '<p style="color:#ffaaaa; text-align:center;">Error al cargar noticias</p>';
-        console.error(err);
-      }
-    }
+  try {
+    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+    const user = userCredential.user;
 
-    // Cargar tabla general desde API pública
-    async function cargarTabla() {
-      try {
-        const resp = await fetch("https://api-football-standings.azharimm.site/leagues/mex.1/standings");
-        const data = await resp.json();
-        const tbody = document.querySelector("#tablaGeneral tbody");
-        tbody.innerHTML = '';
-        if (data && data.data && data.data.standings) {
-          data.data.standings.forEach((team, idx) => {
-            tbody.innerHTML += `
-              <tr>
-                <td>${idx + 1}</td>
-                <td>${team.team.name}</td>
-                <td>${team.stats.find(s => s.name === 'points')?.value || '-'}</td>
-              </tr>`;
+    // Guardar usuario en Firestore si es nuevo
+    const userRef = db.collection('users').doc(user.uid);
+    const doc = await userRef.get();
+    if (!doc.exists) {
+      await userRef.set({
+        uid: user.uid,
+        creditos: 1,
+        name: user.displayName || null,
+        email: user.email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // 👉 Enviar crédito al invitador (si hay referrerId)
+      if (referrerId && referrerId !== user.uid) { // 🔹 Previene auto-créditos
+        try {
+          const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
           });
-        } else {
-          tbody.innerHTML = '<tr><td colspan="3">Tabla no disponible</td></tr>';
+          const data = await res.json();
+          console.log("📤 Request al backend enviado con referrerId:", referrerId);
+          console.log("📥 Respuesta del backend:", data);
+        } catch (err) {
+          console.error("❌ Error enviando créditos de invitación:", err);
         }
-      } catch (err) {
-        document.querySelector("#tablaGeneral tbody").innerHTML = '<tr><td colspan="3">Error al cargar tabla</td></tr>';
-        console.error(err);
       }
     }
 
-    // Ejecutar al cargar
-    cargarNoticias();
-    cargarTabla();
-    setInterval(cargarTabla, 10 * 60 * 1000); // cada 10 minutos
-  </script>
+    window.location.href = "interfaz.html";
+  } catch (error) {
+    let errorMessage;
+    switch(error.code) {
+      case 'auth/invalid-email':
+        errorMessage = 'Correo electrónico inválido';
+        break;
+      case 'auth/user-not-found':
+        errorMessage = 'Usuario no registrado';
+        break;
+      case 'auth/wrong-password':
+        errorMessage = 'Contraseña incorrecta';
+        break;
+      case 'auth/too-many-requests':
+        errorMessage = 'Demasiados intentos. Intenta más tarde.';
+        break;
+      default:
+        errorMessage = 'Error al iniciar sesión';
+    }
+
+    messageDiv.textContent = errorMessage;
+    messageDiv.style.display = 'block';
+  }
+});
+
+// ─────────────── LOGIN CON GOOGLE ───────────────
+document.getElementById('google-login').addEventListener('click', async () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  try {
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
+
+    // Guardar usuario en Firestore si es nuevo
+    const userRef = db.collection('users').doc(user.uid);
+    const doc = await userRef.get();
+    if (!doc.exists) {
+      await userRef.set({
+        uid: user.uid,
+        creditos: 1,
+        name: user.displayName || null,
+        email: user.email,
+        photoURL: user.photoURL || null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // 👉 Enviar crédito al invitador (si hay referrerId)
+      if (referrerId && referrerId !== user.uid) { // 🔹 Previene auto-créditos
+        try {
+          const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
+          });
+          const data = await res.json();
+          console.log("📤 Request al backend enviado con referrerId:", referrerId);
+          console.log("📥 Respuesta del backend:", data);
+        } catch (err) {
+          console.error("❌ Error enviando créditos de invitación:", err);
+        }
+      }
+    }
+
+    window.location.href = "interfaz.html";
+  } catch (error) {
+    alert("Error al iniciar sesión con Google: " + error.message);
+  }
+});
+</script>
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
