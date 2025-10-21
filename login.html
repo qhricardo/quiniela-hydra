@@ -229,12 +229,65 @@
       } catch (error) { alert("Error con Google"); }
     });
 
-     cargarNoticias();
-      cargarTabla();
+// ─────────── Noticias de Fútbol Mexicano (NewsData.io) ───────────
+async function cargarNoticias() {
+  const apiKey = "pub_55007f214e86a5dc8a6dcb9ee8350d1d4c9"; // clave gratuita
+  const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&q=futbol%20mexicano&country=mx&language=es`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.results) throw new Error("Sin resultados");
+
+    let html = "";
+    data.results.slice(0, 6).forEach(n => {
+      html += `
+        <div style="background:#0b3d2e;color:white;margin:8px;padding:10px;border-radius:8px;">
+          <h3>${n.title}</h3>
+          <p>${n.description ? n.description.substring(0, 150) + "..." : ""}</p>
+          <a href="${n.link}" target="_blank" style="color:#FFD700;">Ver noticia completa</a>
+        </div>
+      `;
+    });
+    document.getElementById("noticias").innerHTML = html;
+  } catch (e) {
+    document.getElementById("noticias").innerHTML = `<p>No se pudieron cargar noticias</p>`;
+  }
+}
+
+// ─────────── Tabla General (API alternativa FootballStandings) ───────────
+async function cargarTabla() {
+  try {
+    const res = await fetch("https://api-football-standings.azharimm.dev/leagues/mex.1/standings");
+    const data = await res.json();
+
+    if (!data.data?.standings) throw new Error();
+
+    const tbody = document.querySelector("#tablaGeneral tbody");
+    tbody.innerHTML = "";
+    data.data.standings.slice(0, 18).forEach((t, i) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${t.team.name}</td>
+          <td>${t.stats[6].value}</td>
+        </tr>`;
+    });
+  } catch (err) {
+    document.querySelector("#tablaGeneral tbody").innerHTML = "<tr><td colspan='3'>Error al cargar tabla</td></tr>";
+  }
+}
+
+// Llamadas automáticas
+cargarNoticias();
+cargarTabla();
+
 
   </script>
 </body>
 </html>
+
 
 
 
