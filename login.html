@@ -224,7 +224,7 @@
 
      // ─────────── Noticias Automáticas ───────────
 async function cargarNoticias() {
-  const rssUrl = 'https://www.espn.com.mx/espn/rss/futbol/mexico';
+ const rssUrl = 'https://www.espn.com.mx/espn/rss/futbol/mex.1';
   try {
     const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
     const data = await res.json();
@@ -256,6 +256,7 @@ async function cargarNoticias() {
   </script>
 </body>
 </html>
+
 
 
 
