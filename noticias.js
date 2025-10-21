@@ -1,52 +1,22 @@
-// ─────────── Noticias ───────────
-async function cargarNoticias(){
-  try{
-    const res = await fetch("api.php?accion=noticias");
-    const noticias = await res.json();
-    const cont = document.getElementById("noticias");
-    cont.innerHTML = noticias.map(n => `
-      <div style="margin-bottom:15px;">
-        <h3>${n.title}</h3>
-        ${n.img ? `<img src="${n.img}" style="width:100%; max-width:300px;">` : ""}
-        <p><a href="${n.link}" target="_blank">Ver noticia completa</a></p>
-      </div><hr>`).join("");
-  } catch(err){
-    console.error(err);
-    document.getElementById("noticias").innerHTML = "<p>No se pudieron cargar noticias.</p>";
-  }
-}
-
-// ─────────── Tabla Liga MX ───────────
-async function cargarTabla(){
-  try{
-    const res = await fetch("api.php?accion=tabla");
+async function cargarNoticias() {
+  try {
+    const res = await fetch("backend/noticias.php");
     const data = await res.json();
-    const tbody = document.querySelector("#tablaGeneral tbody");
-    tbody.innerHTML = "";
-    if(!data.data || !data.data.standings){
-      tbody.innerHTML = "<tr><td colspan='3'>No hay datos disponibles</td></tr>";
-      return;
-    }
-    data.data.standings.forEach((t,i)=>{
-      const ptsObj = t.stats.find(s=>s.name.toLowerCase()==="points");
-      const pts = ptsObj ? ptsObj.value : 0;
-      const logo = t.team.logos?.[0]?.href || "";
-      tbody.innerHTML += `
-        <tr>
-          <td>${i+1}</td>
-          <td style="display:flex; align-items:center; gap:5px;">
-            ${logo ? `<img src="${logo}" width="20">` : ""} ${t.team.name}
-          </td>
-          <td>${pts}</td>
-        </tr>`;
+    if (data.error) throw new Error(data.error);
+
+    let html = "";
+    data.noticias.forEach(n => {
+      html += `
+        <div class="noticia-card">
+          <h3>${n.titulo}</h3>
+          <p>${n.descripcion}</p>
+          <a href="${n.link}" target="_blank">Ver completa</a>
+        </div>`;
     });
-  } catch(err){
-    console.error(err);
-    document.querySelector("#tablaGeneral tbody").innerHTML = "<tr><td colspan='3'>Error al cargar tabla</td></tr>";
+
+    document.getElementById("noticias").innerHTML = html;
+  } catch (e) {
+    document.getElementById("noticias").innerHTML =
+      "<p style='color:red;'>No se pudieron cargar las noticias</p>";
   }
 }
-
-// Llamadas iniciales
-cargarNoticias();
-cargarTabla();
-setInterval(cargarTabla, 300000); // recarga cada 5 minutos
