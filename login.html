@@ -239,11 +239,8 @@
 
 // ─────────── Noticias de Fútbol Mexicano (NewsData.io) ───────────
 async function cargarNoticias() {
-  const apiKey = "pub_55007f214e86a5dc8a6dcb9ee8350d1d4c9"; // clave gratuita
-  const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&q=futbol%20mexicano&country=mx&language=es`;
-
   try {
-    const res = await fetch(url);
+    const res = await fetch("noticias_proxy.php");
     const data = await res.json();
 
     if (!data.results) throw new Error("Sin resultados");
@@ -255,8 +252,7 @@ async function cargarNoticias() {
           <h3>${n.title}</h3>
           <p>${n.description ? n.description.substring(0, 150) + "..." : ""}</p>
           <a href="${n.link}" target="_blank" style="color:#FFD700;">Ver noticia completa</a>
-        </div>
-      `;
+        </div>`;
     });
     document.getElementById("noticias").innerHTML = html;
   } catch (e) {
@@ -295,6 +291,7 @@ cargarTabla();
   </script>
 </body>
 </html>
+
 
 
 
