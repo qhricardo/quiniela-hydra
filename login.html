@@ -230,9 +230,8 @@
     });
 
 
-    
- async function cargarNoticias() {
-  const rssUrl = "https://www.mediotiempo.com/rss/futbol-mexicano";
+  async function cargarNoticias() {
+  const rssUrl = "https://www.espn.com.mx/rss/futbol/mexico.xml";
   try {
     const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
     const data = await res.json();
@@ -241,21 +240,22 @@
 
     let html = "";
     xml.querySelectorAll("item").forEach((item, i) => {
-      if (i >= 5) return; // mostrar solo 5 noticias
+      if (i >= 5) return; // solo 5 noticias
       const title = item.querySelector("title")?.textContent || "";
       const link = item.querySelector("link")?.textContent || "#";
       const description = item.querySelector("description")?.textContent || "";
+      
+      // Buscar imagen dentro de description
       let imgTag = "";
       const imgMatch = description.match(/<img.*?src="(.*?)"/);
       if (imgMatch) imgTag = `<img src="${imgMatch[1]}" alt="${title}" style="width:100%;max-width:300px;">`;
 
       html += `
-        <div style="margin-bottom:15px;">
+        <div>
           <h3>${title}</h3>
           ${imgTag}
           <p><a href="${link}" target="_blank">Ver noticia completa</a></p>
-        </div>
-        <hr>`;
+        </div>`;
     });
 
     document.getElementById("noticias").innerHTML = html;
@@ -266,7 +266,7 @@
 }
 
 
- async function cargarTabla() {
+async function cargarTabla() {
   try {
     const res = await fetch("https://api-football-standings.azharimm.dev/leagues/mex.1/standings");
     const json = await res.json();
@@ -278,21 +278,23 @@
       return;
     }
 
-    json.data.standings.forEach((t, i) => {
-      const pointsObj = t.stats.find(s => s.name.toLowerCase() === "points");
-      const pts = pointsObj ? pointsObj.value : 0;
-      const logo = t.team.logos?.[0]?.href || "";
+    json.data.standings.forEach((team, i) => {
+      // Buscar puntos
+      const ptsObj = team.stats.find(s => s.name?.toLowerCase() === "points");
+      const pts = ptsObj ? ptsObj.value : 0;
+
+      // Logo
+      const logo = team.team.logos?.[0]?.href || "";
 
       tbody.innerHTML += `
         <tr>
           <td>${i + 1}</td>
           <td style="display:flex; align-items:center; gap:5px;">
             ${logo ? `<img src="${logo}" width="20">` : ""}
-            ${t.team.name}
+            ${team.team.name}
           </td>
           <td>${pts}</td>
-        </tr>
-      `;
+        </tr>`;
     });
   } catch (err) {
     console.error("Error cargando tabla:", err);
@@ -300,12 +302,13 @@
   }
 }
 
-// Cargar al inicio
+cargarNoticias();
 cargarTabla();
-setInterval(cargarTabla, 300000); // recarga cada 5 minutos
+setInterval(cargarTabla, 300000); // recarga tabla cada 5 minutos
   </script>
 </body>
 </html>
+
 
 
 
