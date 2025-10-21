@@ -204,14 +204,21 @@
     const referrerId = urlParams.get("ref");
 
     // ─────────── LOGIN NORMAL ───────────
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = email.value, password = password.value;
-      try {
-        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-        window.location.href = "interfaz.html";
-      } catch (err) { alert("Error al iniciar sesión"); }
-    });
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  // Obtener los valores correctamente
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  
+  try {
+    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+    window.location.href = "interfaz.html";
+  } catch (err) {
+    console.error(err);
+    alert("Error al iniciar sesión: " + err.message);
+  }
+});
 
     // ─────────── LOGIN GOOGLE ───────────
     document.getElementById('google-login').addEventListener('click', async () => {
@@ -262,6 +269,7 @@ async function cargarNoticias() {
   </script>
 </body>
 </html>
+
 
 
 
