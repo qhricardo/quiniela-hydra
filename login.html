@@ -229,38 +229,44 @@
       } catch (error) { alert("Error con Google"); }
     });
 
-   // ─────────── Noticias Automáticas de Fútbol Mexicano ───────────
-async function cargarNoticias() {
-  const rssUrl = 'https://www.espn.com.mx/rss/fut-mexico.xml'; // 🔹 RSS de fútbol mexicano
-  const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
-  const data = await res.json();
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(data.contents, "text/xml");
-  let html = "";
 
-  xml.querySelectorAll("item").forEach((item, i) => {
-    if (i < 5) { // mostrar solo las 5 primeras
-      const title = item.querySelector("title").textContent;
-      const link = item.querySelector("link").textContent;
-      const enclosure = item.querySelector("enclosure"); // trae la imagen si existe
-      const image = enclosure ? enclosure.getAttribute("url") : "https://via.placeholder.com/150";
+    
+ async function cargarNoticias() {
+  const rssUrl = "https://www.mediotiempo.com/rss/futbol-mexicano";
+  try {
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
+    const data = await res.json();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(data.contents, "text/xml");
+
+    let html = "";
+    xml.querySelectorAll("item").forEach((item, i) => {
+      if (i >= 5) return; // mostrar solo 5 noticias
+      const title = item.querySelector("title")?.textContent || "";
+      const link = item.querySelector("link")?.textContent || "#";
+      const description = item.querySelector("description")?.textContent || "";
+      let imgTag = "";
+      const imgMatch = description.match(/<img.*?src="(.*?)"/);
+      if (imgMatch) imgTag = `<img src="${imgMatch[1]}" alt="${title}" style="width:100%;max-width:300px;">`;
 
       html += `
-        <div style="margin-bottom: 1rem;">
-          <img src="${image}" alt="${title}" style="width:100%; max-width:300px; border-radius:5px;">
+        <div style="margin-bottom:15px;">
           <h3>${title}</h3>
+          ${imgTag}
           <p><a href="${link}" target="_blank">Ver noticia completa</a></p>
         </div>
-      `;
-    }
-  });
+        <hr>`;
+    });
 
-  document.getElementById("noticias").innerHTML = html;
+    document.getElementById("noticias").innerHTML = html;
+  } catch (err) {
+    console.error("Error cargando noticias:", err);
+    document.getElementById("noticias").innerHTML = "<p>No se pudieron cargar noticias.</p>";
+  }
 }
 
 
-   // ─────────── Tabla General Dinámica ───────────
-async function cargarTabla() {
+ async function cargarTabla() {
   try {
     const res = await fetch("https://api-football-standings.azharimm.dev/leagues/mex.1/standings");
     const json = await res.json();
@@ -268,21 +274,20 @@ async function cargarTabla() {
     tbody.innerHTML = "";
 
     if (!json.data || !json.data.standings) {
-      tbody.innerHTML = "<tr><td colspan='4'>No hay datos disponibles</td></tr>";
+      tbody.innerHTML = "<tr><td colspan='3'>No hay datos disponibles</td></tr>";
       return;
     }
 
     json.data.standings.forEach((t, i) => {
-      // Buscar puntos dentro de stats
-      const ptsObj = t.stats.find(s => s.name === "points");
-      const pts = ptsObj ? ptsObj.value : 0;
+      const pointsObj = t.stats.find(s => s.name.toLowerCase() === "points");
+      const pts = pointsObj ? pointsObj.value : 0;
       const logo = t.team.logos?.[0]?.href || "";
 
       tbody.innerHTML += `
         <tr>
           <td>${i + 1}</td>
           <td style="display:flex; align-items:center; gap:5px;">
-            ${logo ? `<img src="${logo}" width="20" alt="${t.team.name}">` : ""}
+            ${logo ? `<img src="${logo}" width="20">` : ""}
             ${t.team.name}
           </td>
           <td>${pts}</td>
@@ -297,13 +302,11 @@ async function cargarTabla() {
 
 // Cargar al inicio
 cargarTabla();
-
-// Recargar cada 5 minutos
-setInterval(cargarTabla, 300000);
-
+setInterval(cargarTabla, 300000); // recarga cada 5 minutos
   </script>
 </body>
 </html>
+
 
 
 
