@@ -223,39 +223,37 @@
     });
 
      // ─────────── Noticias Automáticas ───────────
-async function cargarNoticias() {
- const rssUrl = 'https://www.espn.com.mx/espn/rss/futbol/mex.1';
-  try {
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
-    const data = await res.json();
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(data.contents, "text/xml");
+ async function cargarNoticias() {
+    const rssUrl = 'https://www.espn.com.mx/espn/rss/futbol/mex.1'; // Liga MX 🟢
+    try {
+      const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
+      const data = await res.json();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(data.contents, "text/xml");
 
-    let html = "";
-    xml.querySelectorAll("item").forEach((item, i) => {
-      const title = item.querySelector("title")?.textContent || "";
-      const link = item.querySelector("link")?.textContent || "#";
-
-      // 🔹 Filtrar solo noticias de Liga MX
-      if (/liga mx|liga mexicana|club|futbol mexicano/i.test(title)) {
-        html += `<div>
-          <h3>${title}</h3>
-          <p><a href="${link}" target="_blank">Ver noticia completa</a></p>
-        </div>`;
-      }
-    });
-
-    document.getElementById("noticias").innerHTML = html || "<p>No hay noticias de Liga MX disponibles.</p>";
-  } catch (err) {
-    console.error("Error cargando noticias:", err);
-    document.getElementById("noticias").innerHTML = "<p>No se pudieron cargar noticias.</p>";
+      let html = "";
+      xml.querySelectorAll("item").forEach((item, i) => {
+        if (i < 5) {
+          html += `
+            <div style="background: rgba(255,255,255,0.08); padding:10px; margin:10px 0; border-radius:8px;">
+              <h3 style="color:#00ff99;">${item.querySelector("title").textContent}</h3>
+              <p><a href="${item.querySelector("link").textContent}" target="_blank" style="color:#ffd700;">Ver noticia completa</a></p>
+            </div>
+          `;
+        }
+      });
+      document.getElementById("noticias").innerHTML = html;
+    } catch (err) {
+      console.error("Error cargando noticias:", err);
+      document.getElementById("noticias").innerHTML = "<p>No se pudieron cargar noticias.</p>";
+    }
   }
-}
 
      cargarNoticias();
   </script>
 </body>
 </html>
+
 
 
 
