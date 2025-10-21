@@ -256,9 +256,11 @@ async function cargarNoticias() {
     });
     document.getElementById("noticias").innerHTML = html;
   } catch (e) {
+    console.error(e);
     document.getElementById("noticias").innerHTML = `<p>No se pudieron cargar noticias</p>`;
   }
 }
+
 
 // ─────────── Tabla General (API alternativa FootballStandings) ───────────
 async function cargarTabla() {
@@ -280,6 +282,7 @@ async function cargarTabla() {
         </tr>`;
     });
   } catch (err) {
+    console.error(err);
     document.querySelector("#tablaGeneral tbody").innerHTML = "<tr><td colspan='3'>Error al cargar tabla</td></tr>";
   }
 }
@@ -292,6 +295,7 @@ cargarTabla();
   </script>
 </body>
 </html>
+
 
 
 
