@@ -185,16 +185,14 @@
     </button>
   </div>
 
-  <h2>📰 Últimas Noticias de Fútbol</h2>
   <div id="noticias">Cargando noticias...</div>
 
-  <h2>⚽ Tabla General Liga MX</h2>
-  <table id="tablaGeneral">
-    <thead>
-      <tr><th>Pos</th><th>Equipo</th><th>Pts</th></tr>
-    </thead>
-    <tbody><tr><td colspan="3">Cargando...</td></tr></tbody>
-  </table>
+<table id="tablaGeneral">
+  <thead>
+    <tr><th>Pos</th><th>Equipo</th><th>Pts</th></tr>
+  </thead>
+  <tbody><tr><td colspan="3">Cargando...</td></tr></tbody>
+</table>
 
   <footer>© 2025 Quiniela360 - Todos los derechos reservados</footer>
 
@@ -229,84 +227,11 @@
       } catch (error) { alert("Error con Google"); }
     });
 
-async function cargarNoticias() {
-  const rssUrl = "https://www.espn.com.mx/rss/futbol/mexico.xml";
-  try {
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
-    const data = await res.json();
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(data.contents, "text/xml");
-
-    let html = "";
-    xml.querySelectorAll("item").forEach((item, i) => {
-      if (i >= 5) return; // solo 5 noticias
-      const title = item.querySelector("title")?.textContent || "";
-      const link = item.querySelector("link")?.textContent || "#";
-      const description = item.querySelector("description")?.textContent || "";
-      
-      // Buscar imagen dentro de description
-      let imgTag = "";
-      const imgMatch = description.match(/<img.*?src="(.*?)"/);
-      if (imgMatch) imgTag = `<img src="${imgMatch[1]}" alt="${title}" style="width:100%;max-width:300px;">`;
-
-      html += `
-        <div>
-          <h3>${title}</h3>
-          ${imgTag}
-          <p><a href="${link}" target="_blank">Ver noticia completa</a></p>
-        </div>`;
-    });
-
-    document.getElementById("noticias").innerHTML = html;
-  } catch (err) {
-    console.error("Error cargando noticias:", err);
-    document.getElementById("noticias").innerHTML = "<p>No se pudieron cargar noticias.</p>";
-  }
-}
-
-    
-async function cargarTabla() {
-  try {
-    const res = await fetch("https://api-football-standings.azharimm.dev/leagues/mex.1/standings");
-    const json = await res.json();
-    const tbody = document.querySelector("#tablaGeneral tbody");
-    tbody.innerHTML = "";
-
-    if (!json.data || !json.data.standings) {
-      tbody.innerHTML = "<tr><td colspan='3'>No hay datos disponibles</td></tr>";
-      return;
-    }
-
-    json.data.standings.forEach((team, i) => {
-      // Buscar puntos
-      const ptsObj = team.stats.find(s => s.name?.toLowerCase() === "points");
-      const pts = ptsObj ? ptsObj.value : 0;
-
-      // Logo
-      const logo = team.team.logos?.[0]?.href || "";
-
-      tbody.innerHTML += `
-        <tr>
-          <td>${i + 1}</td>
-          <td style="display:flex; align-items:center; gap:5px;">
-            ${logo ? `<img src="${logo}" width="20">` : ""}
-            ${team.team.name}
-          </td>
-          <td>${pts}</td>
-        </tr>`;
-    });
-  } catch (err) {
-    console.error("Error cargando tabla:", err);
-    document.querySelector("#tablaGeneral tbody").innerHTML = "<tr><td colspan='3'>Error al cargar tabla</td></tr>";
-  }
-}
-
-cargarNoticias();
-cargarTabla();
-setInterval(cargarTabla, 300000); // recarga tabla cada 5 minutos
+<script src="noticias.js"></script>
   </script>
 </body>
 </html>
+
 
 
 
