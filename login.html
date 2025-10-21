@@ -185,12 +185,12 @@
     </button>
   </div>
 
-  <div id="noticias">Cargando noticias...</div>
+<h2>📰 Últimas Noticias de Fútbol</h2>
+<div id="noticias">Cargando...</div>
 
+<h2>⚽ Tabla General Liga MX</h2>
 <table id="tablaGeneral">
-  <thead>
-    <tr><th>Pos</th><th>Equipo</th><th>Pts</th></tr>
-  </thead>
+  <thead><tr><th>Pos</th><th>Equipo</th><th>Pts</th></tr></thead>
   <tbody><tr><td colspan="3">Cargando...</td></tr></tbody>
 </table>
 
@@ -201,6 +201,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
+  <script src="noticias.js"></script>
 
   <script>
     // Detecta invitaciones
@@ -227,10 +228,11 @@
       } catch (error) { alert("Error con Google"); }
     });
 
-<script src="noticias.js"></script>
+
   </script>
 </body>
 </html>
+
 
 
 
