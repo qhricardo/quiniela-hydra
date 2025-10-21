@@ -229,8 +229,7 @@
       } catch (error) { alert("Error con Google"); }
     });
 
-
-  async function cargarNoticias() {
+async function cargarNoticias() {
   const rssUrl = "https://www.espn.com.mx/rss/futbol/mexico.xml";
   try {
     const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
@@ -265,7 +264,7 @@
   }
 }
 
-
+    
 async function cargarTabla() {
   try {
     const res = await fetch("https://api-football-standings.azharimm.dev/leagues/mex.1/standings");
@@ -308,6 +307,7 @@ setInterval(cargarTabla, 300000); // recarga tabla cada 5 minutos
   </script>
 </body>
 </html>
+
 
 
 
