@@ -224,7 +224,7 @@
 
      // ─────────── Noticias Automáticas ───────────
     async function cargarNoticias() {
-     const rssUrl = 'https://www.informador.mx/rss/deportes/futbol-mexicano.xml';
+     const rssUrl = 'https://www.mediotiempo.com/rss/futbol-mexicano.xml';
       const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
       const data = await res.json();
       const parser = new DOMParser();
@@ -241,6 +241,7 @@
   </script>
 </body>
 </html>
+
 
 
 
