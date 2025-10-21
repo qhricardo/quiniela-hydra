@@ -3,7 +3,14 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 
 $url = "https://api-football-standings.azharimm.dev/leagues/mex.1/standings";
-$res = @file_get_contents($url);
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+$res = curl_exec($ch);
+curl_close($ch);
+
 if (!$res) {
     echo json_encode(["error" => "Error al cargar tabla"]);
     exit;
@@ -20,6 +27,7 @@ if (isset($data["data"]["standings"])) {
             "puntos" => $team["stats"][6]["value"] ?? 0
         ];
     }
+    echo json_encode(["tabla" => $equipos], JSON_UNESCAPED_UNICODE);
+} else {
+    echo json_encode(["error" => "Formato de datos no válido"]);
 }
-
-echo json_encode(["tabla" => $equipos], JSON_UNESCAPED_UNICODE);
