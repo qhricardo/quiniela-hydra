@@ -185,14 +185,22 @@
     </button>
   </div>
 
-<h2>📰 Últimas Noticias de Fútbol</h2>
-<div id="noticias">Cargando...</div>
+<section id="contenedorNoticias">
+  <h2>📰 Noticias de Fútbol Mexicano</h2>
+  <div id="noticias" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;"></div>
+</section>
 
-<h2>⚽ Tabla General Liga MX</h2>
-<table id="tablaGeneral">
-  <thead><tr><th>Pos</th><th>Equipo</th><th>Pts</th></tr></thead>
-  <tbody><tr><td colspan="3">Cargando...</td></tr></tbody>
-</table>
+<section id="contenedorTabla">
+  <h2>🏆 Tabla General Liga MX</h2>
+  <table id="tablaGeneral" style="width:100%;border-collapse:collapse;background:#004d2d;color:white;">
+    <thead>
+      <tr style="background:#007a3d;">
+        <th>Posición</th><th>Equipo</th><th>Puntos</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
 
   <footer>© 2025 Quiniela360 - Todos los derechos reservados</footer>
 
@@ -287,6 +295,7 @@ cargarTabla();
   </script>
 </body>
 </html>
+
 
 
 
