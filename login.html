@@ -232,7 +232,7 @@
       const xml = parser.parseFromString(data.contents, "text/xml");
       let html = "";
       xml.querySelectorAll("item").forEach((item, i) => {
-        if (i < 5) html += `<div><h3>${item.querySelector("title").textContent}</h3>
+        if (i < 10) html += `<div><h3>${item.querySelector("title").textContent}</h3>
           <p><a href="${item.querySelector("link").textContent}" target="_blank">Ver noticia completa</a></p></div>`;
       });
       document.getElementById("noticias").innerHTML = html;
@@ -242,6 +242,7 @@
   </script>
 </body>
 </html>
+
 
 
 
