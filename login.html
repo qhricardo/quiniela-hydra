@@ -259,27 +259,52 @@ async function cargarNoticias() {
 }
 
 
-    // ─────────── Tabla General Dinámica ───────────
-    async function cargarTabla() {
-      try {
-        const res = await fetch("https://api-football-standings.azharimm.dev/leagues/mex.1/standings");
-        const data = await res.json();
-        const tbody = document.querySelector("#tablaGeneral tbody");
-        tbody.innerHTML = "";
-        data.data.standings.forEach((t, i) => {
-          tbody.innerHTML += `<tr><td>${i+1}</td><td>${t.team.name}</td><td>${t.stats[6].value}</td></tr>`;
-        });
-      } catch {
-        document.querySelector("#tablaGeneral tbody").innerHTML = "<tr><td colspan='3'>Error al cargar tabla</td></tr>";
-      }
+   // ─────────── Tabla General Dinámica ───────────
+async function cargarTabla() {
+  try {
+    const res = await fetch("https://api-football-standings.azharimm.dev/leagues/mex.1/standings");
+    const json = await res.json();
+    const tbody = document.querySelector("#tablaGeneral tbody");
+    tbody.innerHTML = "";
+
+    if (!json.data || !json.data.standings) {
+      tbody.innerHTML = "<tr><td colspan='4'>No hay datos disponibles</td></tr>";
+      return;
     }
 
-    cargarNoticias();
-    cargarTabla();
-    setInterval(cargarTabla, 10 * 60 * 1000); // actualiza cada 10 minutos
+    json.data.standings.forEach((t, i) => {
+      // Buscar puntos dentro de stats
+      const ptsObj = t.stats.find(s => s.name === "points");
+      const pts = ptsObj ? ptsObj.value : 0;
+      const logo = t.team.logos?.[0]?.href || "";
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${i + 1}</td>
+          <td style="display:flex; align-items:center; gap:5px;">
+            ${logo ? `<img src="${logo}" width="20" alt="${t.team.name}">` : ""}
+            ${t.team.name}
+          </td>
+          <td>${pts}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error("Error cargando tabla:", err);
+    document.querySelector("#tablaGeneral tbody").innerHTML = "<tr><td colspan='3'>Error al cargar tabla</td></tr>";
+  }
+}
+
+// Cargar al inicio
+cargarTabla();
+
+// Recargar cada 5 minutos
+setInterval(cargarTabla, 300000);
+
   </script>
 </body>
 </html>
+
 
 
 
