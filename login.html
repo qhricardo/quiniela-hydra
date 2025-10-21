@@ -233,7 +233,7 @@
 
       let html = "";
       xml.querySelectorAll("item").forEach((item, i) => {
-        if (i < 5) {
+        if (i < 10) {
           html += `
             <div style="background: rgba(255,255,255,0.08); padding:10px; margin:10px 0; border-radius:8px;">
               <h3 style="color:#00ff99;">${item.querySelector("title").textContent}</h3>
@@ -253,6 +253,7 @@
   </script>
 </body>
 </html>
+
 
 
 
