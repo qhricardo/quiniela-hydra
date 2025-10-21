@@ -224,7 +224,7 @@
 
      // ─────────── Noticias Automáticas ───────────
     async function cargarNoticias() {
-     const rssUrl = 'https://www.tvazteca.com/aztecadeportes/rss-taboola-notas-azteca-deportes';
+     const rssUrl = 'https://www.tudn.com/rss/feed/liga-mx.xml';
       const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
       const data = await res.json();
       const parser = new DOMParser();
@@ -241,6 +241,7 @@
   </script>
 </body>
 </html>
+
 
 
 
