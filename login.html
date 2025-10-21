@@ -224,7 +224,7 @@
 
      // ─────────── Noticias Automáticas ───────────
     async function cargarNoticias() {
-     const rssUrl = 'https://as.com/rss/futbol_mexicano.xml'; // Liga MX 🟢
+     const rssUrl = 'https://www.excelsior.com.mx/rss/deportes/futbol-mexicano.xml'; // Liga MX 🟢
       const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
       const data = await res.json();
       const parser = new DOMParser();
@@ -241,6 +241,7 @@
   </script>
 </body>
 </html>
+
 
 
 
