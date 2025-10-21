@@ -225,7 +225,7 @@
 
      // ─────────── Noticias Automáticas ───────────
     async function cargarNoticias() {
-     const rssUrl = 'http://www.mediotiempo.com/rss/noticia.xml';
+     const rssUrl = 'https://www.tvazteca.com/aztecadeportes/rss-taboola-notas-azteca-deportes';
       const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
       const data = await res.json();
       const parser = new DOMParser();
@@ -242,6 +242,7 @@
   </script>
 </body>
 </html>
+
 
 
 
