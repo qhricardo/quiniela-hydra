@@ -237,64 +237,13 @@
       } catch (error) { alert("Error con Google"); }
     });
 
-// ─────────── Noticias de Fútbol Mexicano (NewsData.io) ───────────
-async function cargarNoticias() {
-  try {
-    const res = await fetch("noticias_proxy.php");
-    const data = await res.json();
-
-    if (!data.results) throw new Error("Sin resultados");
-
-    let html = "";
-    data.results.slice(0, 6).forEach(n => {
-      html += `
-        <div style="background:#0b3d2e;color:white;margin:8px;padding:10px;border-radius:8px;">
-          <h3>${n.title}</h3>
-          <p>${n.description ? n.description.substring(0, 150) + "..." : ""}</p>
-          <a href="${n.link}" target="_blank" style="color:#FFD700;">Ver noticia completa</a>
-        </div>`;
-    });
-    document.getElementById("noticias").innerHTML = html;
-  } catch (e) {
-    console.error(e);
-    document.getElementById("noticias").innerHTML = `<p>No se pudieron cargar noticias</p>`;
-  }
-}
-
-
-// ─────────── Tabla General (API alternativa FootballStandings) ───────────
-async function cargarTabla() {
-  try {
-    const res = await fetch("tabla_proxy.php");
-    const data = await res.json();
-
-    if (!data.data?.standings) throw new Error();
-
-    const tbody = document.querySelector("#tablaGeneral tbody");
-    tbody.innerHTML = "";
-    data.data.standings.slice(0, 18).forEach((t, i) => {
-      const puntos = t.stats.find(s => s.name.toLowerCase().includes("points"))?.value || 0;
-      tbody.innerHTML += `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${t.team.name}</td>
-          <td>${puntos}</td>
-        </tr>`;
-    });
-  } catch (err) {
-    console.error(err);
-    document.querySelector("#tablaGeneral tbody").innerHTML = "<tr><td colspan='3'>Error al cargar tabla</td></tr>";
-  }
-}
-
-// Llamadas automáticas
-cargarNoticias();
-cargarTabla();
+<iframe width="390" height="520" frameborder="0" scrolling="no" src="https://fcstats.com/get-table,63,es.php"></iframe>
 
 
   </script>
 </body>
 </html>
+
 
 
 
