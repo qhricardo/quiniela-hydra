@@ -2,9 +2,21 @@
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 
-$rssUrl = "https://www.espn.com.mx/espn/rss/futbol/mexico"; // RSS ESPN México
+$rssUrl = "https://www.espn.com.mx/espn/rss/futbol/mexico";
 
-$xml = @simplexml_load_file($rssUrl);
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $rssUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+$data = curl_exec($ch);
+curl_close($ch);
+
+if (!$data) {
+    echo json_encode(["error" => "No se pudieron cargar las noticias"]);
+    exit;
+}
+
+$xml = @simplexml_load_string($data);
 if (!$xml) {
     echo json_encode(["error" => "No se pudieron cargar las noticias"]);
     exit;
@@ -16,7 +28,7 @@ foreach ($xml->channel->item as $i => $item) {
     $noticias[] = [
         "titulo" => (string)$item->title,
         "link" => (string)$item->link,
-        "descripcion" => (string)$item->description,
+        "descripcion" => strip_tags((string)$item->description),
     ];
 }
 
