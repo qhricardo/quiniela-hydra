@@ -229,20 +229,35 @@
       } catch (error) { alert("Error con Google"); }
     });
 
-    // ─────────── Noticias Automáticas ───────────
-    async function cargarNoticias() {
-      const rssUrl = 'https://www.espn.com.mx/espn/rss/news';
-      const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
-      const data = await res.json();
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(data.contents, "text/xml");
-      let html = "";
-      xml.querySelectorAll("item").forEach((item, i) => {
-        if (i < 5) html += `<div><h3>${item.querySelector("title").textContent}</h3>
-          <p><a href="${item.querySelector("link").textContent}" target="_blank">Ver noticia completa</a></p></div>`;
-      });
-      document.getElementById("noticias").innerHTML = html;
+   // ─────────── Noticias Automáticas de Fútbol Mexicano ───────────
+async function cargarNoticias() {
+  const rssUrl = 'https://www.espn.com.mx/rss/fut-mexico.xml'; // 🔹 RSS de fútbol mexicano
+  const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
+  const data = await res.json();
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(data.contents, "text/xml");
+  let html = "";
+
+  xml.querySelectorAll("item").forEach((item, i) => {
+    if (i < 5) { // mostrar solo las 5 primeras
+      const title = item.querySelector("title").textContent;
+      const link = item.querySelector("link").textContent;
+      const enclosure = item.querySelector("enclosure"); // trae la imagen si existe
+      const image = enclosure ? enclosure.getAttribute("url") : "https://via.placeholder.com/150";
+
+      html += `
+        <div style="margin-bottom: 1rem;">
+          <img src="${image}" alt="${title}" style="width:100%; max-width:300px; border-radius:5px;">
+          <h3>${title}</h3>
+          <p><a href="${link}" target="_blank">Ver noticia completa</a></p>
+        </div>
+      `;
     }
+  });
+
+  document.getElementById("noticias").innerHTML = html;
+}
+
 
     // ─────────── Tabla General Dinámica ───────────
     async function cargarTabla() {
@@ -265,5 +280,6 @@
   </script>
 </body>
 </html>
+
 
 
