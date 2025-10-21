@@ -1,206 +1,276 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Quiniela 360</title>
-<style>
-body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    background: #f5f5f5;
-    display: flex;
-    justify-content: center;
-}
-
-/* LOGIN AL LADO DERECHO */
-.login-container {
-    position: fixed;
-    right: 20px;
-    top: 50px;
-    width: 250px;
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-}
-.login-container input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 5px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-.login-container button {
-    width: 100%;
-    padding: 8px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    background: #006847;
-    color: white;
-    margin-bottom: 5px;
-}
-.login-container button:hover { background: #004d33; }
-
-/* MAIN CONTENT */
-main {
-    max-width: 1000px;
-    margin: 20px 0;
-    width: 100%;
-}
-
-/* NOTICIAS */
-#noticias {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-.noticia {
-    display: flex;
-    gap: 15px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 8px;
-    flex-wrap: wrap;
-}
-.noticia img {
-    width: 150px;
-    height: 90px;
-    object-fit: cover;
-    border-radius: 5px;
-}
-.noticia .contenido {
-    flex: 1;
-}
-.noticia iframe {
-    width: 300px;
-    height: 170px;
-    border-radius: 5px;
-}
-
-/* TABLA GENERAL */
-#tablaGeneral {
-    width: 100%;
-    max-width: 600px;
-    margin: 20px auto 40px;
-    border-collapse: collapse;
-}
-#tablaGeneral th, #tablaGeneral td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-}
-#tablaGeneral th { background: #006847; color: white; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiniela 360 - Login</title>
+  <style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .login-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 350px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #006847;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button, #google-login {
+      width: 100%;
+      padding: 12px;
+      background: #006847;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+    button:hover, #google-login:hover {
+      background: #004d33;
+    }
+    #form-message {
+      margin-top: 1rem;
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+      text-align: center;
+    }
+    .error {
+      background: #ffebee;
+      color: #c62828;
+    }
+    .register-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .register-link a {
+      color: #006847;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .divider {
+      text-align: center;
+      margin: 1.5rem 0;
+      position: relative;
+    }
+    .divider::before,
+    .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: #ccc;
+    }
+    .divider::before {
+      left: 0;
+    }
+    .divider::after {
+      right: 0;
+    }
+  </style>
 </head>
 <body>
+ 
+  <div class="login-container">
+    <h1>Quiniela 360<img src="img/hidra.png" width="40"></h1>
 
-<!-- LOGIN LADO DERECHO -->
-<div class="login-container">
+    <!-- Formulario de login por correo -->
     <form id="login-form">
-        <input type="email" id="email" placeholder="Correo electrónico" required>
-        <input type="password" id="password" placeholder="Contraseña" required>
-        <button type="submit">Iniciar sesión</button>
-    </form>
-    <button id="google-login" style="background:#4285F4;">Entrar con Google</button>
-</div>
+   <div class="form-group">
+     <!--    <label for="email">Correo electrónico</label>
+        <input type="email" id="email" required>
+      </div>
+       <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" required>
+      </div>
+   <button type="submit">Iniciar sesión</button>
+      <div id="form-message" class="error"></div>
+    </form> 
 
-<main>
-    <h2 style="text-align:center; margin-top:20px;">📰 Últimas Noticias de Fútbol</h2>
-    <div id="noticias">Cargando noticias...</div>
+    <!-- División -->
+    <div class="divider">o</div>
 
-    <h2 style="text-align:center;">⚽ Tabla General Liga MX</h2>
-    <table id="tablaGeneral">
-        <thead>
-            <tr><th>Pos</th><th>Equipo</th><th>Puntos</th></tr>
-        </thead>
-        <tbody>
-            <tr><td colspan="3">Cargando...</td></tr>
-        </tbody>
-    </table>
-</main>
+    <!-- Botón de login con Google -->
+    <button id="google-login" style="background-color: #4285F4; color: white; font-weight: bold; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; border-radius: 5px;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png" alt="Google" style="width: 20px; height: 20px;">
+      Entrar con Google
+    </button>
 
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
+    <!-- Enlace de registro -->
+    <div class="register-link">
+      ¿No tienes cuenta? <a href="login.html">Regístrate aquí</a>
+    </div>
+  </div>
 
-<script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+
+  <!-- Configuración de Firebase -->
+  <script src="js/firebase-config.js"></script>
+
+  <!-- Lógica de autenticación -->
+  <script>
 const db = firebase.firestore();
+
+// Detectar parámetro ref del URL (ID del invitador)
 const urlParams = new URLSearchParams(window.location.search);
-const referrerId = urlParams.get("ref");
+const referrerId = urlParams.get("ref"); // 🔹 Cambio realizado
+console.log("🎯 Referrer detectado desde URL:", referrerId);
 
-// LOGIN CORREO
-document.getElementById('login-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    try {
-        await firebase.auth().signInWithEmailAndPassword(email,password);
-        window.location.href="interfaz.html";
-    } catch(e){ alert(e.message); }
+// ─────────────── LOGIN POR CORREO/PASSWORD ───────────────
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const messageDiv = document.getElementById('form-message');
+
+  try {
+    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+    const user = userCredential.user;
+
+    // Guardar usuario en Firestore si es nuevo
+    const userRef = db.collection('users').doc(user.uid);
+    const doc = await userRef.get();
+    if (!doc.exists) {
+      await userRef.set({
+        uid: user.uid,
+        creditos: 1,
+        name: user.displayName || null,
+        email: user.email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // 👉 Enviar crédito al invitador (si hay referrerId)
+      if (referrerId && referrerId !== user.uid) { // 🔹 Previene auto-créditos
+        try {
+          const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
+          });
+          const data = await res.json();
+          console.log("📤 Request al backend enviado con referrerId:", referrerId);
+          console.log("📥 Respuesta del backend:", data);
+        } catch (err) {
+          console.error("❌ Error enviando créditos de invitación:", err);
+        }
+      }
+    }
+
+    window.location.href = "interfaz.html";
+  } catch (error) {
+    let errorMessage;
+    switch(error.code) {
+      case 'auth/invalid-email':
+        errorMessage = 'Correo electrónico inválido';
+        break;
+      case 'auth/user-not-found':
+        errorMessage = 'Usuario no registrado';
+        break;
+      case 'auth/wrong-password':
+        errorMessage = 'Contraseña incorrecta';
+        break;
+      case 'auth/too-many-requests':
+        errorMessage = 'Demasiados intentos. Intenta más tarde.';
+        break;
+      default:
+        errorMessage = 'Error al iniciar sesión';
+    }
+
+    messageDiv.textContent = errorMessage;
+    messageDiv.style.display = 'block';
+  }
 });
 
-// LOGIN GOOGLE
+// ─────────────── LOGIN CON GOOGLE ───────────────
 document.getElementById('google-login').addEventListener('click', async () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try { await firebase.auth().signInWithPopup(provider); window.location.href="interfaz.html"; }
-    catch(e){ alert(e.message); }
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  try {
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
+
+    // Guardar usuario en Firestore si es nuevo
+    const userRef = db.collection('users').doc(user.uid);
+    const doc = await userRef.get();
+    if (!doc.exists) {
+      await userRef.set({
+        uid: user.uid,
+        creditos: 1,
+        name: user.displayName || null,
+        email: user.email,
+        photoURL: user.photoURL || null,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // 👉 Enviar crédito al invitador (si hay referrerId)
+      if (referrerId && referrerId !== user.uid) { // 🔹 Previene auto-créditos
+        try {
+          const res = await fetch("https://quiniela-hydra.onrender.com/credit-invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ referrerId, invitedUserId: user.uid }),
+          });
+          const data = await res.json();
+          console.log("📤 Request al backend enviado con referrerId:", referrerId);
+          console.log("📥 Respuesta del backend:", data);
+        } catch (err) {
+          console.error("❌ Error enviando créditos de invitación:", err);
+        }
+      }
+    }
+
+    window.location.href = "interfaz.html";
+  } catch (error) {
+    alert("Error al iniciar sesión con Google: " + error.message);
+  }
 });
-
-// NOTICIAS CON IMAGEN Y VIDEOS
-async function cargarNoticias() {
-    const rssUrl = 'https://www.espn.com.mx/espn/rss/news';
-    try {
-        const resp = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
-        const data = await resp.json();
-        const xml = new DOMParser().parseFromString(data.contents,"text/xml");
-        const items = xml.querySelectorAll("item");
-        let html = '';
-        items.forEach((item,i)=>{
-            if(i<5){
-                const title = item.querySelector("title").textContent;
-                const link = item.querySelector("link").textContent;
-                const media = item.querySelector("media\\:thumbnail, thumbnail");
-                const img = media ? media.getAttribute("url") : "https://via.placeholder.com/150x90?text=Fútbol";
-                const video = `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(title)}`;
-                html += `<div class="noticia">
-                    <img src="${img}" alt="noticia">
-                    <div class="contenido">
-                        <h3>${title}</h3>
-                        <p><a href="${link}" target="_blank">Ver noticia completa</a></p>
-                        <iframe src="${video}" frameborder="0" allowfullscreen></iframe>
-                    </div>
-                </div>`;
-            }
-        });
-        document.getElementById('noticias').innerHTML = html;
-    } catch(err){ console.error(err); document.getElementById('noticias').innerHTML='Error al cargar noticias'; }
-}
-
-// TABLA GENERAL LIGA MX
-async function cargarTabla() {
-    try {
-        const res = await fetch("https://api-football-standings.azharimm.site/leagues/mex.1/standings");
-        const data = await res.json();
-        const tbody = document.querySelector("#tablaGeneral tbody");
-        tbody.innerHTML = '';
-        data.data.standings.forEach((team,i)=>{
-            tbody.innerHTML += `<tr>
-                <td>${i+1}</td>
-                <td>${team.team.name}</td>
-                <td>${team.stats.find(s=>s.name==='points')?.value || 0}</td>
-            </tr>`;
-        });
-    } catch(err){ console.error(err); document.querySelector("#tablaGeneral tbody").innerHTML='<tr><td colspan="3">Error al cargar tabla</td></tr>'; }
-}
-
-cargarNoticias();
-cargarTabla();
-setInterval(cargarTabla,10*60*1000); // actualizar cada 10 minutos
 </script>
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
