@@ -295,7 +295,7 @@
       <tr>
         <th colspan="3">Resultados Oficiales</th>
         <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
-        <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th>
+        <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
       </tr>
         <tr id="input-resultados">
           <td colspan="3" style="font-weight:bold; color:#006847;">Resultados Oficiales</td>
@@ -317,7 +317,7 @@
         <th>Fecha</th>
         <th>Hora</th>
         <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
-        <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th>
+        <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
         <th>Total</th>
       </tr>
     </thead>
@@ -426,7 +426,7 @@ const snapshot = await db.collection("grupos")
 
   // ✅ Verificar si ya hay resultados oficiales
   const resultadosCompletos = [];
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 11; i++) {
     const val = document.getElementById(`res-${i}`).value.toUpperCase();
     if (["L", "E", "V"].includes(val)) resultadosCompletos.push(val);
   }
@@ -534,6 +534,7 @@ const snapshot = await db.collection("grupos")
 </footer>
 </body>
 </html>
+
 
 
 
