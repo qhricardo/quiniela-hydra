@@ -362,7 +362,7 @@ const snapshot = await db.collection("grupos")
 
       const totalPronosticos = snapshot.size;
       const montoTotal = totalPronosticos * 110;
-      const premioFinal = montoTotal * 0.7;
+      const premioFinal = montoTotal * 0.9;
       document.getElementById('premio-total').textContent = `$${premioFinal.toFixed(2)} MXN`;
 
       const resultadosOficiales = {};
@@ -533,6 +533,7 @@ const snapshot = await db.collection("grupos")
 </footer>
 </body>
 </html>
+
 
 
 
