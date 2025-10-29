@@ -18,6 +18,7 @@ app.use(cors({
   origin: "https://qhricardo.github.io",
   methods: ["GET", "POST", "OPTIONS"],
 }));
+app.options("*", cors());
 
 // ──────────────── FIREBASE ────────────────
 if (!admin.apps.length) {
