@@ -249,51 +249,60 @@
 
     // ─────────── LOGIN GOOGLE ───────────
      // Login con Google y registro automático en Firestore
-    document.getElementById('google-login').addEventListener('click', async () => {
+   
+  document.getElementById('google-login').addEventListener('click', async () => {
     const provider = new firebase.auth.GoogleAuthProvider();
 
     try {
       const result = await firebase.auth().signInWithPopup(provider);
       const user = result.user;
 
-      // Referencia al usuario
       const userRef = db.collection('users').doc(user.uid);
       const userDoc = await userRef.get();
 
       // Si el usuario es nuevo
       if (!userDoc.exists) {
+        console.log("🆕 Usuario nuevo detectado");
         await userRef.set({
           uid: user.uid,
           name: user.displayName || "Sin nombre",
           email: user.email || "",
           photoURL: user.photoURL || "",
           creditos: 1,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          invitadoPor: referrerId || null
+          invitadoPor: referrerId || null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // 💰 Si viene con link de invitación, aumenta +1 crédito al referente
+        // 💰 Si viene de un link de invitación, intenta sumar crédito al referente
         if (referrerId) {
+          console.log("🎯 Referrer detectado:", referrerId);
           const refUser = db.collection('users').doc(referrerId);
+
           await db.runTransaction(async (transaction) => {
             const refDoc = await transaction.get(refUser);
-            if (refDoc.exists) {
-              const currentCredits = refDoc.data().creditos || 0;
-              transaction.update(refUser, { creditos: currentCredits + 1 });
-              console.log(`✅ Crédito sumado a ${referrerId}`);
-            } else {
-              console.warn("⚠️ Referente no encontrado");
+            if (!refDoc.exists) {
+              console.warn("⚠️ El referente no existe:", referrerId);
+              return;
             }
+            const currentCredits = refDoc.data().creditos || 0;
+            const newCredits = currentCredits + 1;
+            transaction.update(refUser, { creditos: newCredits });
+            console.log(`✅ Créditos actualizados para ${referrerId}: ${currentCredits} → ${newCredits}`);
+          }).catch((err) => {
+            console.error("❌ Error en transacción:", err);
           });
+        } else {
+          console.log("ℹ️ No hay referrerId en la URL");
         }
+      } else {
+        console.log("👤 Usuario existente, no se suman créditos.");
       }
 
-      // Redirigir
       window.location.href = "interfaz.html";
 
     } catch (error) {
-      console.error("❌ Error con Google:", error);
-      alert("No se pudo iniciar sesión con Google: " + error.message);
+      console.error("❌ Error en login con Google:", error);
+      alert("Error al iniciar sesión: " + error.message);
     }
   });
 
@@ -337,6 +346,7 @@ async function cargarNoticias() {
   </script>
 </body>
 </html>
+
 
 
 
