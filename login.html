@@ -161,17 +161,21 @@
     <h1>Quiniela 360 <img src="img/hidra.png" alt="logo"></h1>
   </header>
 
-<iframe
-  src="https://www.facebook.com/reel/1442359766759254"
-  width="560"
-  height="315"
-  style="border:none;overflow:hidden"
-  scrolling="no"
-  frameborder="0"
-  allowTransparency="true"
-  allow="encrypted-media; picture-in-picture; web-share"
-  allowFullscreen="true">
-</iframe>
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous"
+  src="https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v19.0">
+</script>
+
+<!-- Contenedor centrado -->
+<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#000;">
+  <!-- Video embed con autoplay -->
+  <div class="fb-video"
+    data-href="https://www.facebook.com/reel/1442359766759254"
+    data-width="560"
+    data-autoplay="true"
+    data-allowfullscreen="true">
+  </div>
+</div>
   
   <div class="login-container">
     <h2>Iniciar Sesión</h2>
@@ -281,6 +285,7 @@ async function cargarNoticias() {
   </script>
 </body>
 </html>
+
 
 
 
