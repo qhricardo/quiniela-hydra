@@ -249,36 +249,54 @@
 
     // ─────────── LOGIN GOOGLE ───────────
      // Login con Google y registro automático en Firestore
-   document.getElementById('google-login').addEventListener('click', async () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
+    document.getElementById('google-login').addEventListener('click', async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
 
-  try {
-    const result = await firebase.auth().signInWithPopup(provider);
-    const user = result.user;
+    try {
+      const result = await firebase.auth().signInWithPopup(provider);
+      const user = result.user;
 
-    // Guardar usuario en Firestore si no existe
-    const userRef = db.collection('users').doc(user.uid);
-    const doc = await userRef.get();
+      // Referencia al usuario
+      const userRef = db.collection('users').doc(user.uid);
+      const userDoc = await userRef.get();
 
-    if (!doc.exists) {
-      await userRef.set({
-        uid: user.uid,
-        creditos: 1,
-        name: user.displayName || null,
-        email: user.email,
-        photoURL: user.photoURL || null,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      // Si el usuario es nuevo
+      if (!userDoc.exists) {
+        await userRef.set({
+          uid: user.uid,
+          name: user.displayName || "Sin nombre",
+          email: user.email || "",
+          photoURL: user.photoURL || "",
+          creditos: 1,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          invitadoPor: referrerId || null
+        });
+
+        // 💰 Si viene con link de invitación, aumenta +1 crédito al referente
+        if (referrerId) {
+          const refUser = db.collection('users').doc(referrerId);
+          await db.runTransaction(async (transaction) => {
+            const refDoc = await transaction.get(refUser);
+            if (refDoc.exists) {
+              const currentCredits = refDoc.data().creditos || 0;
+              transaction.update(refUser, { creditos: currentCredits + 1 });
+              console.log(`✅ Crédito sumado a ${referrerId}`);
+            } else {
+              console.warn("⚠️ Referente no encontrado");
+            }
+          });
+        }
+      }
+
+      // Redirigir
+      window.location.href = "interfaz.html";
+
+    } catch (error) {
+      console.error("❌ Error con Google:", error);
+      alert("No se pudo iniciar sesión con Google: " + error.message);
     }
+  });
 
-    // ✅ Redirigir al panel principal
-    window.location.href = "interfaz.html";
-
-  } catch (error) {
-    console.error("Error con Google:", error);
-    alert("No se pudo iniciar sesión con Google: " + error.message);
-  }
-});
      // ─────────── Noticias Automáticas ───────────
 async function cargarNoticias() {
   const rssUrl = 'https://www.espn.com.mx/espn/rss/futbol/mexico'; // fútbol mexicano
@@ -319,6 +337,7 @@ async function cargarNoticias() {
   </script>
 </body>
 </html>
+
 
 
 
