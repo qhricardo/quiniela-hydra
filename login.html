@@ -161,20 +161,31 @@
     <h1>Quiniela 360 <img src="img/hidra.png" alt="logo"></h1>
   </header>
 
-<div id="fb-root"></div>
-<script async defer crossorigin="anonymous"
-  src="https://connect.facebook.net/es_LA/sdk.js#xfbml=1&version=v19.0">
-</script>
-
-<!-- Contenedor centrado -->
-<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#000;">
-  <!-- Video embed con autoplay -->
-  <div class="fb-video"
-    data-href="https://www.facebook.com/reel/1442359766759254"
-    data-width="560"
-    data-autoplay="true"
-    data-allowfullscreen="true">
-  </div>
+<div style="
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+">
+  <iframe
+    src="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/reel/1442359766759254&show_text=false&autoplay=true&mute=0"
+    width="900"
+    height="400"
+    style="
+      border: none;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.6);
+      background: transparent;
+    "
+    scrolling="no"
+    frameborder="0"
+    allowfullscreen="true"
+    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+  ></iframe>
 </div>
   
   <div class="login-container">
@@ -285,6 +296,7 @@ async function cargarNoticias() {
   </script>
 </body>
 </html>
+
 
 
 
