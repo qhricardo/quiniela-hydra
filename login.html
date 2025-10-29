@@ -248,13 +248,29 @@
 });
 
     // ─────────── LOGIN GOOGLE ───────────
+     // Login con Google y registro automático en Firestore
     document.getElementById('google-login').addEventListener('click', async () => {
       const provider = new firebase.auth.GoogleAuthProvider();
+
       try {
-        await firebase.auth().signInWithPopup(provider);
-        window.location.href = "interfaz.html";
-      } catch (error) { alert("Error con Google"); }
-    });
+        const result = await firebase.auth().signInWithPopup(provider);
+        const user = result.user;
+
+        // Referencia al documento del usuario
+        const userRef = db.collection('users').doc(user.uid);
+        const doc = await userRef.get();
+
+        if (!doc.exists) {
+          // Guardar datos si es nuevo
+          await userRef.set({
+            uid: user.uid,
+            creditos: 1,
+            name: user.displayName || null,
+            email: user.email,
+            photoURL: user.photoURL || null,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
 
      // ─────────── Noticias Automáticas ───────────
 async function cargarNoticias() {
@@ -296,6 +312,7 @@ async function cargarNoticias() {
   </script>
 </body>
 </html>
+
 
 
 
