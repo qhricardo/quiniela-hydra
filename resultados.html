@@ -366,7 +366,7 @@ const snapshot = await db.collection("grupos")
       document.getElementById('premio-total').textContent = `$${premioFinal.toFixed(2)} MXN`;
 
       const resultadosOficiales = {};
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 1; i <= 11; i++) {
         const val = document.getElementById(`res-${i}`).value.toUpperCase();
         if (["L","E","V"].includes(val)) resultadosOficiales[i] = val;
       }
@@ -492,7 +492,7 @@ const snapshot = await db.collection("grupos")
     window.addEventListener('DOMContentLoaded', () => {
       cargarResultados();
 
-      for (let i = 1; i <= 10; i++) {
+      for (let i = 1; i <= 11; i++) {
         document.getElementById(`res-${i}`).addEventListener('input', cargarResultados);
       }
 
@@ -533,6 +533,7 @@ const snapshot = await db.collection("grupos")
 </footer>
 </body>
 </html>
+
 
 
 
