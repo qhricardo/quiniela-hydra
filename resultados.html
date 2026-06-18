@@ -455,12 +455,12 @@ const snapshot = await db.collection("grupos")
   // 🔸 Crear botón solo si hay resultados oficiales
   const crearBoton = (usuario, lugar) => {
     if (hayResultadosOficiales && usuarioLogueado && usuario === usuarioLogueado) {
-      return `<a href="https://m.me/439939209212181?text=Solicito%20mi%20premio%20${encodeURIComponent(lugar)}" 
-                 target="_blank" 
-                 style="margin-left:10px; padding:4px 10px; background:#FFD700; color:#000; font-weight:bold; 
-                 text-decoration:none; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.3);">
-                💬 Solicitar Premio ${lugar}
-              </a>`;
+      return `<a href="https://wa.me/527122239378?text=Solicito%20mi%20premio%20${encodeURIComponent(lugar)}" 
+   target="_blank" 
+   style="margin-left:10px; padding:4px 10px; background:#FFD700; color:#000; font-weight:bold; 
+   text-decoration:none; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.3);">
+   💬 Solicitar Premio ${lugar}
+</a>`;
     }
     return "";
   };
