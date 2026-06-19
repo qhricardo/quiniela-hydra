@@ -120,6 +120,14 @@
       color: #00ff99;
       margin: 0 0 10px;
       font-size: 18px;
+      line-height: 1.4;
+    }
+
+    #noticias p {
+      color: #ddd;
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 10px 0;
     }
 
     #noticias a {
@@ -170,11 +178,12 @@
     <img src="img/instruccion.png" alt="Instrucciones" class="img-responsive">
   </div>
   
-  <h2 style="text-align: center; margin-top: 40px;">📰 Últimas Noticias de Fútbol</h2>
-  <div id="noticias">Cargando noticias...</div>
+  <h2 style="text-align: center; margin-top: 40px;">📰 Últimas Noticias de Fútbol MX</h2>
+  <div id="noticias">Cargando noticias de la Liga MX...</div>
 
   <footer>© 2025 Quiniela360 - Todos los derechos reservados</footer>
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
@@ -238,9 +247,10 @@
       }
     });
 
-    // ─────────── Noticias Automáticas ───────────
+    // ─────────── Noticias Automáticas (Liga MX) ───────────
     async function cargarNoticias() {
-      const rssUrl = 'https://www.espn.com.mx/espn/rss/futbol/mexico';
+      // Usamos el feed de Mediotiempo para asegurar estabilidad en noticias de Fútbol Mexicano
+      const rssUrl = 'https://www.mediotiempo.com/rss/futbol/liga-mx';
       try {
         const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
         const data = await res.json();
@@ -248,29 +258,37 @@
         const xml = parser.parseFromString(data.contents, "text/xml");
 
         let html = "";
-        xml.querySelectorAll("item").forEach((item, i) => {
-          if (i >= 5) return; 
+        const items = xml.querySelectorAll("item");
+
+        if (items.length === 0) {
+          document.getElementById("noticias").innerHTML = "<p>No hay noticias disponibles en este momento.</p>";
+          return;
+        }
+
+        items.forEach((item, i) => {
+          if (i >= 5) return; // Limitar estrictamente a 5 noticias
+          
           const title = item.querySelector("title")?.textContent || "";
           const link = item.querySelector("link")?.textContent || "#";
-          const description = item.querySelector("description")?.textContent || "";
-
-          let imgTag = "";
-          const imgMatch = description.match(/<img.*?src="(.*?)"/);
-          if (imgMatch) imgTag = `<img src="${imgMatch[1]}" alt="${title}" style="width:100%; max-width:300px; border-radius:5px; margin-top:10px; display:block;">`;
+          
+          // Limpiar descripción por si trae HTML basura o textos rotos
+          let description = item.querySelector("description")?.textContent || "";
+          description = description.replace(/<[^>]*>/g, ''); // Eliminar etiquetas HTML internas
+          if (description.length > 150) description = description.substring(0, 150) + "...";
 
           html += `
-            <div style="margin-bottom:15px;">
+            <div style="margin-bottom:15px; text-align: left;">
               <h3>${title}</h3>
-              ${imgTag}
-              <p style="margin-top:10px;"><a href="${link}" target="_blank">Ver noticia completa ➔</a></p>
+              <p>${description}</p>
+              <p style="margin-top:8px;"><a href="${link}" target="_blank">Leer noticia completa en Mediotiempo ➔</a></p>
             </div>
-            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.15);">`;
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.15); margin: 15px 0;">`;
         });
 
-        document.getElementById("noticias").innerHTML = html || "<p>No hay noticias disponibles.</p>";
+        document.getElementById("noticias").innerHTML = html;
       } catch (err) {
         console.error("Error cargando noticias:", err);
-        document.getElementById("noticias").innerHTML = "<p>No se pudieron cargar noticias.</p>";
+        document.getElementById("noticias").innerHTML = "<p>No se pudieron sincronizar las noticias de la Liga MX. Intenta más tarde.</p>";
       }
     }
     
