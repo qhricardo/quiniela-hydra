@@ -2,8 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <!-- Etiqueta viewport obligatoria para que sea 100% responsivo en móviles -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quiniela360 | Interfaz</title>
-<style>
+  <style>
     /* 🌍 Fondo principal */
     body {
       font-family: 'Poppins', sans-serif;
@@ -29,10 +31,11 @@
     header {
       background: linear-gradient(90deg, #007a33, #00c853);
       box-shadow: 0 5px 25px rgba(0,0,0,0.5);
-      padding: 25px;
+      padding: 25px 15px;
       text-align: center;
       border-radius: 0 0 25px 25px;
       animation: glowHeader 3s infinite alternate;
+      box-sizing: border-box;
     }
 
     @keyframes glowHeader {
@@ -42,11 +45,12 @@
 
     header h2 {
       margin: 0;
-      font-size: 36px;
+      font-size: 2rem; /* Adaptable a pantallas */
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 2px;
       text-shadow: 0 3px 10px rgba(0,0,0,0.6);
+      word-wrap: break-word;
     }
 
     .info {
@@ -75,18 +79,57 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.6);
     }
 
+    /* Contenedor Semántico Adaptable */
+    section {
+      width: 90%;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    /* Contenedor flexible de botones de compartir */
+    .share-buttons-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .share-buttons-container button {
+      flex: 1;
+      min-width: 200px;
+      max-width: 280px;
+      margin: 0 !important;
+    }
+
+    /* Enlace de invitación responsivo para que no rompa la pantalla */
+    #miLink {
+      color: #00ff99;
+      font-weight: bold;
+      margin-top: 15px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px dashed rgba(0, 255, 150, 0.4);
+      word-break: break-all; /* Evita que el enlace largo empuje los bordes del móvil */
+      font-size: 14px;
+    }
+
     /* 🎯 Card general */
     .card {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(0,255,150,0.3);
       border-radius: 18px;
-      padding: 30px;
+      padding: 30px 20px;
       width: 90%;
       max-width: 900px;
       margin: 30px auto;
       text-align: center;
       box-shadow: 0 0 20px rgba(0,255,150,0.1);
       transition: 0.3s ease;
+      box-sizing: border-box;
     }
 
     .card:hover {
@@ -102,7 +145,8 @@
     }
 
     input[type="text"], input[type="password"] {
-      width: 80%;
+      width: 100%;
+      max-width: 500px;
       padding: 12px;
       border-radius: 10px;
       border: none;
@@ -114,6 +158,7 @@
       background: rgba(0,255,150,0.1);
       border: 1px solid rgba(0,255,150,0.3);
       transition: 0.3s ease;
+      box-sizing: border-box;
     }
 
     input:focus {
@@ -131,7 +176,7 @@
       letter-spacing: 1px;
       transition: all 0.3s ease;
       font-weight: bold;
-      box-shadow: 0 5px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 5px 12 rgba(0,0,0,0.3);
     }
 
     button:hover {
@@ -143,18 +188,17 @@
     #invitarMessenger { background: linear-gradient(135deg, #0084FF, #005FCC); color: white; }
     #copiarLink { background: linear-gradient(135deg, #FFD700, #FFB300); color: #222; }
 
-    /* 🏆 Grupos */
+    /* 🏆 CSS Grid para visualización de grupos */
     #gruposContainer {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 25px;
-      margin: 40px 0;
+      width: 90%;
+      max-width: 950px;
+      margin: 30px auto 50px auto;
     }
 
     .grupo-card {
-      width: 260px;
-      height: 210px;
       background: linear-gradient(145deg, rgba(0,104,71,0.9), rgba(0,200,100,0.4));
       border-radius: 18px;
       padding: 25px;
@@ -165,17 +209,18 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       transition: all 0.3s ease;
       border: 1px solid rgba(255,255,255,0.15);
+      box-sizing: border-box;
     }
 
     .grupo-card:hover {
-      transform: scale(1.07);
+      transform: scale(1.04);
       background: linear-gradient(145deg, rgba(0,255,150,0.9), rgba(0,150,80,0.4));
       box-shadow: 0 12px 30px rgba(0,255,100,0.3);
     }
 
     .grupo-card h3 {
       font-size: 22px;
-      margin-bottom: 10px;
+      margin: 0 0 10px 0;
       text-shadow: 0 2px 6px rgba(0,0,0,0.4);
     }
 
@@ -191,31 +236,35 @@
       right: 15px;
       bottom: 10px;
       transform: rotate(-10deg);
+      pointer-events: none;
     }
 
-    /* 💫 Modal contraseña */
+    /* 💫 Modal de ingreso adaptable */
     #modal {
       display: none;
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.8);
       backdrop-filter: blur(6px);
       z-index: 1000;
+      box-sizing: border-box;
     }
 
     #modalContent {
       background: linear-gradient(160deg, #002f1a, #004d2a);
       border: 2px solid rgba(0,255,150,0.4);
       box-shadow: 0 0 25px rgba(0,255,150,0.3);
-      width: 380px;
-      margin: 12% auto;
-      padding: 25px;
+      width: 90%;
+      max-width: 400px;
+      margin: 15% auto;
+      padding: 30px 20px;
       border-radius: 20px;
       color: #fff;
       text-align: center;
       position: relative;
       overflow: hidden;
+      box-sizing: border-box;
     }
 
     #modalContent::before {
@@ -238,6 +287,7 @@
       z-index: 1;
       text-transform: uppercase;
       color: #00ff99;
+      margin-top: 10px;
     }
 
     #modalContent p, #passwordInput, #btnEntrar {
@@ -250,9 +300,10 @@
       right: 15px;
       top: 10px;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 24px;
       font-weight: bold;
       color: #00ff99;
+      z-index: 10;
     }
 
     #closeModal:hover {
@@ -266,62 +317,52 @@
       margin-top: 15px;
     }
 
-    /* 📱 Responsive */
-    @media (max-width: 768px) {
-      .grupo-card { width: 90%; height: 180px; }
-      header h2 { font-size: 28px; }
-      .card { padding: 20px; }
-      #modalContent { width: 90%; }
+    /* 📱 Breakpoints extras de ajuste fino para Celulares muy Pequeños */
+    @media (max-width: 480px) {
+      header h2 { font-size: 1.6rem; }
+      .card h3, section h2 { font-size: 1.4rem; }
+      .share-buttons-container button { min-width: 100%; }
+      #modalContent { margin: 30% auto; }
     }
   </style>
 </head>
 <body>
+
   <header>
     <h2 id="usuario">Cargando...</h2>
     <div class="info">Créditos: <span id="creditos">0</span></div>
-   
   </header>
   
-  <!-- 🟢 SECCIÓN DE INVITACIONES -->
-<section id="invitaciones" style="margin-top:30px; text-align:center;">
-  <h2 style="color:#5DF70A;">Invita a tus amigos y gana créditos</h2>
-  <p>Comparte tu enlace y recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
+  <!-- 🟢 SECCIÓN DE INVITACIONES RESPONSIVA -->
+  <section id="invitaciones">
+    <h2 style="color:#5DF70A; text-align:center;">Invita a tus amigos y gana créditos</h2>
+    <p style="text-align:center;">Comparte tu enlace y recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
 
-  <!-- Botones de invitación -->
-  <div style="margin-top:20px;">
-    <button id="invitarWhatsApp"
-      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
-      📱 Invitar por WhatsApp
-    </button>
+    <!-- Botones organizados -->
+    <div class="share-buttons-container">
+      <button id="invitarWhatsApp">📱 Invitar por WhatsApp</button>
+      <button id="invitarMessenger">💬 Invitar por Messenger</button>
+      <button id="copiarLink">📋 Copiar mi link</button>
+    </div>
 
-    <button id="invitarMessenger"
-      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
-      💬 Invitar por Messenger
-    </button>
-
-    <button id="copiarLink"
-      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px;">
-      📋 Copiar mi link
-    </button>
-  </div>
-
-  <!-- Mostrar el link personalizado -->
-  <p style="margin-top:20px;">Tu enlace de invitación:</p>
-  <div id="miLink" style="color:#006847; font-weight:bold;"></div>
-</section>
+    <!-- Mostrar el link personalizado sin romper cajas -->
+    <p style="margin-top:25px; text-align:center; margin-bottom:5px;">Tu enlace de invitación:</p>
+    <div id="miLink">Generando enlace personal...</div>
+  </section>
 
   <!-- Crear Grupo -->
   <div class="card">
     <h3>Crear Nuevo Grupo</h3>
     <input type="text" id="nombreGrupo" placeholder="Nombre del grupo">
     <input type="password" id="passwordGrupo" placeholder="Contraseña (opcional)">
-    <button onclick="crearGrupo()">Crear</button>
+    <br>
+    <button onclick="crearGrupo()">Crear Grupo</button>
   </div>
 
-  <h3>Grupos Disponibles</h3>
+  <h3 style="text-align: center; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 40px; color: #00ff99;">Grupos Disponibles</h3>
   <div id="gruposContainer"></div>
 
-  <div id="modalExito" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#006847; color:white; padding:20px 30px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.3); font-size:16px; z-index:1000;">
+  <div id="modalExito" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#006847; color:white; padding:20px 30px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.3); font-size:16px; z-index:1000; text-align:center; width:80%; max-width:300px;">
     ✅ Grupo creado con éxito
   </div>
 
@@ -386,52 +427,41 @@
       handleInvitation();
       cargarGrupos();
 
-      // 🔹 Generar link de invitación
       const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${user.uid}`;
       document.getElementById("miLink").textContent = linkInvitacion;
 
-      // Asignar botones
       document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
       document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
       document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
     });
 
-    // 🔹 Procesar invitaciones
-   async function handleInvitation() {
-  const params = new URLSearchParams(window.location.search);
-  const invitedBy = params.get("ref");
-  if (!invitedBy || !usuarioActual) return;
+    async function handleInvitation() {
+      const params = new URLSearchParams(window.location.search);
+      const invitedBy = params.get("ref");
+      if (!invitedBy || !usuarioActual) return;
+      if (invitedBy === usuarioActual.uid) return;
 
-  // Evitar autoinvitación
-  if (invitedBy === usuarioActual.uid) return;
+      const referrerRef = doc(db, "users", invitedBy);
+      const referrerSnap = await getDoc(referrerRef);
+      if (!referrerSnap.exists()) return;
 
-  const referrerRef = doc(db, "users", invitedBy);
-  const referrerSnap = await getDoc(referrerRef);
-  if (!referrerSnap.exists()) return;
+      const invitedUsersRef = doc(db, "invites", invitedBy);
+      const invitedSnap = await getDoc(invitedUsersRef);
+      let invitedUsers = [];
+      if (invitedSnap.exists()) invitedUsers = invitedSnap.data().invitedUsers || [];
 
-  // Colección para invitados
-  const invitedUsersRef = doc(db, "invites", invitedBy);
-  const invitedSnap = await getDoc(invitedUsersRef);
-  let invitedUsers = [];
-  if (invitedSnap.exists()) invitedUsers = invitedSnap.data().invitedUsers || [];
+      if (!invitedUsers.includes(usuarioActual.uid)) {
+        invitedUsers.push(usuarioActual.uid);
+        await setDoc(invitedUsersRef, { invitedUsers }, { merge: true });
 
-  // Verificar si ya fue invitado
-  if (!invitedUsers.includes(usuarioActual.uid)) {
-    // Guardar invitado
-    invitedUsers.push(usuarioActual.uid);
-    await setDoc(invitedUsersRef, { invitedUsers }, { merge: true });
+        const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
+        await updateDoc(referrerRef, { creditos: nuevosCreditos });
 
-    // Sumar crédito
-    const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
-    await updateDoc(referrerRef, { creditos: nuevosCreditos });
+        document.getElementById("creditos").innerText = nuevosCreditos;
+        alert("🎉 Se registró tu invitación correctamente.");
+      }
+    }
 
-    // 🔹 Actualizar UI
-    document.getElementById("creditos").innerText = nuevosCreditos;
-
-    alert("🎉 Se registró tu invitación correctamente.");
-  }
-}
-    // 🔹 Crear grupo
     async function crearGrupo() {
       const nombre = document.getElementById("nombreGrupo").value;
       const pass = document.getElementById("passwordGrupo").value || null;
@@ -470,7 +500,6 @@
     }
     window.crearGrupo = crearGrupo;
 
-    // 🔹 Listar grupos
     async function cargarGrupos() {
       const contenedor = document.getElementById("gruposContainer");
       contenedor.innerHTML = "";
@@ -533,7 +562,6 @@
       }
     };
 
-    // 🔹 Funciones de invitación
     function invitarWhatsApp(link) {
       const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
       window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
@@ -550,19 +578,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
