@@ -65,11 +65,12 @@ h1 { color: var(--blanco); text-align: center; margin-bottom: 30px; }
 #countdown span { font-weight: bold; }
 #recuadro-derecho { float: right; width: 300px; margin: -300px 10px; }
 #recuadro-derecho img { display: block; width: 100%; height: auto; border-radius: 5px; }
- #comprarCreditos {
+
+#comprarCreditos {
   display: block;               /* Para poder centrarlo */
-  margin: 30px auto;            /* Centrado horizontal y con margen arriba y abajo */
+  margin: 30px auto 15px auto;  /* Centrado horizontal y con margen */
   padding: 15px 30px;           /* Más grande que antes */
-  font-size: 18px;              /* Texto más grande */
+  font-size: 16px;              /* Texto más grande */
   background-color: #006847;
   color: white;
   border: none;
@@ -77,11 +78,18 @@ h1 { color: var(--blanco); text-align: center; margin-bottom: 30px; }
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s;
+  width: 100%;                  /* Se adapta mejor al contenedor lateral */
+  box-sizing: border-box;
 }
 
-#comprarCreditos:hover {
+#comprarCreditos:hover:not(:disabled) {
   background-color: #004d33;
-  transform: scale(1.05);       /* Efecto de “zoom” al pasar el mouse */
+  transform: scale(1.02);       /* Efecto de “zoom” al pasar el mouse */
+}
+
+#comprarCreditos:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
     
 </style>
@@ -115,29 +123,28 @@ h1 { color: var(--blanco); text-align: center; margin-bottom: 30px; }
                     <span id="seconds">00</span>
                 </div>
             </li>
+         </ul>
          
    <section id="invitaciones" style="margin-top:30px; text-align:center;">
-  <h2 style="color:#006847;">Invita a tus amigos y gana créditos</h2>
-  <p>Comparte tu enlace y recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
+  <h2 style="color:#006847; font-size: 18px;">Invita a tus amigos y gana créditos</h2>
+  <p style="font-size: 13px;">Comparte tu enlace y recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
 
   <!-- Botones de invitación -->
   <div style="margin-top:20px;">
     <button id="invitarWhatsApp"
-      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px; background-color:#25D366;">
-      📱 Invitar por WhatsApp
+      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px; background-color:#25D366; font-size: 12px;">
+      📱 WhatsApp
     </button>
 
     <button id="invitarMessenger"
-      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px; background-color:#0084FF;">
-      💬 Invitar por Messenger
+      style="padding:10px 20px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; margin:5px; background-color:#0084FF; font-size: 12px;">
+      💬 Messenger
     </button>
-
-  
   </div>
 
   <!-- Mostrar el link personalizado -->
-   <p style="margin-top:20px;">Tu enlace de invitación:</p>
- <div id="miLink" style="color:#006847; font-weight:bold;">Cargando...</div>
+   <p style="margin-top:20px; font-size: 13px;">Tu enlace de invitación:</p>
+ <div id="miLink" style="color:#006847; font-weight:bold; font-size: 13px; word-break: break-all;">Cargando...</div>
 </section>
 
 <!-- 🔹 Firebase Auth y lógica de invitación -->
@@ -180,49 +187,60 @@ h1 { color: var(--blanco); text-align: center; margin-bottom: 30px; }
       window.open(url, "_blank");
     }
 
-    function copiarLink(link) {
-      navigator.clipboard.writeText(link)
-        .then(() => alert("✅ Link copiado al portapapeles:\n" + link))
-        .catch(() => alert("⚠️ No se pudo copiar el link, cópialo manualmente."));
-    }
-
     // Asignar eventos
     document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
     document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
-    document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
   });
 </script>
 
-<!--<button id="comprarCreditos">Comprar 1 Crédito</button>-->
+<!-- 🔹 Botón automático Openpay SPEI -->
+<button id="comprarCreditos">💳 Cargar 1 Crédito ($50 MXN) por SPEI</button>
 
-           <div style="text-align: center; margin-top: 20px;">
-    <a href="https://wa.me/527122239378?text=Solicito%20un%20credito%20para%20jugar%20Quiniela%20" 
+<!-- 🔹 Recuadro de Instrucciones Dinámicas de Transferencia -->
+<div id="spei-instructions" style="display: none; background-color: #fff; border: 2px dashed #0038a8; border-radius: 8px; padding: 15px; margin-top: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h4 style="color: #0038a8; margin-top: 0; text-align: center; font-size: 15px;">🏦 Datos para Transferencia SPEI</h4>
+    <p style="font-size: 12px; color: #333; margin-bottom: 10px;">Realiza tu pago vía banca móvil. Los créditos se asignarán de forma automática al confirmarse el movimiento.</p>
+    <div style="font-size: 13px; line-height: 1.6;">
+        <strong>Banco Receptor:</strong> <span id="spei-banco">STP</span><br>
+        <strong>CLABE Interbancaria:</strong> <span id="spei-clabe" style="font-family: monospace; font-weight: bold; font-size: 15px; background: #eee; padding: 2px 6px; border-radius: 4px;"></span><br>
+        <strong>Concepto:</strong> <span id="spei-concepto" style="font-weight: bold; color: var(--verde);"></span><br>
+        <strong>Monto exacto:</strong> <span id="spei-monto" style="font-weight: bold; color: var(--rojo);"></span>
+    </div>
+    <p style="font-size: 11px; color: #666; margin-top: 10px; text-align: center;">* Esta orden expira en 24 horas.</p>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="https://wa.me/527122239378?text=Tengo%20problemas%20con%20mi%20pago%20SPEI%20en%20Quiniela" 
        target="_blank" 
-       style="padding: 15px 30px; background-color: #FFD700; color: #000; font-weight: bold; font-size: 20px; text-decoration: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: inline-block; transition: background-color 0.3s ease;">
-        💰 SOLICITAR CREDITO
+       style="padding: 10px 20px; background-color: #FFD700; color: #000; font-weight: bold; font-size: 14px; text-decoration: none; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: inline-block;">
+        💰 Soporte / Dudas por WhatsApp
     </a>
 </div>
             
 <script>
 document.getElementById("comprarCreditos").addEventListener("click", async () => {
-  // Verifica que el usuario esté logueado
+  // Verifica que el usuario esté logueado en la app
   if (!currentUser) {
     alert("Debes iniciar sesión para comprar créditos");
     return;
   }
 
-  // Datos para enviar al backend
+  const btnComprar = document.getElementById("comprarCreditos");
+  btnComprar.disabled = true;
+  btnComprar.textContent = "⏳ Generando orden SPEI...";
+
+  // Datos adaptados para Openpay Cargo por SPEI
   const body = {
-    amount: 50, // precio en MXN
+    amount: 50.00, // Formato numérico requerido
     userId: currentUser.uid,
-    name: currentUser.displayName || "Usuario",
-    email: currentUser.email || "",
-    creditsToAdd: 1, // créditos a sumar
+    name: currentUser.displayName || "Jugador Hydra",
+    email: currentUser.email || "correo@ejemplo.com", 
+    creditsToAdd: 1,
   };
 
   try {
-    console.log("📤 Enviando a backend:", body);
-    const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+    console.log("📤 Enviando a backend (Openpay SPEI):", body);
+    const res = await fetch("https://quiniela-hydra.onrender.com/create-charge-spei", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -230,20 +248,41 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
 
     const data = await res.json();
 
-    if (data.init_point) {
-      console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
-      window.location.href = data.init_point;
+    // Validamos que el backend devuelva la clave CLABE de Openpay
+    if (data.payment_method && data.payment_method.clabe) {
+      console.log("✅ Datos SPEI generados:", data);
+      
+      // Seteamos la información en los elementos de la interfaz
+      document.getElementById("spei-clabe").textContent = data.payment_method.clabe;
+      document.getElementById("spei-concepto").textContent = data.payment_method.name || "Recarga Quiniela";
+      document.getElementById("spei-monto").textContent = `$${body.amount.toFixed(2)} MXN`;
+      if(data.payment_method.bank) {
+          document.getElementById("spei-banco").textContent = data.payment_method.bank;
+      }
+
+      // Mostramos el recuadro informativo
+      document.getElementById("spei-instructions").style.display = "block";
+      
+      btnComprar.textContent = "🔄 Generar otra orden SPEI";
+      btnComprar.disabled = false;
+
+      // Scroll automático al recuadro para mejor experiencia visual
+      document.getElementById("spei-instructions").scrollIntoView({ behavior: 'smooth' });
+
     } else {
-      console.error("❌ Respuesta del servidor:", data);
-      alert("No se pudo generar la preferencia de pago.");
+      console.error("❌ Error en la estructura de la respuesta:", data);
+      alert("No se pudo generar la orden de transferencia. Revisa la consola o intenta más tarde.");
+      btnComprar.disabled = false;
+      btnComprar.textContent = "💳 Cargar 1 Crédito ($50 MXN) por SPEI";
     }
   } catch (error) {
-    console.error("🚨 Error al crear preferencia:", error);
-    alert("Ocurrió un error al intentar crear la preferencia.");
+    console.error("🚨 Error en la petición a Render:", error);
+    alert("Ocurrió un error al intentar comunicar con el servidor.");
+    btnComprar.disabled = false;
+    btnComprar.textContent = "💳 Cargar 1 Crédito ($50 MXN) por SPEI";
   }
 });
 </script>
-
 
      </div>
 
@@ -267,8 +306,8 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
             </div>
         </div>
 
-        <!-- Partido 2 -->
-         <<div class="partido">
+         <!-- Partido 2 -->
+          <div class="partido">
               <h3 style="color: #006847; text-align: center;">Viernes, 31/10/2025 21:00</h3>
               <div class="equipos">
                 <h2><img src="img/queretaro.png" alt="" width="75"></h2>
@@ -285,7 +324,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
         </div>
             
 
-        <!-- Partido 3 -->
+         <!-- Partido 3 -->
        <div class="partido">
               <h3 style="color: #006847; text-align: center;">Viernes, 31/10/2025 19:00hrs</h3>
               <div class="equipos">
@@ -302,7 +341,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
             </div>
         </div>
 
-        <!-- Partido 4 -->
+         <!-- Partido 4 -->
        <div class="partido">
               <h3 style="color: #006847; text-align: center;">Sábado, 01/11/2025 17:00hrs</h3>
               <div class="equipos">
@@ -319,7 +358,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
             </div>
         </div>
 
-        <!-- Partido 5 -->
+         <!-- Partido 5 -->
         <div class="partido">
               <h3 style="color: #006847; text-align: center;">Sábado, 01/11/2025 19:00hrs</h3>
               <div class="equipos">
@@ -336,7 +375,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
             </div>
         </div>
 
-        <!-- Partido 6 -->
+         <!-- Partido 6 -->
         <div class="partido">
               <h3 style="color: #006847; text-align: center;">Sábado, 01/11/2025 21:00hrs</h3>
               <div class="equipos">
@@ -353,7 +392,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
             </div>
         </div>
 
-        <!-- Partido 7 -->
+         <!-- Partido 7 -->
         <div class="partido">
               <h3 style="color: #006847; text-align: center;">Domingo, 02/11/2025 12:00hrs</h3>
               <div class="equipos">
@@ -370,7 +409,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
             </div>
         </div>
 
-        <!-- Partido 8 -->
+         <!-- Partido 8 -->
         <div class="partido">
               <h3 style="color: #006847; text-align: center;">Domingo, 02/11/2025 17:00hrs</h3>
               <div class="equipos">
@@ -387,7 +426,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
             </div>
         </div>
 
-        <!-- Partido 9 -->
+         <!-- Partido 9 -->
        <div class="partido">
               <h3 style="color: #006847; text-align: center;">Domingo, 02/11/2025 19:00hrs</h3>
               <div class="equipos">
@@ -404,7 +443,7 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
             </div>
         </div>
 
-        <!-- Partido 10 -->
+         <!-- Partido 10 -->
 <div class="partido">
               <h3 style="color: #006847; text-align: center;">Domingo, 02/11/2025 12:00hrs</h3>
               <div class="equipos">
@@ -525,7 +564,7 @@ document.querySelectorAll('.opcion').forEach(el=>{
 });
 
 
-// Guardar pronósticos (limitado a 3 por usuario por grupo con contador visible)
+// Guardar pronósticos
 document.getElementById('guardar-btn').addEventListener('click', async () => {
     if (userCredits <= 0) {
         alert('No tienes créditos suficientes');
@@ -608,7 +647,6 @@ document.getElementById('guardar-btn').addEventListener('click', async () => {
         });
         
       alert("✅ Pronósticos guardados y 1 crédito descontado correctamente.");
-        // 🔹 Espera breve para que el usuario lea el mensaje
         setTimeout(() => {
           window.location.href = "resultados.html";
         }, 1000);
@@ -652,11 +690,11 @@ async function mostrarGrupoActual() {
     }
 }
 
+// Re-escucha redundante de Auth unificada
 firebase.auth().onAuthStateChanged(async (user) => {
     if (!user) { window.location.href = 'login.html'; return; }
     currentUser = user;
 
-    // Mostrar usuario
     const userDoc = await db.collection('users').doc(user.uid).get();
     if (userDoc.exists) {
         const userData = userDoc.data();
@@ -664,10 +702,8 @@ firebase.auth().onAuthStateChanged(async (user) => {
         document.getElementById('username').textContent = `${userData.name||user.email} | Créditos: ${userCredits}`;
     }
 
-    // Mostrar grupo
     await mostrarGrupoActual();
 
-    // Cargar pronósticos previos
     const grupoId = localStorage.getItem("grupoSeleccionado");
     if (!grupoId) { alert("Debes seleccionar un grupo"); return; }
 
@@ -688,7 +724,6 @@ firebase.auth().onAuthStateChanged(async (user) => {
     }
 });
 
-
 // Logout
 document.getElementById('logout-btn').addEventListener('click', ()=>firebase.auth().signOut());
    
@@ -708,115 +743,3 @@ document.getElementById('logout-btn').addEventListener('click', ()=>firebase.aut
 </footer>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
