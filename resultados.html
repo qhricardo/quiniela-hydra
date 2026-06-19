@@ -33,6 +33,7 @@
       text-transform: uppercase;
       letter-spacing: 1px;
       text-shadow: 2px 2px 10px rgba(0,0,0,0.6);
+      margin: 0;
     }
 
     #logout-btn {
@@ -84,6 +85,7 @@
       max-width: 700px;
       box-shadow: 0 0 25px rgba(255,215,0,0.4);
       color: #000;
+      box-sizing: border-box;
     }
 
     #premio-box h3 {
@@ -101,15 +103,21 @@
       text-shadow: 0 0 12px #00ffcc;
     }
 
-    /* ───────────── Tabla Principal ───────────── */
-    table {
+    /* ───────────── Contenedor para Tablas Responsivas ───────────── */
+    .table-container {
       width: 95%;
       margin: 25px auto;
+      overflow-x: auto;
+      border-radius: 15px;
+      box-shadow: 0 0 25px rgba(0,255,204,0.2);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ───────────── Tabla Principal ───────────── */
+    table {
+      width: 100%;
       border-collapse: collapse;
       background: rgba(0, 0, 0, 0.6);
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 0 25px rgba(0,255,204,0.2);
     }
 
     th, td {
@@ -117,6 +125,7 @@
       text-align: center;
       border-bottom: 1px solid rgba(255,255,255,0.15);
       color: #fff; 
+      white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
     }
 
     th {
@@ -153,6 +162,7 @@
       padding: 25px;
       text-align: center;
       box-shadow: 0 0 25px rgba(0,255,204,0.3);
+      box-sizing: border-box;
     }
 
     .partidos-cuadro h3 {
@@ -169,60 +179,62 @@
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-  /* ───────────── Tabla Ganadores ───────────── */
-#tablaGanadores {
-  width: 460px;
-  margin: 30px auto;
-  border-collapse: collapse;
-  background: rgba(0,0,0,0.85);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 0 25px rgba(0,255,128,0.3);
-  font-family: 'Poppins', sans-serif;
-  font-size: 18px;
-  color: #000;
-  text-align: center;
-}
+    /* ───────────── Tabla Ganadores ───────────── */
+    #tablaGanadores {
+      width: 100%;
+      max-width: 460px;
+      margin: 30px auto;
+      border-collapse: collapse;
+      background: rgba(0,0,0,0.85);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 25px rgba(0,255,128,0.3);
+      font-family: 'Poppins', sans-serif;
+      font-size: 18px;
+      color: #000;
+      text-align: center;
+    }
 
-#tablaGanadores th {
-  background: linear-gradient(40deg, #00cc6a, #008c49);
-  color: #fff;
-  font-size: 20px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 14px;
-}
+    #tablaGanadores th {
+      background: linear-gradient(40deg, #00cc6a, #008c49);
+      color: #fff;
+      font-size: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 14px;
+    }
 
-#tablaGanadores td {
-  padding: 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  color: #000;
-}
+    #tablaGanadores td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: #fff; /* Cambiado a blanco para mejor legibilidad general */
+    }
 
-/* 🥇 Primer lugar */
-#tablaGanadores tr.primer-lugar {
- background: linear-gradient(90deg, #FFD700, #fff6a1);
-  color: #000;
-  font-weight: 900;
-  font-size: 20px;
-  text-shadow: 0 0 5px rgba(255,255,255,0.5);
-}
+    /* 🥇 Primer lugar */
+    #tablaGanadores tr.primer-lugar td {
+      background: linear-gradient(90deg, #FFD700, #fff6a1);
+      color: #000;
+      font-weight: 900;
+      font-size: 20px;
+      text-shadow: 0 0 5px rgba(255,255,255,0.5);
+    }
 
-/* 🥈 Segundo lugar */
-#tablaGanadores tr.segundo-lugar {
- background: linear-gradient(90deg, #C0C0C0, #f0f0f0);
-  color: #000;
-  font-weight: 800;
-  font-size: 19px;
-  text-shadow: 0 0 4px rgba(255,255,255,0.4);
-}
+    /* 🥈 Segundo lugar */
+    #tablaGanadores tr.segundo-lugar td {
+      background: linear-gradient(90deg, #C0C0C0, #f0f0f0);
+      color: #000;
+      font-weight: 800;
+      font-size: 19px;
+      text-shadow: 0 0 4px rgba(255,255,255,0.4);
+    }
 
-/* 🔹 Filas normales */
-#tablaGanadores tr:not(.primer-lugar):not(.segundo-lugar):hover {
-  background: rgba(255,255,255,0.05);
-  transform: scale(1.02);
-  transition: 0.2s;
-}
+    /* 🔹 Filas normales */
+    #tablaGanadores tr:not(.primer-lugar):not(.segundo-lugar):hover {
+      background: rgba(255,255,255,0.05);
+      transform: scale(1.02);
+      transition: 0.2s;
+    }
+
     /* ───────────── Inputs Resultados ───────────── */
     input[readonly] {
       text-align: center;
@@ -250,6 +262,32 @@
       color: #00ffcc;
       margin-bottom: 8px;
     }
+
+    /* ───────────── MEDIA QUERIES (RESPONSIVO) ───────────── */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px 20px;
+      }
+      .header h2 {
+        font-size: 22px;
+      }
+      #premio-box h3, .partidos-cuadro h3 {
+        font-size: 22px;
+      }
+      #premio-total {
+        font-size: 28px;
+      }
+      #tablaGanadores {
+        width: 95%;
+        font-size: 16px;
+      }
+      #tablaGanadores th {
+        font-size: 18px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -259,46 +297,45 @@
     <button id="logout-btn">Cerrar Sesión</button>
   </div>
 
-  <div style="text-align: center; margin-top: 30px;">
-    <button onclick="window.location.href='index.html'" style="padding: 10px 20px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+  <div style="text-align: center; margin-top: 30px; padding: 0 15px;">
+    <button onclick="window.location.href='index.html'" style="padding: 12px 24px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; max-width: 280px; box-sizing: border-box;">
         ⬅️ Regresar a Pronósticos
     </button>
   </div>
 
-  <div id="premio-box" style="margin: 20px auto; width: 90%; max-width: 600px; background: #fff; border: 2px solid #006847; padding: 15px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); text-align: center;">
+  <div id="premio-box">
     <h3 style="color: #006847; margin: 0;">🏆 Premio Acumulado</h3>
-    <p style="font-size: 24px; color: #FFD700; text-align: center;">1er Lugar</p>
-    <p id="premio-total" style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0;">$0.00 MXN </p>
-    <p style="font-size: 24px; color: #C0C0C0; text-align: center;">2do Lugar 1 Credito GRATIS</p>
-    <p>En caso de empate en total de puntos el premio se divide entre los ganadores</p>
+    <p style="font-size: 24px; color: #FFD700; text-align: center; font-weight: bold; margin: 10px 0;">1er Lugar</p>
+    <p id="premio-total" style="font-weight: bold; margin: 10px 0;">$0.00 MXN </p>
+    <p style="font-size: 20px; color: #C0C0C0; text-align: center; font-weight: bold; margin: 15px 0 5px 0;">2do Lugar 1 Crédito GRATIS</p>
+    <p style="color: #fff; font-size: 14px; margin: 10px 0 0 0; font-family: 'Poppins', sans-serif;">En caso de empate en total de puntos el premio se divide entre los ganadores</p>
   </div>
 
- <h2 style="color: #FFD700; text-align: center;">🏆Ganadores</h2>
-  <table id="tablaGanadores">
-    <thead>
-      <tr>
-        <th>Lugar</th>
-        <th>Usuario</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h2 style="color: #FFD700; text-align: center; text-transform: uppercase; letter-spacing: 1px;">🏆 Ganadores</h2>
+  
+  <div class="table-container" style="max-width: 460px;">
+    <table id="tablaGanadores">
+      <thead>
+        <tr>
+          <th>Lugar</th>
+          <th>Usuario</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-  <!--div id="partidos-info" class="partidos-cuadro">
-    <h3>Partidos Programados</h3>
-    <ul id="lista-partidos"></ul>
-  </div>-->
-
-  <table>
-    <thead>
-      <tr>
-        <th colspan="3">Resultados Oficiales</th>
-        <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
-        <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
-      </tr>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th colspan="3">Resultados Oficiales</th>
+          <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
+          <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
+        </tr>
         <tr id="input-resultados">
-          <td colspan="3" style="font-weight:bold; color:#006847;">Resultados Oficiales</td>
+          <td colspan="3" style="font-weight:bold; color:#00a86b;">Resultados Oficiales</td>
           <td><input type="text" maxlength="1" size="1" id="res-1" value="L" readonly /></td>
           <td><input type="text" maxlength="1" size="1" id="res-2" value="V" readonly /></td>
           <td><input type="text" maxlength="1" size="1" id="res-3" value="E" readonly /></td>
@@ -309,19 +346,20 @@
           <td><input type="text" maxlength="1" size="1" id="res-8" value="L" readonly /></td>
           <td><input type="text" maxlength="1" size="1" id="res-9" value="E" readonly /></td>
           <td><input type="text" maxlength="1" size="1" id="res-10" value="L" readonly /></td>
-           <td><input type="text" maxlength="1" size="1" id="res-11" value="E" readonly /></td>
+          <td><input type="text" maxlength="1" size="1" id="res-11" value="E" readonly /></td>
         </tr>
-      <tr>
-        <th>Usuario</th>
-        <th>Fecha</th>
-        <th>Hora</th>
-        <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
-        <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody id="resultados-body"></tbody>
-  </table>
+        <tr>
+          <th>Usuario</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
+          <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="resultados-body"></tbody>
+    </table>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
@@ -335,30 +373,29 @@
 
     async function cargarResultados() {
       const grupoActual = localStorage.getItem("grupoSeleccionado");
-if (!grupoActual) {
-  alert("No se seleccionó un grupo. Regresa e ingresa a un grupo primero.");
-  return;
-}
+      if (!grupoActual) {
+        alert("No se seleccionó un grupo. Regresa e ingresa a un grupo primero.");
+        return;
+      }
 
-// Mostrar el nombre del grupo en el encabezado
-try {
-  const grupoDoc = await db.collection("grupos").doc(grupoActual).get();
-  if (grupoDoc.exists) {
-    document.querySelector(".header h2").textContent = 
-      `Resultados del Grupo: ${grupoDoc.data().nombre}`;
-  } else {
-    document.querySelector(".header h2").textContent = 
-      `Resultados del Grupo: ${grupoActual}`;
-  }
-} catch (err) {
-  console.error("Error obteniendo grupo:", err);
-}
+      try {
+        const grupoDoc = await db.collection("grupos").doc(grupoActual).get();
+        if (grupoDoc.exists) {
+          document.querySelector(".header h2").textContent = 
+            `Resultados del Grupo: ${grupoDoc.data().nombre}`;
+        } else {
+          document.querySelector(".header h2").textContent = 
+            `Resultados del Grupo: ${grupoActual}`;
+        }
+      } catch (err) {
+        console.error("Error obteniendo grupo:", err);
+      }
 
-const snapshot = await db.collection("grupos")
-  .doc(grupoActual)
-  .collection("pronosticos")
-  .orderBy("fecha", "desc")
-  .get();
+      const snapshot = await db.collection("grupos")
+        .doc(grupoActual)
+        .collection("pronosticos")
+        .orderBy("fecha", "desc")
+        .get();
 
       const totalPronosticos = snapshot.size;
       const montoTotal = totalPronosticos * 25;
@@ -419,76 +456,74 @@ const snapshot = await db.collection("grupos")
       actualizarGanadores();
     }
 
- function actualizarGanadores() {
-  const filas = document.querySelectorAll("#resultados-body tr");
-  const datos = [];
+    function actualizarGanadores() {
+      const filas = document.querySelectorAll("#resultados-body tr");
+      const datos = [];
 
-  // ✅ Verificar si ya hay resultados oficiales
-  const resultadosCompletos = [];
-  for (let i = 1; i <= 11; i++) {
-    const val = document.getElementById(`res-${i}`).value.toUpperCase();
-    if (["L", "E", "V"].includes(val)) resultadosCompletos.push(val);
-  }
+      const resultadosCompletos = [];
+      for (let i = 1; i <= 11; i++) {
+        const val = document.getElementById(`res-${i}`).value.toUpperCase();
+        if (["L", "E", "V"].includes(val)) resultadosCompletos.push(val);
+      }
 
-  // Si no hay al menos 1 resultado oficial, no mostrar ganadores ni botones
-  const hayResultadosOficiales = resultadosCompletos.length > 0;
+      const hayResultadosOficiales = resultadosCompletos.length > 0;
+      const user = firebase.auth().currentUser;
+      const usuarioLogueado = user ? user.displayName || user.email : null;
 
-  // 🔹 Obtener usuario logueado
-  const user = firebase.auth().currentUser;
-  const usuarioLogueado = user ? user.displayName || user.email : null;
+      filas.forEach(fila => {
+        const columnas = fila.querySelectorAll("td");
+        if(columnas.length > 0) {
+          const usuario = columnas[0].innerText;
+          const total = parseInt(columnas[columnas.length - 1].innerText);
+          datos.push({ usuario, total });
+        }
+      });
 
-  filas.forEach(fila => {
-    const columnas = fila.querySelectorAll("td");
-    const usuario = columnas[0].innerText;
-    const total = parseInt(columnas[columnas.length - 1].innerText);
-    datos.push({ usuario, total });
-  });
+      datos.sort((a, b) => b.total - a.total);
+      const tablaGanadores = document.querySelector("#tablaGanadores tbody");
+      tablaGanadores.innerHTML = "";
+      if (datos.length === 0) return;
 
-  datos.sort((a, b) => b.total - a.total);
-  const tablaGanadores = document.querySelector("#tablaGanadores tbody");
-  tablaGanadores.innerHTML = "";
-  if (datos.length === 0) return;
+      const primerLugarPuntaje = datos[0].total;
+      const segundoLugarPuntaje = datos.find(u => u.total < primerLugarPuntaje)?.total;
 
-  const primerLugarPuntaje = datos[0].total;
-  const segundoLugarPuntaje = datos.find(u => u.total < primerLugarPuntaje)?.total;
+      const crearBoton = (usuario, lugar) => {
+        if (hayResultadosOficiales && usuarioLogueado && usuario === usuarioLogueado) {
+          return `<br><a href="https://wa.me/527122239378?text=Solicito%20mi%20premio%20${encodeURIComponent(lugar)}" 
+           target="_blank" 
+           style="display:inline-block; margin-top:5px; padding:4px 10px; background:#006847; color:#fff; font-weight:bold; 
+           text-decoration:none; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.3); font-size:12px;">
+           💬 Solicitar Premio
+          </a>`;
+        }
+        return "";
+      };
 
-  // 🔸 Crear botón solo si hay resultados oficiales
-  const crearBoton = (usuario, lugar) => {
-    if (hayResultadosOficiales && usuarioLogueado && usuario === usuarioLogueado) {
-      return `<a href="https://wa.me/527122239378?text=Solicito%20mi%20premio%20${encodeURIComponent(lugar)}" 
-   target="_blank" 
-   style="margin-left:10px; padding:4px 10px; background:#FFD700; color:#000; font-weight:bold; 
-   text-decoration:none; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.3);">
-   💬 Solicitar Premio ${lugar}
-</a>`;
+      // 🥇 1er lugar
+      datos.filter(u => u.total === primerLugarPuntaje).forEach(u => {
+        tablaGanadores.innerHTML += `
+          <tr class="primer-lugar">
+            <td>🥇 1er Lugar</td>
+            <td>${u.usuario}${crearBoton(u.usuario, "1er Lugar")}</td>
+            <td>${u.total}</td>
+          </tr>
+        `;
+      });
+
+      // 🥈 2do lugar
+      if (segundoLugarPuntaje !== undefined) {
+        datos.filter(u => u.total === segundoLugarPuntaje).forEach(u => {
+          tablaGanadores.innerHTML += `
+            <tr class="segundo-lugar">
+              <td>🥈 2do Lugar</td>
+              <td>${u.usuario}${crearBoton(u.usuario, "2do Lugar")}</td>
+              <td>${u.total}</td>
+            </tr>
+          `;
+        });
+      }
     }
-    return "";
-  };
 
-  // 🥇 1er lugar
-  datos.filter(u => u.total === primerLugarPuntaje).forEach(u => {
-    tablaGanadores.innerHTML += `
-      <tr class="primer-lugar">
-        <td>🥇 1er Lugar</td>
-        <td>${u.usuario}${crearBoton(u.usuario, "1er Lugar")}</td>
-        <td>${u.total}</td>
-      </tr>
-    `;
-  });
-
-  // 🥈 2do lugar
-  if (segundoLugarPuntaje !== undefined) {
-    datos.filter(u => u.total === segundoLugarPuntaje).forEach(u => {
-      tablaGanadores.innerHTML += `
-        <tr class="segundo-lugar">
-          <td>🥈 2do Lugar</td>
-          <td>${u.usuario}${crearBoton(u.usuario, "2do Lugar")}</td>
-          <td>${u.total}</td>
-        </tr>
-      `;
-    });
-  }
-}
     window.addEventListener('DOMContentLoaded', () => {
       cargarResultados();
 
@@ -513,87 +548,22 @@ const snapshot = await db.collection("grupos")
       });
     });
   </script>
-</body>
-</html>
 
   <footer style="background-color: #1a1a1a; color: white; padding: 40px 20px; font-family: 'Arial', sans-serif;">
-  <div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start;">
-
-    <!-- Sección Logo o Nombre -->
-      <div style="flex: 1 1 200px; margin-bottom: 20px;">
-      <h2 style="margin: 0; color: #00d084;">Quiniela360</h2>
-      <p style="font-size: 14px; color: #ccc;">
-        Plataforma de pronósticos deportivos en línea.
-      </p>
-        <p style="font-size: 14px; color: #ccc;">
-        © 2025 Quiniela360.com - Todos los derechos reservados.
-        <p style="font-size: 10px; color: #ccc;">  q.h.ricardoarturo@gmail.com </p>
-      </p>
-     </div>
-</footer>
+    <div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 20px;">
+      <div style="flex: 1 1 200px;">
+        <h2 style="margin: 0; color: #00d084;">Quiniela360</h2>
+        <p style="font-size: 14px; color: #ccc; margin: 10px 0;">
+          Plataforma de pronósticos deportivos en línea.
+        </p>
+        <p style="font-size: 14px; color: #ccc; margin: 5px 0;">
+          © 2025 Quiniela360.com - Todos los derechos reservados.
+        </p>
+        <p style="font-size: 11px; color: #aaa; margin: 5px 0;">
+          q.h.ricardoarturo@gmail.com
+        </p>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
