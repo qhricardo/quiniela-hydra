@@ -10,6 +10,7 @@
       background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop');
       background-size: cover;
       background-position: center;
+      background-attachment: fixed;
       margin: 0;
       color: #fff;
     }
@@ -37,30 +38,29 @@
       width: 45px;
     }
 
-    /* LOGIN BOX */
+    /* LOGIN BOX RESPONSIVO */
     .login-container {
       background: rgba(255,255,255,0.95);
-      color: #b88c8c;
+      color: #333;
       margin: 40px auto;
       padding: 2rem;
       border-radius: 10px;
-      width: 350px;
+      width: 90%;
+      max-width: 350px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      box-sizing: border-box;
     }
 
     h2 {
       text-align: center;
       color: #FFF;
-      text-shadow: 1px 1px 4px rgba(0,0,255,1);
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
     }
 
-    .form-group { margin-bottom: 1rem; }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+    .login-container h2 {
+      color: #006847;
+      text-shadow: none;
+      margin-top: 0;
     }
 
     button, #google-login {
@@ -73,6 +73,7 @@
       cursor: pointer;
       font-size: 16px;
       transition: all 0.3s ease;
+      box-sizing: border-box;
     }
 
     button:hover, #google-login:hover {
@@ -80,10 +81,20 @@
       transform: scale(1.03);
     }
 
-    .divider {
+    /* Secciones de Contenido e Instrucciones */
+    .content-section {
+      width: 90%;
+      max-width: 600px;
+      margin: 30px auto;
       text-align: center;
-      margin: 1.5rem 0;
-      color: #555;
+    }
+
+    .img-responsive {
+      width: 100%;
+      max-width: 500px;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
 
     /* ───────────── Noticias ───────────── */
@@ -91,67 +102,52 @@
       width: 90%;
       max-width: 800px;
       margin: 20px auto;
-      background: rgba(0,0,0,0.6);
-      padding: 15px;
+      background: rgba(0,0,0,0.75);
+      padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      box-sizing: border-box;
     }
 
     #noticias div {
       background: rgba(255,255,255,0.08);
-      padding: 10px;
-      margin: 10px 0;
+      padding: 15px;
+      margin: 15px 0;
       border-radius: 8px;
     }
 
     #noticias h3 {
       color: #00ff99;
-      margin: 0 0 5px;
+      margin: 0 0 10px;
       font-size: 18px;
     }
 
     #noticias a {
       color: #ffd700;
       text-decoration: none;
-    }
-
-    /* ───────────── Tabla General ───────────── */
-    #tablaGeneral {
-      width: 90%;
-      max-width: 500px;
-      margin: 25px auto;
-      border-collapse: collapse;
-      background: rgba(0,0,0,0.7);
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 15px rgba(255,255,255,0.2);
-    }
-
-    #tablaGeneral th {
-      background: linear-gradient(90deg, #00a86b, #007a3d);
-      color: #fff;
-      font-size: 16px;
-      padding: 12px;
-    }
-
-    #tablaGeneral td {
-      text-align: center;
-      color: #fff;
-      font-size: 15px;
-      padding: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    #tablaGeneral tr:hover {
-      background: rgba(255,255,255,0.1);
+      font-weight: bold;
     }
 
     footer {
       text-align: center;
-      padding: 15px;
-      background: rgba(0,0,0,0.7);
+      padding: 20px;
+      background: rgba(0,0,0,0.85);
       color: #ccc;
       margin-top: 40px;
+      font-size: 14px;
+    }
+
+    /* Ajustes para pantallas pequeñas */
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 24px;
+      }
+      .login-container {
+        padding: 1.5rem;
+      }
+      #noticias h3 {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -161,255 +157,124 @@
     <h1>Quiniela 360 <img src="img/hidra.png" alt="logo"></h1>
   </header>
 
-<div style="
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  background: transparent;
-  margin: 0;
-  padding: 0, 0;
-">
-  < <!--iframe
-    src="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/reel/1442359766759254&show_text=false&autoplay=true&mute=0"
-    width="600"
-    height="300"
-    style="
-      border: none;
-      overflow: hidden;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
-      background: transparent;
-    "
-    scrolling="no"
-    frameborder="0"
-    allowfullscreen="true"
-    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-  ></iframe>-->
-     
-</div>
-  
   <div class="login-container">
     <h2>Iniciar Sesión</h2>
-
-   <form id="login-form">
-       <!--<div class="form-group">
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" required>
-      </div>
-      <button type="submit">Entrar</button>
-      <div id="form-message" class="error"></div>
-    </form>-->
-
-    <div class="divider"></div>
-
     <button id="google-login" style="background-color:#4285F4; display:flex; align-items:center; justify-content:center; gap:10px;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20" height="20">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20" height="20" alt="Google">
       Entrar con Google
     </button>
   </div>
 
-<h2>INSTRUCCIONES<h2>
-  <img src="img/instruccion.png" alt="logo">
+  <div class="content-section">
+    <h2>📋 INSTRUCCIONES</h2>
+    <img src="img/instruccion.png" alt="Instrucciones" class="img-responsive">
+  </div>
   
-   <h2>📰 Últimas Noticias de Fútbol</h2>
+  <h2 style="text-align: center; margin-top: 40px;">📰 Últimas Noticias de Fútbol</h2>
   <div id="noticias">Cargando noticias...</div>
 
   <footer>© 2025 Quiniela360 - Todos los derechos reservados</footer>
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
   <script src="js/firebase-config.js"></script>
 
-
   <script>
-    // Detecta invitaciones
     const db = firebase.firestore();
     const urlParams = new URLSearchParams(window.location.search);
     const referrerId = urlParams.get("ref");
 
-    // ─────────── LOGIN NORMAL ───────────
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  // Obtener los valores correctamente
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  
-  try {
-    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-    window.location.href = "interfaz.html";
-  } catch (err) {
-    console.error(err);
-    alert("Error al iniciar sesión: " + err.message);
-  }
-});
-
     // ─────────── LOGIN GOOGLE ───────────
-     // Login con Google y registro automático en Firestore
-   
-  document.getElementById('google-login').addEventListener('click', async () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
+    document.getElementById('google-login').addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
 
-    try {
-      const result = await firebase.auth().signInWithPopup(provider);
-      const user = result.user;
+      try {
+        const result = await firebase.auth().signInWithPopup(provider);
+        const user = result.user;
 
-      const userRef = db.collection('users').doc(user.uid);
-      const userDoc = await userRef.get();
+        const userRef = db.collection('users').doc(user.uid);
+        const userDoc = await userRef.get();
 
-      // Si el usuario es nuevo
-      if (!userDoc.exists) {
-        console.log("🆕 Usuario nuevo detectado");
-        await userRef.set({
-          uid: user.uid,
-          name: user.displayName || "Sin nombre",
-          email: user.email || "",
-          photoURL: user.photoURL || "",
-          creditos: 1,
-          invitadoPor: referrerId || null,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // 💰 Si viene de un link de invitación, intenta sumar crédito al referente
-        if (referrerId) {
-          console.log("🎯 Referrer detectado:", referrerId);
-          const refUser = db.collection('users').doc(referrerId);
-
-          await db.runTransaction(async (transaction) => {
-            const refDoc = await transaction.get(refUser);
-            if (!refDoc.exists) {
-              console.warn("⚠️ El referente no existe:", referrerId);
-              return;
-            }
-            const currentCredits = refDoc.data().creditos || 0;
-            const newCredits = currentCredits + 1;
-            transaction.update(refUser, { creditos: newCredits });
-            console.log(`✅ Créditos actualizados para ${referrerId}: ${currentCredits} → ${newCredits}`);
-          }).catch((err) => {
-            console.error("❌ Error en transacción:", err);
+        if (!userDoc.exists) {
+          console.log("🆕 Usuario nuevo detectado");
+          await userRef.set({
+            uid: user.uid,
+            name: user.displayName || "Sin nombre",
+            email: user.email || "",
+            photoURL: user.photoURL || "",
+            creditos: 1,
+            invitadoPor: referrerId || null,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
+
+          if (referrerId) {
+            console.log("🎯 Referrer detectado:", referrerId);
+            const refUser = db.collection('users').doc(referrerId);
+
+            await db.runTransaction(async (transaction) => {
+              const refDoc = await transaction.get(refUser);
+              if (!refDoc.exists) {
+                console.warn("⚠️ El referente no existe:", referrerId);
+                return;
+              }
+              const currentCredits = refDoc.data().creditos || 0;
+              const newCredits = currentCredits + 1;
+              transaction.update(refUser, { creditos: newCredits });
+              console.log(`✅ Créditos actualizados para ${referrerId}: ${currentCredits} → ${newCredits}`);
+            }).catch((err) => {
+              console.error("❌ Error en transacción:", err);
+            });
+          }
         } else {
-          console.log("ℹ️ No hay referrerId en la URL");
+          console.log("👤 Usuario existente, no se suman créditos.");
         }
-      } else {
-        console.log("👤 Usuario existente, no se suman créditos.");
+
+        window.location.href = "interfaz.html";
+
+      } catch (error) {
+        console.error("❌ Error en login con Google:", error);
+        alert("Error al iniciar sesión: " + error.message);
       }
-
-      window.location.href = "interfaz.html";
-
-    } catch (error) {
-      console.error("❌ Error en login con Google:", error);
-      alert("Error al iniciar sesión: " + error.message);
-    }
-  });
-
-     // ─────────── Noticias Automáticas ───────────
-async function cargarNoticias() {
-  const rssUrl = 'https://www.espn.com.mx/espn/rss/futbol/mexico'; // fútbol mexicano
-  try {
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
-    const data = await res.json();
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(data.contents, "text/xml");
-
-    let html = "";
-    xml.querySelectorAll("item").forEach((item, i) => {
-      if (i >= 5) return; // mostrar solo 5 noticias
-      const title = item.querySelector("title")?.textContent || "";
-      const link = item.querySelector("link")?.textContent || "#";
-      const description = item.querySelector("description")?.textContent || "";
-
-      // extraer imagen si existe
-      let imgTag = "";
-      const imgMatch = description.match(/<img.*?src="(.*?)"/);
-      if (imgMatch) imgTag = `<img src="${imgMatch[1]}" alt="${title}" style="width:100%;max-width:300px;">`;
-
-      html += `
-        <div style="margin-bottom:15px;">
-          <h3>${title}</h3>
-          ${imgTag}
-          <p><a href="${link}" target="_blank">Ver noticia completa</a></p>
-        </div>
-        <hr>`;
     });
 
-    document.getElementById("noticias").innerHTML = html || "<p>No hay noticias disponibles.</p>";
-  } catch (err) {
-    console.error("Error cargando noticias:", err);
-    document.getElementById("noticias").innerHTML = "<p>No se pudieron cargar noticias.</p>";
-  }
-}
-     cargarNoticias();
+    // ─────────── Noticias Automáticas ───────────
+    async function cargarNoticias() {
+      const rssUrl = 'https://www.espn.com.mx/espn/rss/futbol/mexico';
+      try {
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`);
+        const data = await res.json();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(data.contents, "text/xml");
+
+        let html = "";
+        xml.querySelectorAll("item").forEach((item, i) => {
+          if (i >= 5) return; 
+          const title = item.querySelector("title")?.textContent || "";
+          const link = item.querySelector("link")?.textContent || "#";
+          const description = item.querySelector("description")?.textContent || "";
+
+          let imgTag = "";
+          const imgMatch = description.match(/<img.*?src="(.*?)"/);
+          if (imgMatch) imgTag = `<img src="${imgMatch[1]}" alt="${title}" style="width:100%; max-width:300px; border-radius:5px; margin-top:10px; display:block;">`;
+
+          html += `
+            <div style="margin-bottom:15px;">
+              <h3>${title}</h3>
+              ${imgTag}
+              <p style="margin-top:10px;"><a href="${link}" target="_blank">Ver noticia completa ➔</a></p>
+            </div>
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.15);">`;
+        });
+
+        document.getElementById("noticias").innerHTML = html || "<p>No hay noticias disponibles.</p>";
+      } catch (err) {
+        console.error("Error cargando noticias:", err);
+        document.getElementById("noticias").innerHTML = "<p>No se pudieron cargar noticias.</p>";
+      }
+    }
+    
+    cargarNoticias();
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
