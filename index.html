@@ -794,8 +794,9 @@
                 window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
             };
 
-            document.getElementById("invitarMessenger").onclick = () => {
-                const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(linkInvitacion)}&redirect_uri=${encodeURIComponent(linkInvitacion)}`;
+         document.getElementById("invitarMessenger").onclick = () => {
+                const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${linkInvitacion}`;
+                const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(linkInvitacion)}&redirect_uri=${encodeURIComponent(linkInvitacion)}&quote=${encodeURIComponent(mensaje)}`;
                 window.open(url, "_blank");
             };
 
