@@ -1,635 +1,826 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiniela 360 | Pronósticos</title>
-<style>
-:root {
-    --verde: #006847;
-    --rojo: #ce1126;
-    --azul: #0038a8;
-    --gris: #f5f5f5;
-    --blanco: #ffffff;
-}
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-image: url('https://img.freepik.com/vector-gratis/campo-futbol-verde_225004-1137.jpg?semt=ais_hybrid&w=740');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-color: var(--gris);
-    background-attachment: fixed;
-    margin: 0;
-    padding: 0;
-}
-header {
-    background-color: #FFFFFF;
-    background-image: url('https://www.shutterstock.com/image-photo/soccer-ball-on-green-grass-260nw-1663239277.jpg');
-    background-size: cover;
-    background-position: center;
-    padding: 15px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    color: white;
-}
-header h2 { margin: 0; }
-header h2 img { max-width: 65px; height: auto; }
-.header-buttons {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-.user-info {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    background: rgba(0,0,0,0.5);
-    padding: 8px 12px;
-    border-radius: 6px;
-    width: 100%;
-    justify-content: space-between;
-}
-@media (min-width: 768px) {
-    header { padding: 15px 30px; }
-    header h2 img { max-width: 75px; }
-    .user-info { width: auto; justify-content: flex-start; }
-}
-.user-info span { font-weight: 500; font-size: 14px; }
-button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
-#logout-btn { background-color: var(--rojo); color: white; }
-#logout-btn:hover { background-color: #a00d20; }
-.main-wrapper {
-    display: flex; 
-    flex-direction: column-reverse; 
-    align-items: flex-start; 
-    max-width: 1200px; 
-    margin: 10px auto; 
-    padding: 10px;
-    gap: 20px;
-}
-@media (min-width: 992px) {
-    .main-wrapper { flex-direction: row; padding: 20px; margin: 20px auto; }
-}
-.sidebar-avisos {
-    flex: 1 1 100%; 
-    width: 100%;
-    box-sizing: border-box;
-    background-color: #fff; 
-    border: 2px solid #006847; 
-    border-radius: 10px; 
-    padding: 15px; 
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-@media (min-width: 992px) {
-    .sidebar-avisos { flex: 0 0 300px; width: 300px; position: sticky; top: 20px; }
-}
-.container { 
-    flex: 3 1 600px; 
-    width: 100%; 
-    box-sizing: border-box;
-}
-h1 { color: var(--blanco); text-align: center; margin-bottom: 20px; font-size: 24px; text-shadow: 1px 1px 4px rgba(0,0,0,0.7); }
-@media (min-width: 768px) { h1 { font-size: 32px; margin-bottom: 30px; } }
-.partido { background-color: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-@media (min-width: 768px) { .partido { padding: 20px; } }
-.equipos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
-.equipos h2 { margin: 0; display: flex; align-items: center; justify-content: center; }
-.equipos h2 img { width: 50px; height: auto; }
-@media (min-width: 768px) { .equipos h2 img { width: 75px; } }
-.equipo { width: 40%; text-align: center; font-weight: 500; font-size: 14px; }
-@media (min-width: 768px) { .equipo { font-size: 18px; } }
-.vs { width: 20%; text-align: center; color: var(--rojo); font-weight: bold; font-size: 16px; }
-@media (min-width: 768px) { .vs { font-size: 22px; } }
-.opciones { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-@media (min-width: 576px) { .opciones { flex-direction: row; justify-content: center; } }
-.opcion { padding: 12px 15px; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; transition: all 0.3s; text-align: center; font-size: 14px; font-weight: 500; flex: 1; }
-@media (min-width: 576px) { .opcion { padding: 8px 20px; } }
-.opcion:hover { background-color: #f0f0f0; }
-.opcion.selected { background-color: var(--verde); color: white; border-color: var(--verde); }
-.local { background-color: #e8f5e9; }
-.empate { background-color: #fff8e1; }
-.visitante { background-color: #ffebee; }
-.actions { display: flex; justify-content: center; margin-top: 30px; }
-#guardar-btn { background-color: var(--verde); color: white; padding: 12px 35px; font-size: 16px; width: 100%; max-width: 300px; font-weight: bold; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-#guardar-btn:disabled { background-color: #cccccc; color: #666666; cursor: not-allowed; box-shadow: none; }
-#guardar-btn:hover:not(:disabled) { background-color: #004d33; }
-.loading { display: none; text-align: center; margin-top: 20px; color: var(--verde); font-weight: bold; background: white; padding: 10px; border-radius: 5px; }
-#countdown { font-family: Arial, sans-serif; font-size: 1.1rem; color: #006847; background: #f5f5f5; padding: 0.5rem; border-radius: 0.5rem; display: block; text-align: center; margin-top: 5px; }
-#countdown span { font-weight: bold; }
-#comprarCreditos {
-  display: block;
-  margin: 20px auto;
-  padding: 12px 25px;
-  font-size: 16px;
-  background-color: #006847;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  width: 100%;
-  box-sizing: border-box;
-  transition: background-color 0.3s, transform 0.2s;
-}
-#comprarCreditos:hover { background-color: #004d33; transform: scale(1.02); }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiniela 360 | Pronósticos</title>
+    <style>
+        :root {
+            --verde: #006847;
+            --rojo: #ce1126;
+            --azul: #0038a8;
+            --gris: #f5f5f5;
+            --blanco: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('https://img.freepik.com/vector-gratis/campo-futbol-verde_225004-1137.jpg?semt=ais_hybrid&w=740');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: var(--gris);
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #FFFFFF;
+            background-image: url('https://www.shutterstock.com/image-photo/soccer-ball-on-green-grass-260nw-1663239277.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            color: white;
+        }
+
+        header h2 {
+            margin: 0;
+            text-align: center;
+        }
+
+        header h2 img {
+            max-width: 65px;
+            height: auto;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            justify-content: space-between;
+        }
+
+        /* Responsividad del Header */
+        @media (min-width: 768px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 30px;
+            }
+            header h2 {
+                text-align: left;
+            }
+            header h2 img {
+                max-width: 75px;
+            }
+            .header-buttons {
+                width: auto;
+            }
+            .user-info {
+                width: auto;
+                justify-content: flex-start;
+            }
+        }
+
+        .user-info span {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        #logout-btn {
+            background-color: var(--rojo);
+            color: white;
+        }
+
+        #logout-btn:hover {
+            background-color: #a00d20;
+        }
+
+        /* Estructura Principal Responsiva */
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 1300px;
+            margin: 10px auto;
+            padding: 10px;
+            gap: 20px;
+        }
+
+        @media (min-width: 992px) {
+            .main-wrapper {
+                flex-direction: row-reverse; /* Sidebar a la derecha en PC */
+                padding: 20px;
+                margin: 20px auto;
+            }
+        }
+
+        .sidebar-avisos {
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #fff;
+            border: 2px solid #006847;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        @media (min-width: 992px) {
+            .sidebar-avisos {
+                width: 320px;
+                flex-shrink: 0;
+                position: sticky;
+                top: 20px;
+                height: fit-content;
+            }
+        }
+
+        .container {
+            flex-grow: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--blanco);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 32px;
+                margin-bottom: 30px;
+            }
+        }
+
+        /* Grid de partidos en Computadora */
+        .partidos-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .partidos-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 columnas en Tablet/PC */
+                gap: 20px;
+            }
+        }
+
+        .partido {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        @media (min-width: 768px) {
+            .partido {
+                padding: 20px;
+            }
+        }
+
+        .equipos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .equipos h2 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .equipos h2 img {
+            width: 45px;
+            height: auto;
+        }
+
+        @media (min-width: 768px) {
+            .equipos h2 img {
+                width: 60px;
+            }
+        }
+
+        .equipo {
+            width: 40%;
+            text-align: center;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        @media (min-width: 768px) {
+            .equipo {
+                font-size: 16px;
+            }
+        }
+
+        .vs {
+            width: 20%;
+            text-align: center;
+            color: var(--rojo);
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .vs {
+                font-size: 18px;
+            }
+        }
+
+        .opciones {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        @media (min-width: 480px) {
+            .opciones {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+
+        .opcion {
+            padding: 10px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .opcion:hover {
+            background-color: #f0f0f0;
+        }
+
+        .opcion.selected {
+            background-color: var(--verde);
+            color: white;
+            border-color: var(--verde);
+        }
+
+        .local { background-color: #e8f5e9; }
+        .empate { background-color: #fff8e1; }
+        .visitante { background-color: #ffebee; }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            grid-column: 1 / -1; /* Ocupa todo el ancho en el grid */
+        }
+
+        #guardar-btn {
+            background-color: var(--verde);
+            color: white;
+            padding: 14px 35px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 400px;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            border: none;
+            cursor: pointer;
+        }
+
+        #guardar-btn:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #guardar-btn:hover:not(:disabled) {
+            background-color: #004d33;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--verde);
+            font-weight: bold;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            grid-column: 1 / -1;
+        }
+
+        #countdown {
+            font-family: Arial, sans-serif;
+            font-size: 1.1rem;
+            color: #006847;
+            background: #f5f5f5;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            display: block;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        #countdown span {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
-<header>
-    <h2><img src="https://i.postimg.cc/Sx6wL6gR/504667444-122141205488674048-8857650743605451691-n.jpg" alt="Logo"></h2>
-    <div class="header-buttons">
-        <button onclick="window.location.href='resultados.html'" style="padding: 10px 15px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px;">
-            ⬅ Resultados
-        </button>
-        <button onclick="window.location.href='interfaz.html'" style="padding: 10px 15px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px;">
-            ⬅ Grupos
-        </button>
-    </div>
-    <div class="user-info">
-        <span id="username">Cargando usuario...</span>
-        <span id="grupoActual" style="font-weight:bold; color: #ffd700;"></span>
-        <button id="logout-btn">Salir</button>
-    </div>
-</header>
+    <header>
+        <h2><img src="https://i.postimg.cc/Sx6wL6gR/504667444-122141205488674048-8857650743605451691-n.jpg" alt="Logo"></h2>
+        <div class="header-buttons">
+            <button onclick="window.location.href='resultados.html'" style="padding: 10px 15px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px;"> ⬅ Resultados </button>
+            <button onclick="window.location.href='interfaz.html'" style="padding: 10px 15px; background-color: #006847; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px;"> ⬅ Grupos </button>
+        </div>
+        <div class="user-info">
+            <span id="username">Cargando usuario...</span>
+            <span id="grupoActual" style="font-weight:bold; color: #ffd700;"></span>
+            <button id="logout-btn">Salir</button>
+        </div>
+    </header>
 
-<div class="main-wrapper">
-    <div class="sidebar-avisos">
-        <h3 style="color: #006847; text-align: center; margin-top: 0;">📢 Avisos</h3>
-        <ul id="avisos-lista" style="list-style-type: none; padding-left: 0; font-size: 14px; text-align: center; margin-bottom: 20px;">
-            <li style="font-weight: bold; margin-bottom: 5px;">🎯 Cierre de Pronósticos</li>
-            <li>
-                <div id="countdown">
-                    <span id="days">00</span>d 
-                    <span id="hours">00</span>h 
-                    <span id="minutes">00</span>m 
-                    <span id="seconds">00</span>s
-                </div>
-            </li>
-        </ul>
-         
-        <section id="invitaciones" style="border-top: 1px dashed #ccc; padding-top: 15px; text-align:center;">
-            <h4 style="color:#006847; margin: 0 0 10px 0; font-size: 16px;">Invita y Gana Créditos</h4>
-            <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
-
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <button id="invitarWhatsApp" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#25D366; font-size: 14px;">
-                    📱 WhatsApp
-                </button>
-                <button id="invitarMessenger" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#0084FF; font-size: 14px;">
-                    💬 Messenger
-                </button>
-                <button id="copiarLink" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#6c757d; font-size: 14px;">
-                    🔗 Copiar Enlace
-                </button>
-            </div>
-
-            <p style="margin-top:15px; font-size: 12px; margin-bottom: 5px;">Tu enlace de invitación:</p>
-            <div id="miLink" style="color:#006847; font-weight:bold; font-size: 12px; word-break: break-all; background: #f0f0f0; padding: 5px; border-radius: 4px;">Cargando...</div>
-        </section>
-
-        <div style="text-align: center; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
-    <a href="https://m.me/439939209212181"
-       target="_blank"
-       style="padding: 12px 20px; background-color: #FFD700; color: #000; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: block; transition: background-color 0.3s ease;">
-        💰 SOLICITAR CRÉDITO
-    </a>
-</div>
+    <div class="main-wrapper">
         
-    <div class="container">
-        <h1>Liga-MX Jornada 16</h1>
+        <div class="sidebar-avisos">
+            <h3 style="color: #006847; text-align: center; margin-top: 0;">📢 Avisos</h3>
+            <ul id="avisos-lista" style="list-style-type: none; padding-left: 0; font-size: 14px; text-align: center; margin-bottom: 20px;">
+                <li style="font-weight: bold; margin-bottom: 5px;">🎯 Cierre de Pronósticos</li>
+                <li>
+                    <div id="countdown">
+                        <span id="days">00</span>d <span id="hours">00</span>h <span id="minutes">00</span>m <span id="seconds">00</span>s
+                    </div>
+                </li>
+            </ul>
+            
+            <section id="invitaciones" style="border-top: 1px dashed #ccc; padding-top: 15px; text-align:center;">
+                <h4 style="color:#006847; margin: 0 0 10px 0; font-size: 16px;">Invita y Gana Créditos</h4>
+                <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button id="invitarWhatsApp" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#25D366; font-size: 14px;"> 📱 WhatsApp </button>
+                    <button id="invitarMessenger" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#0084FF; font-size: 14px;"> 💬 Messenger </button>
+                    <button id="copiarLink" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#6c757d; font-size: 14px;"> 🔗 Copiar Enlace </button>
+                </div>
+                <p style="margin-top:15px; font-size: 12px; margin-bottom: 5px;">Tu enlace de invitación:</p>
+                <div id="miLink" style="color:#006847; font-weight:bold; font-size: 12px; word-break: break-all; background: #f0f0f0; padding: 5px; border-radius: 4px;">Cargando...</div>
+            </section>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Viernes, 31/10/2025 19:00</h3>
-            <div class="equipos">
-                <h2><img src="img/pumas.png" alt="Pumas"></h2>
-                <div class="equipo">Pumas</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Juarez</div>
-                <h2><img src="img/juarez.png" alt="Juarez"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
+            <div style="text-align: center; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                <a href="https://m.me/439939209212181" target="_blank" style="padding: 12px 20px; background-color: #FFD700; color: #000; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: block; transition: background-color 0.3s ease;"> 💰 SOLICITAR CRÉDITO </a>
             </div>
         </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Viernes, 31/10/2025 21:00</h3>
-            <div class="equipos">
-                <h2><img src="img/queretaro.png" alt="Queretaro"></h2>
-                <div class="equipo">Queretaro</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Cruz azul</div>
-                <h2><img src="img/cruzazul.png" alt="Cruz Azul"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+        <div class="container">
+            <h1>Liga-MX Jornada 16</h1>
+            
+            <div class="partidos-grid">
+                
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Viernes, 31/10/2025 19:00</h3>
+                    <div class="equipos">
+                        <h2><img src="img/pumas.png" alt="Pumas"></h2>
+                        <div class="equipo">Pumas</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">Juarez</div>
+                        <h2><img src="img/juarez.png" alt="Juarez"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Viernes, 31/10/2025 19:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="img/monterrey.png" alt="Monterrey"></h2>
-                <div class="equipo">Monterrey</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Puebla</div>
-                <h2><img src="img/puebla.png" alt="Puebla"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Viernes, 31/10/2025 21:00</h3>
+                    <div class="equipos">
+                        <h2><img src="img/queretaro.png" alt="Queretaro"></h2>
+                        <div class="equipo">Queretaro</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">Cruz azul</div>
+                        <h2><img src="img/cruzazul.png" alt="Cruz Azul"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Sábado, 01/11/2025 17:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="img/leon.png" alt="Leon"></h2>
-                <div class="equipo">Leon</div>
-                <div class="vs">VS</div>
-                <div class="equipo">America</div>
-                <h2><img src="img/america.png" alt="America"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Viernes, 31/10/2025 19:00hrs</h3>
+                    <div class="equipos">
+                        <h2><img src="img/monterrey.png" alt="Monterrey"></h2>
+                        <div class="equipo">Monterrey</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">Puebla</div>
+                        <h2><img src="img/puebla.png" alt="Puebla"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Sábado, 01/11/2025 19:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="img/atlas.png" alt="Atlas"></h2>
-                <div class="equipo">Atlas</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Tigres</div>
-                <h2><img src="img/tigres.png" alt="Tigres"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Sábado, 01/11/2025 17:00hrs</h3>
+                    <div class="equipos">
+                        <h2><img src="img/leon.png" alt="Leon"></h2>
+                        <div class="equipo">Leon</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">America</div>
+                        <h2><img src="img/america.png" alt="America"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Sábado, 01/11/2025 21:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="img/sanluis.png" alt="San Luis"></h2>
-                <div class="equipo">San Luis</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Santos</div>
-                <h2><img src="img/Santos.png" alt="Santos"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Sábado, 01/11/2025 19:00hrs</h3>
+                    <div class="equipos">
+                        <h2><img src="img/atlas.png" alt="Atlas"></h2>
+                        <div class="equipo">Atlas</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">Tigres</div>
+                        <h2><img src="img/tigres.png" alt="Tigres"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Domingo, 02/11/2025 12:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="img/mazatlan.png" alt="Mazatlan"></h2>
-                <div class="equipo">Mazatlan</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Toluca</div>
-                <h2><img src="img/toluca.png" alt="Toluca"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Sábado, 01/11/2025 21:00hrs</h3>
+                    <div class="equipos">
+                        <h2><img src="img/sanluis.png" alt="San Luis"></h2>
+                        <div class="equipo">San Luis</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">Santos</div>
+                        <h2><img src="img/Santos.png" alt="Santos"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Domingo, 02/11/2025 17:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="img/necaxa.png" alt="Necaxa"></h2>
-                <div class="equipo">Necaxa</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Chivas</div>
-                <h2><img src="img/chivas.png" alt="Chivas"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Domingo, 02/11/2025 12:00hrs</h3>
+                    <div class="equipos">
+                        <h2><img src="img/mazatlan.png" alt="Mazatlan"></h2>
+                        <div class="equipo">Mazatlan</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">Toluca</div>
+                        <h2><img src="img/toluca.png" alt="Toluca"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Domingo, 02/11/2025 19:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="img/tijuana.png" alt="Tijuana"></h2>
-                <div class="equipo">Tijuana</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Pachuca</div>
-                <h2><img src="img/pachuca.png" alt="Pachuca"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Domingo, 02/11/2025 17:00hrs</h3>
+                    <div class="equipos">
+                        <h2><img src="img/necaxa.png" alt="Necaxa"></h2>
+                        <div class="equipo">Necaxa</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">Chivas</div>
+                        <h2><img src="img/chivas.png" alt="Chivas"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Domingo, 02/11/2025 12:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="img/mineros.webp" alt="Mineros"></h2>
-                <div class="equipo">Mineros</div>
-                <div class="vs">VS</div>
-                <div class="equipo">Morelia</div>
-                <h2><img src="img/morelia.webp" alt="Morelia"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Domingo, 02/11/2025 19:00hrs</h3>
+                    <div class="equipos">
+                        <h2><img src="img/tijuana.png" alt="Tijuana"></h2>
+                        <div class="equipo">Tijuana</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">Pachuca</div>
+                        <h2><img src="img/pachuca.png" alt="Pachuca"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="partido">
-            <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Sábado, 25/10/2025 20:00hrs</h3>
-            <div class="equipos">
-                <h2><img src="img/Tm futbol.webp" alt="Tm futbol"></h2>
-                <div class="equipo">Tm futbol</div>
-                <div class="vs">VS</div>
-                <div class="equipo">La paz</div>
-                <h2><img src="img/la paz.webp" alt="La paz"></h2>
-            </div>
-            <div class="opciones">
-                <div class="opcion local" data-result="L">Gana Local</div>
-                <div class="opcion empate" data-result="E">Empate</div>
-                <div class="opcion visitante" data-result="V">Gana Visitante</div>
-            </div>
-        </div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Domingo, 02/11/2025 12:00hrs</h3>
+                    <div class="equipos">
+                        <h2><img src="img/mineros.webp" alt="Mineros"></h2>
+                        <div class="equipo">Mineros</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">Morelia</div>
+                        <h2><img src="img/morelia.webp" alt="Morelia"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
 
-        <div class="actions">
-            <button id="guardar-btn">Guardar Pronósticos</button>
-        </div>
-        <div id="loading" class="loading">Guardando tus pronósticos...</div>
+                <div class="partido">
+                    <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Sábado, 25/10/2025 20:00hrs</h3>
+                    <div class="equipos">
+                        <h2><img src="img/Tm futbol.webp" alt="Tm futbol"></h2>
+                        <div class="equipo">Tm futbol</div>
+                        <div class="vs">VS</div>
+                        <div class="equipo">La paz</div>
+                        <h2><img src="img/la paz.webp" alt="La paz"></h2>
+                    </div>
+                    <div class="opciones">
+                        <div class="opcion local" data-result="L">Gana Local</div>
+                        <div class="opcion empate" data-result="E">Empate</div>
+                        <div class="opcion visitante" data-result="V">Gana Visitante</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button id="guardar-btn">Guardar Pronósticos</button>
+                </div>
+                
+                <div id="loading" class="loading">Guardando tus pronósticos...</div>
+                
+            </div> </div>
     </div>
-</div>
 
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        const db = firebase.firestore();
+        let currentUser = null;
+        let userCredits = 0;
 
-<script>
-const db = firebase.firestore();
-let currentUser = null;
-let userCredits = 0;
-
-// Cuenta Atrás
-const targetDate = new Date('2026-06-18T19:00:00');
-function updateCountdown(){
-    const now = new Date();
-    const diffMs = targetDate - now;
-    if(diffMs <= 0){
-        ['days','hours','minutes','seconds'].forEach(id=>document.getElementById(id).textContent='00');
-        document.getElementById('guardar-btn').disabled=true;
-        return;
-    }
-    const totalSeconds = Math.floor(diffMs/1000);
-    const days=Math.floor(totalSeconds/(3600*24));
-    const hours=Math.floor((totalSeconds % (3600*24))/3600);
-    const minutes=Math.floor((totalSeconds %3600)/60);
-    const seconds=totalSeconds%60;
-    document.getElementById('days').textContent=String(days).padStart(2,'0');
-    document.getElementById('hours').textContent=String(hours).padStart(2,'0');
-    document.getElementById('minutes').textContent=String(minutes).padStart(2,'0');
-    document.getElementById('seconds').textContent=String(seconds).padStart(2,'0');
-}
-updateCountdown();
-setInterval(updateCountdown,1000);
-
-// Cambiar selecciones visuales de partidos
-document.querySelectorAll('.opcion').forEach(el=>{
-    el.addEventListener('click', function(){
-        this.closest('.partido').querySelectorAll('.opcion').forEach(op=>op.classList.remove('selected'));
-        this.classList.add('selected');
-    });
-});
-
-// Guardar pronósticos en Firebase mediante transacciones
-document.getElementById('guardar-btn').addEventListener('click', async () => {
-    if (userCredits <= 0) {
-        alert('No tienes créditos suficientes');
-        return;
-    }
-
-    const grupoActual = localStorage.getItem('grupoSeleccionado');
-    if (!grupoActual) {
-        alert('Debes seleccionar un grupo');
-        return;
-    }
-
-    const partidos = [];
-    let completo = true;
-    document.querySelectorAll('.partido').forEach(el => {
-        const opcion = el.querySelector('.opcion.selected');
-        if (!opcion) {
-            completo = false;
-            el.style.border = '2px solid red';
-            setTimeout(() => el.style.border = 'none', 1000);
-            return;
+        // Cuenta Atrás
+        const targetDate = new Date('2026-06-18T19:00:00');
+        function updateCountdown(){
+            const now = new Date();
+            const diffMs = targetDate - now;
+            if(diffMs <= 0){
+                ['days','hours','minutes','seconds'].forEach(id=>document.getElementById(id).textContent='00');
+                document.getElementById('guardar-btn').disabled=true;
+                return;
+            }
+            const totalSeconds = Math.floor(diffMs/1000);
+            const days=Math.floor(totalSeconds/(3600*24));
+            const hours=Math.floor((totalSeconds % (3600*24))/3600);
+            const minutes=Math.floor((totalSeconds %3600)/60);
+            const seconds=totalSeconds%60;
+            
+            document.getElementById('days').textContent=String(days).padStart(2,'0');
+            document.getElementById('hours').textContent=String(hours).padStart(2,'0');
+            document.getElementById('minutes').textContent=String(minutes).padStart(2,'0');
+            document.getElementById('seconds').textContent=String(seconds).padStart(2,'0');
         }
-        const equipos = el.querySelectorAll('.equipo');
-        partidos.push({
-            local: equipos[0].textContent.trim(),
-            visitante: equipos[1].textContent.trim(),
-            prediccion: opcion.dataset.result
+        updateCountdown();
+        setInterval(updateCountdown,1000);
+
+        // Cambiar selecciones visuales de partidos
+        document.querySelectorAll('.opcion').forEach(el=>{
+            el.addEventListener('click', function(){
+                this.closest('.partido').querySelectorAll('.opcion').forEach(op=>op.classList.remove('selected'));
+                this.classList.add('selected');
+            });
         });
-    });
 
-    if (!completo) {
-        alert('Selecciona todos los partidos antes de guardar.');
-        return;
-    }
+        // Guardar pronósticos
+        document.getElementById('guardar-btn').addEventListener('click', async () => {
+            if (userCredits <= 0) {
+                alert('No tienes créditos suficientes');
+                return;
+            }
+            const grupoActual = localStorage.getItem('grupoSeleccionado');
+            if (!grupoActual) {
+                alert('Debes seleccionar un grupo');
+                return;
+            }
+            const partidos = [];
+            let completo = true;
+            document.querySelectorAll('.partido').forEach(el => {
+                const opcion = el.querySelector('.opcion.selected');
+                if (!opcion) {
+                    completo = false;
+                    el.style.border = '2px solid red';
+                    setTimeout(() => el.style.border = 'none', 1000);
+                    return;
+                }
+                const equipos = el.querySelectorAll('.equipo');
+                partidos.push({
+                    local: equipos[0].textContent.trim(),
+                    visitante: equipos[1].textContent.trim(),
+                    prediccion: opcion.dataset.result
+                });
+            });
 
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('guardar-btn').disabled = true;
-
-    try {
-        await db.runTransaction(async tx => {
-            const userRef = db.collection('users').doc(currentUser.uid);
-            const userDoc = await tx.get(userRef);
-
-            if (!userDoc.exists || (userDoc.data().creditos ?? 0) <= 0) {
-                throw new Error("Créditos insuficientes");
+            if (!completo) {
+                alert('Selecciona todos los partidos antes de guardar.');
+                return;
             }
 
-            const grupoRef = db.collection('grupos').doc(grupoActual);
-            const grupoDoc = await tx.get(grupoRef);
-            if (!grupoDoc.exists) {
-                throw new Error("El grupo no existe");
-            }
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('guardar-btn').disabled = true;
 
-            const pronSnapshot = await grupoRef.collection('pronosticos')
-                .where('userId', '==', currentUser.uid)
+            try {
+                await db.runTransaction(async tx => {
+                    const userRef = db.collection('users').doc(currentUser.uid);
+                    const userDoc = await tx.get(userRef);
+                    if (!userDoc.exists || (userDoc.data().creditos ?? 0) <= 0) {
+                        throw new Error("Créditos insuficientes");
+                    }
+                    const grupoRef = db.collection('grupos').doc(grupoActual);
+                    const grupoDoc = await tx.get(grupoRef);
+                    if (!grupoDoc.exists) {
+                        throw new Error("El grupo no existe");
+                    }
+                    const pronSnapshot = await grupoRef.collection('pronosticos')
+                        .where('userId', '==', currentUser.uid)
+                        .get();
+                    if (pronSnapshot.size >= 3) {
+                        throw new Error("Solo puedes realizar 3 pronósticos por grupo");
+                    }
+
+                    tx.update(userRef, { creditos: firebase.firestore.FieldValue.increment(-1) });
+                    const pronRef = grupoRef.collection('pronosticos').doc();
+                    tx.set(pronRef, {
+                        userId: currentUser.uid,
+                        grupoId: grupoActual,
+                        grupoNombre: grupoDoc.data().nombre || grupoActual,
+                        userName: currentUser.displayName || userDoc.data().name || "Usuario",
+                        partidos: partidos,
+                        fecha: firebase.firestore.Timestamp.now(),
+                        estado: "pendiente"
+                    });
+                });
+
+                alert("✅ Pronósticos guardados y 1 crédito descontado correctamente.");
+                setTimeout(() => { window.location.href = "resultados.html"; }, 1000);
+                userCredits--;
+                document.getElementById('username').textContent = `${currentUser.displayName || currentUser.email} | Créditos: ${userCredits}`;
+            } catch (error) {
+                console.error("❌ Error al guardar pronósticos:", error);
+                alert(error.message);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('guardar-btn').disabled = false;
+            }
+        });
+
+        // Despliegue dinámico del grupo
+        async function mostrarGrupoActual() {
+            const grupoId = localStorage.getItem("grupoSeleccionado");
+            const grupoSpan = document.getElementById("grupoActual");
+            if (!grupoId) {
+                grupoSpan.textContent = " | Sin grupo";
+                return;
+            }
+            try {
+                const grupoDoc = await db.collection("grupos").doc(grupoId).get();
+                if (grupoDoc.exists) {
+                    grupoSpan.textContent = ` | Grupo: ${grupoDoc.data().nombre}`;
+                } else {
+                    grupoSpan.textContent = " | Grupo: (no encontrado)";
+                }
+            } catch (err) {
+                console.error("Error cargando grupo:", err);
+                grupoSpan.textContent = " | Grupo: error";
+            }
+        }
+
+        // Control de Estado de Autenticación
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUser = user;
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                userCredits = userData.creditos ?? 0;
+                document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
+            }
+            await mostrarGrupoActual();
+            
+            const grupoId = localStorage.getItem("grupoSeleccionado");
+            if (!grupoId) return;
+            
+            const pronSnapshot = await db.collection('grupos')
+                .doc(grupoId)
+                .collection('pronosticos')
+                .where('userId','==',user.uid)
+                .orderBy('fecha','desc')
+                .limit(1)
                 .get();
 
-            if (pronSnapshot.size >= 3) {
-                throw new Error("Solo puedes realizar 3 pronósticos por grupo");
+            if (!pronSnapshot.empty) {
+                const pron = pronSnapshot.docs[0].data();
+                pron.partidos.forEach((p,index)=>{
+                    const opcion = document.querySelector(`.partido:nth-of-type(${index+1}) .opcion[data-result="${p.prediccion}"]`);
+                    if (opcion) opcion.classList.add('selected');
+                });
             }
-
-            tx.update(userRef, {
-                creditos: firebase.firestore.FieldValue.increment(-1)
-            });
-
-            const pronRef = grupoRef.collection('pronosticos').doc();
-            tx.set(pronRef, {
-                userId: currentUser.uid,
-                grupoId: grupoActual,
-                grupoNombre: grupoDoc.data().nombre || grupoActual,
-                userName: currentUser.displayName || userDoc.data().name || "Usuario",
-                partidos: partidos,
-                fecha: firebase.firestore.Timestamp.now(),
-                estado: "pendiente"
-            });
         });
-        
-        alert("✅ Pronósticos guardados y 1 crédito descontado correctamente.");
-        setTimeout(() => { window.location.href = "resultados.html"; }, 1000);
 
-        userCredits--;
-        document.getElementById('username').textContent = `${currentUser.displayName || currentUser.email} | Créditos: ${userCredits}`;
+        document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
+    </script>
 
-    } catch (error) {
-        console.error("❌ Error al guardar pronósticos:", error);
-        alert(error.message);
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('guardar-btn').disabled = false;
-    }
-});
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-// Despliegue dinámico del grupo en el header
-async function mostrarGrupoActual() {
-    const grupoId = localStorage.getItem("grupoSeleccionado");
-    const grupoSpan = document.getElementById("grupoActual");
+        const firebaseConfig = {
+            apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
+            authDomain: "quiniela-hydra.firebaseapp.com",
+            projectId: "quiniela-hydra",
+            storageBucket: "quiniela-hydra.firebasestorage.app",
+            messagingSenderId: "329849216739",
+            appId: "1:329849216739:web:83d23ff1424eb167172fd6",
+            measurementId: "G-FWDDQ5HQYV"
+        };
 
-    if (!grupoId) {
-        grupoSpan.textContent = " | Sin grupo";
-        return;
-    }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-    try {
-        const grupoDoc = await db.collection("grupos").doc(grupoId).get();
-        if (grupoDoc.exists) {
-            grupoSpan.textContent = ` | Grupo: ${grupoDoc.data().nombre}`;
-        } else {
-            grupoSpan.textContent = " | Grupo: (no encontrado)";
-        }
-    } catch (err) {
-        console.error("Error cargando grupo:", err);
-        grupoSpan.textContent = " | Grupo: error";
-    }
-}
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return;
+            const uid = user.uid;
+            const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${uid}`;
+            document.getElementById("miLink").textContent = linkInvitacion;
 
-// Control de Estado de Autenticación
-firebase.auth().onAuthStateChanged(async (user) => {
-    if (!user) { window.location.href = 'login.html'; return; }
-    currentUser = user;
+            document.getElementById("invitarWhatsApp").onclick = () => {
+                const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${linkInvitacion}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
+            };
 
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    if (userDoc.exists) {
-        const userData = userDoc.data();
-        userCredits = userData.creditos ?? 0;
-        document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
-    }
+            document.getElementById("invitarMessenger").onclick = () => {
+                const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(linkInvitacion)}&redirect_uri=${encodeURIComponent(linkInvitacion)}`;
+                window.open(url, "_blank");
+            };
 
-    await mostrarGrupoActual();
-
-    const grupoId = localStorage.getItem("grupoSeleccionado");
-    if (!grupoId) return;
-
-    const pronSnapshot = await db.collection('grupos')
-        .doc(grupoId)
-        .collection('pronosticos')
-        .where('userId','==',user.uid)
-        .orderBy('fecha','desc')
-        .limit(1)
-        .get();
-    
-    if (!pronSnapshot.empty) {
-        const pron = pronSnapshot.docs[0].data();
-        pron.partidos.forEach((p,index)=>{
-            const opcion = document.querySelector(`.partido:nth-of-type(${index+1}) .opcion[data-result="${p.prediccion}"]`);
-            if (opcion) opcion.classList.add('selected');
+            document.getElementById("copiarLink").onclick = () => {
+                navigator.clipboard.writeText(linkInvitacion)
+                    .then(() => alert("✅ Link copiado al portapapeles:\n" + linkInvitacion))
+                    .catch(() => alert("⚠️ No se pudo copiar el link automáticamente."));
+            };
         });
-    }
-});
+    </script>
 
-document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
-</script>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
-    authDomain: "quiniela-hydra.firebaseapp.com",
-    projectId: "quiniela-hydra",
-    storageBucket: "quiniela-hydra.firebasestorage.app",
-    messagingSenderId: "329849216739",
-    appId: "1:329849216739:web:83d23ff1424eb167172fd6",
-    measurementId: "G-FWDDQ5HQYV"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) return; 
-    const uid = user.uid;
-    const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${uid}`;
-    document.getElementById("miLink").textContent = linkInvitacion;
-
-    document.getElementById("invitarWhatsApp").onclick = () => {
-      const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${linkInvitacion}`;
-      window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
-    };
-
-    document.getElementById("invitarMessenger").onclick = () => {
-      const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(linkInvitacion)}&redirect_uri=${encodeURIComponent(linkInvitacion)}`;
-      window.open(url, "_blank");
-    };
-
-    document.getElementById("copiarLink").onclick = () => {
-      navigator.clipboard.writeText(linkInvitacion)
-        .then(() => alert("✅ Link copiado al portapapeles:\n" + linkInvitacion))
-        .catch(() => alert("⚠️ No se pudo copiar el link automáticamente."));
-    };
-  });
-</script>
-
-<footer style="background-color: #1a1a1a; color: white; padding: 30px 20px; font-family: Arial, sans-serif; margin-top: 30px; text-align: center;">
-    <div style="max-width: 1200px; margin: auto;">
-        <h2 style="margin:0 0 10px 0; color:#00d084; font-size: 20px;">Quiniela360</h2>
-        <p style="font-size:13px; color:#ccc; margin: 5px 0;">Plataforma de pronósticos deportivos en línea.</p>
-        <p style="font-size:12px; color:#aaa; margin: 5px 0;">© 2025 Quiniela360.com - Todos los derechos reservados.</p>
-        <p style="font-size:9px; color:#666; margin: 10px 0 0 0;">q.h.ricardoarturo@gmail.com</p>
-    </div>
-</footer>
-
+    <footer style="background-color: #1a1a1a; color: white; padding: 30px 20px; font-family: Arial, sans-serif; margin-top: 30px; text-align: center;">
+        <div style="max-width: 1200px; margin: auto;">
+            <h2 style="margin:0 0 10px 0; color:#00d084; font-size: 20px;">Quiniela360</h2>
+            <p style="font-size:13px; color:#ccc; margin: 5px 0;">Plataforma de pronósticos deportivos en línea.</p>
+            <p style="font-size:12px; color:#aaa; margin: 5px 0;">© 2025 Quiniela360.com - Todos los derechos reservados.</p>
+            <p style="font-size:9px; color:#666; margin: 10px 0 0 0;">q.h.ricardoarturo@gmail.com</p>
+        </div>
+    </footer>
 </body>
 </html>
