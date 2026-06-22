@@ -389,7 +389,7 @@
                 <div id="miLink" style="color:#006847; font-weight:bold; font-size: 12px; word-break: break-all; background: #f0f0f0; padding: 5px; border-radius: 4px;">Cargando...</div>
             </section>
 
-           <div style="text-align: center; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
+            <div style="text-align: center; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
                 <a href="https://m.me/439939209212181?text=Quiero%20comprar%20un%20cr%C3%A9dito" target="_blank" style="padding: 12px 20px; background-color: #FFD700; color: #000; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: block; transition: background-color 0.3s ease;"> 💰 SOLICITAR CRÉDITO </a>
             </div>
         </div>
@@ -794,9 +794,10 @@
                 window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
             };
 
-         document.getElementById("invitarMessenger").onclick = () => {
-                const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${linkInvitacion}`;
-                const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(linkInvitacion)}&redirect_uri=${encodeURIComponent(linkInvitacion)}&quote=${encodeURIComponent(mensaje)}`;
+            document.getElementById("invitarMessenger").onclick = () => {
+                // Modificado para incluir el nuevo texto personalizado en la invitación de Messenger
+                const mensajePersonalizado = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${linkInvitacion}`;
+                const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(linkInvitacion)}&redirect_uri=${encodeURIComponent(linkInvitacion)}&quote=${encodeURIComponent(mensajePersonalizado)}`;
                 window.open(url, "_blank");
             };
 
