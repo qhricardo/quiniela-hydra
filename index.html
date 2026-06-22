@@ -113,11 +113,11 @@
             background-color: #a00d20;
         }
 
-        /* Estructura Principal Responsiva */
+        /* Estructura Principal: Avisos a la izquierda en PC */
         .main-wrapper {
             display: flex;
             flex-direction: column;
-            max-width: 1300px;
+            max-width: 1200px;
             margin: 10px auto;
             padding: 10px;
             gap: 20px;
@@ -125,7 +125,7 @@
 
         @media (min-width: 992px) {
             .main-wrapper {
-                flex-direction: row-reverse; /* Sidebar a la derecha en PC */
+                flex-direction: row; /* Sidebar a la izquierda, Contenedor a la derecha */
                 padding: 20px;
                 margin: 20px auto;
             }
@@ -143,7 +143,7 @@
 
         @media (min-width: 992px) {
             .sidebar-avisos {
-                width: 320px;
+                width: 300px;
                 flex-shrink: 0;
                 position: sticky;
                 top: 20px;
@@ -172,18 +172,11 @@
             }
         }
 
-        /* Grid de partidos en Computadora */
-        .partidos-grid {
-            display: grid;
-            grid-template-columns: 1fr;
+        /* Partidos uno abajo del otro en fila completa */
+        .partidos-lista {
+            display: flex;
+            flex-direction: column;
             gap: 15px;
-        }
-
-        @media (min-width: 768px) {
-            .partidos-grid {
-                grid-template-columns: repeat(2, 1fr); /* 2 columnas en Tablet/PC */
-                gap: 20px;
-            }
         }
 
         .partido {
@@ -191,9 +184,6 @@
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
 
         @media (min-width: 768px) {
@@ -224,7 +214,7 @@
 
         @media (min-width: 768px) {
             .equipos h2 img {
-                width: 60px;
+                width: 65px;
             }
         }
 
@@ -237,7 +227,7 @@
 
         @media (min-width: 768px) {
             .equipo {
-                font-size: 16px;
+                font-size: 18px;
             }
         }
 
@@ -251,22 +241,17 @@
 
         @media (min-width: 768px) {
             .vs {
-                font-size: 18px;
+                font-size: 20px;
             }
         }
 
+        /* Opciones siempre en horizontal (Celular y PC) */
         .opciones {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            flex-direction: row; /* Forzado horizontal en celular */
+            justify-content: center;
+            gap: 8px;
             width: 100%;
-        }
-
-        @media (min-width: 480px) {
-            .opciones {
-                flex-direction: row;
-                justify-content: center;
-            }
         }
 
         .opcion {
@@ -276,9 +261,19 @@
             border: 1px solid #ddd;
             transition: all 0.3s;
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
-            flex: 1;
+            flex: 1; /* Distribuye el espacio equitativamente */
+        }
+
+        @media (min-width: 576px) {
+            .opcion {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            .opciones {
+                gap: 12px;
+            }
         }
 
         .opcion:hover {
@@ -299,7 +294,6 @@
             display: flex;
             justify-content: center;
             margin-top: 30px;
-            grid-column: 1 / -1; /* Ocupa todo el ancho en el grid */
         }
 
         #guardar-btn {
@@ -308,7 +302,7 @@
             padding: 14px 35px;
             font-size: 16px;
             width: 100%;
-            max-width: 400px;
+            max-width: 350px;
             font-weight: bold;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
@@ -336,7 +330,6 @@
             background: white;
             padding: 10px;
             border-radius: 5px;
-            grid-column: 1 / -1;
         }
 
         #countdown {
@@ -404,7 +397,7 @@
         <div class="container">
             <h1>Liga-MX Jornada 16</h1>
             
-            <div class="partidos-grid">
+            <div class="partidos-lista">
                 
                 <div class="partido">
                     <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Viernes, 31/10/2025 19:00</h3>
@@ -582,13 +575,13 @@
                     </div>
                 </div>
 
-                <div class="actions">
-                    <button id="guardar-btn">Guardar Pronósticos</button>
-                </div>
-                
-                <div id="loading" class="loading">Guardando tus pronósticos...</div>
-                
-            </div> </div>
+            </div> <div class="actions">
+                <button id="guardar-btn">Guardar Pronósticos</button>
+            </div>
+            
+            <div id="loading" class="loading">Guardando tus pronósticos...</div>
+            
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
