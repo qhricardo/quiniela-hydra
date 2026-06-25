@@ -807,7 +807,7 @@
 
         // Función para activar los clics de compartir
         function configurarBotonesInvitacion(enlace) {
-            const mensajeTexto = `¡Únete a mi grupo en Quiniela 360, arma tus pronósticos de la Liga MX y gana créditos! Regístrate con mi enlace aquí: ${enlace}`;
+            const mensajeTexto = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉: ${enlace}`;
             const mensajeCodificado = encodeURIComponent(mensajeTexto);
 
             // Botón WhatsApp
@@ -816,10 +816,15 @@
                 window.open(urlWhatsapp, '_blank');
             });
 
-            // Botón Messenger (Comparte el enlace en el ecosistema de Facebook/Messenger)
-            document.getElementById("invitarMessenger").addEventListener("click", () => {
-                const urlMessenger = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(enlace)}`;
-                window.open(urlMessenger, '_blank');
+           function invitarMessenger(link) {
+            const mensajeCompleto = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉: ${link}`;
+            const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&quote=${encodeURIComponent(mensajeCompleto)}&redirect_uri=${encodeURIComponent(link)}`;
+            
+            // Alternativa opcional para dispositivos móviles (intenta abrir la app directamente con el texto):
+            // const urlMobile = `fb-messenger://share?link=${encodeURIComponent(link)}&text=${encodeURIComponent(mensajeCompleto)}`;
+            
+            window.open(url, "_blank");
+        }
             });
 
             // Botón Copiar Enlace
