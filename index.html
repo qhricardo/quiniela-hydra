@@ -377,7 +377,7 @@
             
             <section id="invitaciones" style="border-top: 1px dashed #ccc; padding-top: 15px; text-align:center;">
                 <h4 style="color:#006847; margin: 0 0 10px 0; font-size: 16px;">Invita y Gana Créditos</h4>
-                <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitation 🎁</p>
+                <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <button id="invitarWhatsApp" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#25D366; font-size: 14px;"> 📱 WhatsApp </button>
                     <button id="invitarMessenger" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#0084FF; font-size: 14px;"> 💬 Messenger </button>
@@ -590,6 +590,7 @@
         const db = firebase.firestore();
         let currentUser = null;
         let userCredits = 0;
+        let linkDeReferido = ""; // Se generará dinámicamente con el UID del usuario
 
         // Lógica del Botón de Compras Mercado Pago
         document.getElementById("comprarCreditos").addEventListener("click", async () => {
@@ -599,7 +600,7 @@
           }
 
           const body = {
-            amount: 30, // Cambiado a 25. Nota: Si sigue cobrando 50, debes cambiar el precio en tu código backend en Render.
+            amount: 30, 
             userId: currentUser.uid,
             name: currentUser.displayName || "Usuario",
             email: currentUser.email || "",
@@ -773,7 +774,43 @@
             }
         }
 
-       // Control de Estado de Autenticación e Invitaciones
+        // --- NUEVA LÓGICA AGREGADA: FUNCIONALIDAD DE LOS BOTONES DE INVITACIÓN ---
+
+        function configurarInvitaciones(uid) {
+            // Reemplaza con el dominio real de tu aplicación (ej: https://tudominio.com/registro.html)
+            const baseProdUrl = window.location.origin + "/registro.html"; 
+            linkDeReferido = `${baseProdUrl}?ref=${uid}`;
+            
+            // Mostrar enlace en el contenedor HTML
+            document.getElementById("miLink").textContent = linkDeReferido;
+
+            const mensajeCompleto = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉: ${linkDeReferido}`;
+
+            // Botón WhatsApp
+            document.getElementById("invitarWhatsApp").addEventListener("click", () => {
+                const urlWhatsapp = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeCompleto)}`;
+                window.open(urlWhatsapp, "_blank");
+            });
+
+            // Botón Messenger (Formato Web Dialog Oficial)
+            document.getElementById("invitarMessenger").addEventListener("click", () => {
+                // NOTA: Cambia '9876543210' por tu ID de App de Facebook Real si tienes uno.
+                const appId = "9876543210"; 
+                const urlMessenger = `https://www.facebook.com/dialog/send?app_id=${appId}&link=${encodeURIComponent(linkDeReferido)}&quote=${encodeURIComponent(mensajeCompleto)}&redirect_uri=${encodeURIComponent(linkDeReferido)}`;
+                window.open(urlMessenger, "_blank");
+            });
+
+            // Botón Copiar Link
+            document.getElementById("copiarLink").addEventListener("click", () => {
+                navigator.clipboard.writeText(linkDeReferido).then(() => {
+                    alert("¡Enlace de invitación copiado al portapapeles! 🔗");
+                }).catch(err => {
+                    console.error("Error al copiar link: ", err);
+                });
+            });
+        }
+
+        // Control de Estado de Autenticación e Invitaciones
         firebase.auth().onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
@@ -782,82 +819,25 @@
             
             currentUser = user;
             
-            // 1. Cargar datos del usuario y créditos
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (userDoc.exists) {
-                const userData = userDoc.data();
-                userCredits = userData.creditos ?? 0;
-                document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
-            } else {
-                document.getElementById('username').textContent = `${user.displayName || user.email} | Créditos: 0`;
-            }
-
-            // Llamar a la función para mostrar el grupo actual
-            mostrarGrupoActual();
-
-            // 2. Generar el enlace de invitación dinámico usando el UID del usuario
-            // Esto creará un enlace tipo: https://tusitio.com/login.html?ref=XYZ123ClaveUsuario
-            const urlBase = window.location.origin + window.location.pathname.replace("pronosticos.html", "login.html");
-            const linkInvitacion = `${window.location.origin}/login.html?ref=${user.uid}`;
-            document.getElementById('miLink').textContent = linkInvitacion;
-
-            // 3. Configurar la lógica de los botones de invitación
-            configurarBotonesInvitacion(linkInvitacion);
-        });
-
-        // Función para activar los clics de compartir
-        function configurarBotonesInvitacion(enlace) {
-            const mensajeTexto = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉: ${enlace}`;
-            const mensajeCodificado = encodeURIComponent(mensajeTexto);
-
-            // Botón WhatsApp
-            document.getElementById("invitarWhatsApp").addEventListener("click", () => {
-                const urlWhatsapp = `https://wa.me/?text=${mensajeCodificado}`;
-                window.open(urlWhatsapp, '_blank');
-            });
-
-           function invitarMessenger(link) {
-            const mensajeCompleto = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉: ${link}`;
-            const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&quote=${encodeURIComponent(mensajeCompleto)}&redirect_uri=${encodeURIComponent(link)}`;
-            
-            // Alternativa opcional para dispositivos móviles (intenta abrir la app directamente con el texto):
-            // const urlMobile = `fb-messenger://share?link=${encodeURIComponent(link)}&text=${encodeURIComponent(mensajeCompleto)}`;
-            
-            window.open(url, "_blank");
-        }
-            });
-
-            // Botón Copiar Enlace
-            document.getElementById("copiarLink").addEventListener("click", () => {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(enlace).then(() => {
-                        alert("📋 ¡Enlace de invitación copiado al portapapeles! Envíaselo a tus amigos.");
-                    }).catch(err => {
-                        console.error("Error al copiar enlace: ", err);
-                        fallbackCopiarTexto(enlace);
-                    });
-                } else {
-                    fallbackCopiarTexto(enlace);
-                }
-            });
-        }
-
-        // Alternativa de copiado para navegadores web antiguos o entornos sin HTTPS seguro
-        function fallbackCopiarTexto(texto) {
-            const textArea = document.createElement("textarea");
-            textArea.value = texto;
-            textArea.style.position = "fixed";  // Evita scroll en la pantalla
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
+            // Cargar datos del usuario y créditos
             try {
-                document.execCommand('copy');
-                alert("📋 ¡Enlace de invitación copiado al portapapeles!");
-            } catch (err) {
-                alert("No se pudo copiar el enlace automáticamente. Por favor, selecciónalo manualmente abajo.");
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    userCredits = userData.creditos ?? 0;
+                    document.getElementById('username').textContent = `${user.displayName || user.email} | Créditos: ${userCredits}`;
+                } else {
+                    document.getElementById('username').textContent = `${user.displayName || user.email} | Créditos: 0`;
+                }
+                
+                // Inicializar visualización del grupo y configurar enlaces con el ID del usuario
+                mostrarGrupoActual();
+                configurarInvitaciones(user.uid);
+
+            } catch (error) {
+                console.error("Error al cargar los datos de usuario de Firestore:", error);
             }
-            document.body.removeChild(textArea);
-        }
+        });
     </script>
 </body>
 </html>
