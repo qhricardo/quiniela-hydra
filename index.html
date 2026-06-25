@@ -131,6 +131,7 @@
             }
         }
 
+        /* CUADRO DE AVISOS */
         .sidebar-avisos {
             width: 100%;
             box-sizing: border-box;
@@ -172,7 +173,6 @@
             }
         }
 
-        /* Partidos uno abajo del otro en fila completa */
         .partidos-lista {
             display: flex;
             flex-direction: column;
@@ -245,10 +245,9 @@
             }
         }
 
-        /* Opciones siempre en horizontal (Celular y PC) */
         .opciones {
             display: flex;
-            flex-direction: row; /* Forzado horizontal en celular */
+            flex-direction: row; 
             justify-content: center;
             gap: 8px;
             width: 100%;
@@ -263,7 +262,7 @@
             text-align: center;
             font-size: 12px;
             font-weight: 500;
-            flex: 1; /* Distribuye el espacio equitativamente */
+            flex: 1; 
         }
 
         @media (min-width: 576px) {
@@ -379,7 +378,7 @@
             
             <section id="invitaciones" style="border-top: 1px dashed #ccc; padding-top: 15px; text-align:center;">
                 <h4 style="color:#006847; margin: 0 0 10px 0; font-size: 16px;">Invita y Gana Créditos</h4>
-                <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitation 🎁</p>
+                <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <button id="invitarWhatsApp" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#25D366; font-size: 14px;"> 📱 WhatsApp </button>
                     <button id="invitarMessenger" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#0084FF; font-size: 14px;"> 💬 Messenger </button>
@@ -389,13 +388,12 @@
                 <div id="miLink" style="color:#006847; font-weight:bold; font-size: 12px; word-break: break-all; background: #f0f0f0; padding: 5px; border-radius: 4px;">Cargando...</div>
             </section>
 
-            <div style="text-align: center; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px; display: flex; flex-direction: column; gap: 10px;">
-                <button id="comprarCreditos" style="padding: 12px 20px; background-color: #00a650; color: white; font-weight: bold; font-size: 16px; border: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: block; width: 100%; cursor: pointer; transition: background-color 0.3s ease;"> 💰 COMPRAR 1 CRÉDITO </button>
+            <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                <button id="comprarCreditos" style="width: 100%; padding: 12px; margin-bottom: 10px; background-color: #00a650; color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💳 COMPRAR 1 CRÉDITO</button>
                 
-                <a href="https://m.me/439939209212181?text=Quiero%20comprar%20un%20cr%C3%A9dito" target="_blank" style="padding: 12px 20px; background-color: #FFD700; color: #000; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: block; transition: background-color 0.3s ease;"> 💬 SOLICITAR POR CHAT </a>
+                <a href="https://m.me/439939209212181?text=Quiero%20comprar%20un%20cr%C3%A9dito" target="_blank" style="display: block; text-align: center; width: 100%; box-sizing: border-box; padding: 12px; background-color: #FFD700; color: black; font-weight: bold; border-radius: 8px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💬 SOLICITAR POR CHAT</a>
             </div>
         </div>
-
         <div class="container">
             <h1>Liga-MX Jornada 16</h1>
             
