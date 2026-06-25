@@ -773,21 +773,86 @@
             }
         }
 
-        // Control de Estado de Autenticación
+       // Control de Estado de Autenticación e Invitaciones
         firebase.auth().onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
                 return;
             }
+            
             currentUser = user;
+            
+            // 1. Cargar datos del usuario y créditos
             const userDoc = await db.collection('users').doc(user.uid).get();
             if (userDoc.exists) {
                 const userData = userDoc.data();
                 userCredits = userData.creditos ?? 0;
                 document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
+            } else {
+                document.getElementById('username').textContent = `${user.displayName || user.email} | Créditos: 0`;
             }
-            await mostrarGrupoActual();
+
+            // Llamar a la función para mostrar el grupo actual
+            mostrarGrupoActual();
+
+            // 2. Generar el enlace de invitación dinámico usando el UID del usuario
+            // Esto creará un enlace tipo: https://tusitio.com/login.html?ref=XYZ123ClaveUsuario
+            const urlBase = window.location.origin + window.location.pathname.replace("pronosticos.html", "login.html");
+            const linkInvitacion = `${window.location.origin}/login.html?ref=${user.uid}`;
+            document.getElementById('miLink').textContent = linkInvitacion;
+
+            // 3. Configurar la lógica de los botones de invitación
+            configurarBotonesInvitacion(linkInvitacion);
         });
+
+        // Función para activar los clics de compartir
+        function configurarBotonesInvitacion(enlace) {
+            const mensajeTexto = `¡Únete a mi grupo en Quiniela 360, arma tus pronósticos de la Liga MX y gana créditos! Regístrate con mi enlace aquí: ${enlace}`;
+            const mensajeCodificado = encodeURIComponent(mensajeTexto);
+
+            // Botón WhatsApp
+            document.getElementById("invitarWhatsApp").addEventListener("click", () => {
+                const urlWhatsapp = `https://wa.me/?text=${mensajeCodificado}`;
+                window.open(urlWhatsapp, '_blank');
+            });
+
+            // Botón Messenger (Comparte el enlace en el ecosistema de Facebook/Messenger)
+            document.getElementById("invitarMessenger").addEventListener("click", () => {
+                const urlMessenger = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(enlace)}`;
+                window.open(urlMessenger, '_blank');
+            });
+
+            // Botón Copiar Enlace
+            document.getElementById("copiarLink").addEventListener("click", () => {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(enlace).then(() => {
+                        alert("📋 ¡Enlace de invitación copiado al portapapeles! Envíaselo a tus amigos.");
+                    }).catch(err => {
+                        console.error("Error al copiar enlace: ", err);
+                        fallbackCopiarTexto(enlace);
+                    });
+                } else {
+                    fallbackCopiarTexto(enlace);
+                }
+            });
+        }
+
+        // Alternativa de copiado para navegadores web antiguos o entornos sin HTTPS seguro
+        function fallbackCopiarTexto(texto) {
+            const textArea = document.createElement("textarea");
+            textArea.value = texto;
+            textArea.style.position = "fixed";  // Evita scroll en la pantalla
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert("📋 ¡Enlace de invitación copiado al portapapeles!");
+            } catch (err) {
+                alert("No se pudo copiar el enlace automáticamente. Por favor, selecciónalo manualmente abajo.");
+            }
+            document.body.removeChild(textArea);
+        }
     </script>
 </body>
 </html>
