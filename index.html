@@ -379,7 +379,7 @@
             
             <section id="invitaciones" style="border-top: 1px dashed #ccc; padding-top: 15px; text-align:center;">
                 <h4 style="color:#006847; margin: 0 0 10px 0; font-size: 16px;">Invita y Gana Créditos</h4>
-                <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
+                <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitation 🎁</p>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <button id="invitarWhatsApp" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#25D366; font-size: 14px;"> 📱 WhatsApp </button>
                     <button id="invitarMessenger" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#0084FF; font-size: 14px;"> 💬 Messenger </button>
@@ -389,53 +389,12 @@
                 <div id="miLink" style="color:#006847; font-weight:bold; font-size: 12px; word-break: break-all; background: #f0f0f0; padding: 5px; border-radius: 4px;">Cargando...</div>
             </section>
 
-            <div style="text-align: center; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
-                <a href="https://m.me/439939209212181?text=Quiero%20comprar%20un%20cr%C3%A9dito" target="_blank" style="padding: 12px 20px; background-color: #FFD700; color: #000; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: block; transition: background-color 0.3s ease;"> 💰 SOLICITAR CRÉDITO </a>
+            <div style="text-align: center; margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                <button id="comprarCreditos" style="padding: 12px 20px; background-color: #00a650; color: white; font-weight: bold; font-size: 16px; border: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: block; width: 100%; cursor: pointer; transition: background-color 0.3s ease;"> 💰 COMPRAR 1 CRÉDITO </button>
+                
+                <a href="https://m.me/439939209212181?text=Quiero%20comprar%20un%20cr%C3%A9dito" target="_blank" style="padding: 12px 20px; background-color: #FFD700; color: #000; font-weight: bold; font-size: 16px; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: block; transition: background-color 0.3s ease;"> 💬 SOLICITAR POR CHAT </a>
             </div>
         </div>
-
-    <button id="comprarCreditos">Comprar 1 Crédito</button>
-
-<script>
-document.getElementById("comprarCreditos").addEventListener("click", async () => {
-  // Verifica que el usuario esté logueado
-  if (!currentUser) {
-    alert("Debes iniciar sesión para comprar créditos");
-    return;
-  }
-
-  // Datos para enviar al backend
-  const body = {
-    amount: 50, // precio en MXN
-    userId: currentUser.uid,
-    name: currentUser.displayName || "Usuario",
-    email: currentUser.email || "",
-    creditsToAdd: 1, // créditos a sumar
-  };
-
-  try {
-    console.log("📤 Enviando a backend:", body);
-    const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    const data = await res.json();
-
-    if (data.init_point) {
-      console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
-      window.location.href = data.init_point;
-    } else {
-      console.error("❌ Respuesta del servidor:", data);
-      alert("No se pudo generar la preferencia de pago.");
-    }
-  } catch (error) {
-    console.error("🚨 Error al crear preferencia:", error);
-    alert("Ocurrió un error al intentar crear la preferencia.");
-  }
-});
-</script>
 
         <div class="container">
             <h1>Liga-MX Jornada 16</h1>
@@ -618,7 +577,9 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
                     </div>
                 </div>
 
-            </div> <div class="actions">
+            </div> 
+            
+            <div class="actions">
                 <button id="guardar-btn">Guardar Pronósticos</button>
             </div>
             
@@ -631,6 +592,45 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
+    
+    <script>
+    document.getElementById("comprarCreditos").addEventListener("click", async () => {
+      if (!currentUser) {
+        alert("Debes iniciar sesión para comprar créditos");
+        return;
+      }
+
+      const body = {
+        amount: 50, 
+        userId: currentUser.uid,
+        name: currentUser.displayName || "Usuario",
+        email: currentUser.email || "",
+        creditsToAdd: 1, 
+      };
+
+      try {
+        console.log("📤 Enviando a backend:", body);
+        const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        const data = await res.json();
+
+        if (data.init_point) {
+          console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
+          window.location.href = data.init_point;
+        } else {
+          console.error("❌ Respuesta del servidor:", data);
+          alert("No se pudo generar la preferencia de pago.");
+        }
+      } catch (error) {
+        console.error("🚨 Error al crear preferencia:", error);
+        alert("Ocurrió un error al intentar crear la preferencia.");
+      }
+    });
+    </script>
     
     <script>
         const db = firebase.firestore();
@@ -800,65 +800,14 @@ document.getElementById("comprarCreditos").addEventListener("click", async () =>
             if (!pronSnapshot.empty) {
                 const pron = pronSnapshot.docs[0].data();
                 pron.partidos.forEach((p,index)=>{
-                    const opcion = document.querySelector(`.partido:nth-of-type(${index+1}) .opcion[data-result="${p.prediccion}"]`);
-                    if (opcion) opcion.classList.add('selected');
+                    const partidoCards = document.querySelectorAll('.partido');
+                    if(partidoCards[index]) {
+                        const opcionBtn = partidoCards[index].querySelector(`.opcion[data-result="${p.prediccion}"]`);
+                        if(opcionBtn) opcionBtn.classList.add('selected');
+                    }
                 });
             }
         });
-
-        document.getElementById('logout-btn').addEventListener('click', () => firebase.auth().signOut());
     </script>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
-            authDomain: "quiniela-hydra.firebaseapp.com",
-            projectId: "quiniela-hydra",
-            storageBucket: "quiniela-hydra.firebasestorage.app",
-            messagingSenderId: "329849216739",
-            appId: "1:329849216739:web:83d23ff1424eb167172fd6",
-            measurementId: "G-FWDDQ5HQYV"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) return;
-            const uid = user.uid;
-            const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${uid}`;
-            document.getElementById("miLink").textContent = linkInvitacion;
-
-            document.getElementById("invitarWhatsApp").onclick = () => {
-                const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${linkInvitacion}`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
-            };
-
-            document.getElementById("invitarMessenger").onclick = () => {
-                // Modificado para incluir el nuevo texto personalizado en la invitación de Messenger
-                const mensajePersonalizado = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${linkInvitacion}`;
-                const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(linkInvitacion)}&redirect_uri=${encodeURIComponent(linkInvitacion)}&quote=${encodeURIComponent(mensajePersonalizado)}`;
-                window.open(url, "_blank");
-            };
-
-            document.getElementById("copiarLink").onclick = () => {
-                navigator.clipboard.writeText(linkInvitacion)
-                    .then(() => alert("✅ Link copiado al portapapeles:\n" + linkInvitacion))
-                    .catch(() => alert("⚠️ No se pudo copiar el link automáticamente."));
-            };
-        });
-    </script>
-
-    <footer style="background-color: #1a1a1a; color: white; padding: 30px 20px; font-family: Arial, sans-serif; margin-top: 30px; text-align: center;">
-        <div style="max-width: 1200px; margin: auto;">
-            <h2 style="margin:0 0 10px 0; color:#00d084; font-size: 20px;">Quiniela360</h2>
-            <p style="font-size:13px; color:#ccc; margin: 5px 0;">Plataforma de pronósticos deportivos en línea.</p>
-            <p style="font-size:12px; color:#aaa; margin: 5px 0;">© 2025 Quiniela360.com - Todos los derechos reservados.</p>
-            <p style="font-size:9px; color:#666; margin: 10px 0 0 0;">q.h.ricardoarturo@gmail.com</p>
-        </div>
-    </footer>
 </body>
 </html>
