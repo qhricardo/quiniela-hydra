@@ -394,6 +394,49 @@
             </div>
         </div>
 
+    <button id="comprarCreditos">Comprar 1 Crédito</button>
+
+<script>
+document.getElementById("comprarCreditos").addEventListener("click", async () => {
+  // Verifica que el usuario esté logueado
+  if (!currentUser) {
+    alert("Debes iniciar sesión para comprar créditos");
+    return;
+  }
+
+  // Datos para enviar al backend
+  const body = {
+    amount: 50, // precio en MXN
+    userId: currentUser.uid,
+    name: currentUser.displayName || "Usuario",
+    email: currentUser.email || "",
+    creditsToAdd: 1, // créditos a sumar
+  };
+
+  try {
+    console.log("📤 Enviando a backend:", body);
+    const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (data.init_point) {
+      console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
+      window.location.href = data.init_point;
+    } else {
+      console.error("❌ Respuesta del servidor:", data);
+      alert("No se pudo generar la preferencia de pago.");
+    }
+  } catch (error) {
+    console.error("🚨 Error al crear preferencia:", error);
+    alert("Ocurrió un error al intentar crear la preferencia.");
+  }
+});
+</script>
+
         <div class="container">
             <h1>Liga-MX Jornada 16</h1>
             
