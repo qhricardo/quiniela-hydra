@@ -125,7 +125,7 @@
 
         @media (min-width: 992px) {
             .main-wrapper {
-                flex-direction: row; /* Sidebar a la izquierda, Contenedor a la derecha */
+                flex-direction: row;
                 padding: 20px;
                 margin: 20px auto;
             }
@@ -364,7 +364,6 @@
     </header>
 
     <div class="main-wrapper">
-        
         <div class="sidebar-avisos">
             <h3 style="color: #006847; text-align: center; margin-top: 0;">📢 Avisos</h3>
             <ul id="avisos-lista" style="list-style-type: none; padding-left: 0; font-size: 14px; text-align: center; margin-bottom: 20px;">
@@ -378,7 +377,7 @@
             
             <section id="invitaciones" style="border-top: 1px dashed #ccc; padding-top: 15px; text-align:center;">
                 <h4 style="color:#006847; margin: 0 0 10px 0; font-size: 16px;">Invita y Gana Créditos</h4>
-                <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
+                <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitation 🎁</p>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <button id="invitarWhatsApp" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#25D366; font-size: 14px;"> 📱 WhatsApp </button>
                     <button id="invitarMessenger" style="padding:10px; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer; background-color:#0084FF; font-size: 14px;"> 💬 Messenger </button>
@@ -390,15 +389,13 @@
 
             <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
                 <button id="comprarCreditos" style="width: 100%; padding: 12px; margin-bottom: 10px; background-color: #00a650; color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💳 COMPRAR 1 CRÉDITO</button>
-                
                 <a href="https://m.me/439939209212181?text=Quiero%20comprar%20un%20cr%C3%A9dito" target="_blank" style="display: block; text-align: center; width: 100%; box-sizing: border-box; padding: 12px; background-color: #FFD700; color: black; font-weight: bold; border-radius: 8px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💬 SOLICITAR POR CHAT</a>
             </div>
         </div>
+
         <div class="container">
             <h1>Liga-MX Jornada 16</h1>
-            
             <div class="partidos-lista">
-                
                 <div class="partido">
                     <h3 style="color: #006847; text-align: center; font-size: 14px; margin-top: 0;">Viernes, 31/10/2025 19:00</h3>
                     <div class="equipos">
@@ -574,7 +571,6 @@
                         <div class="opcion visitante" data-result="V">Gana Visitante</div>
                     </div>
                 </div>
-
             </div> 
             
             <div class="actions">
@@ -582,7 +578,6 @@
             </div>
             
             <div id="loading" class="loading">Guardando tus pronósticos...</div>
-            
         </div>
     </div>
 
@@ -592,48 +587,57 @@
     <script src="js/firebase-config.js"></script>
     
     <script>
-    document.getElementById("comprarCreditos").addEventListener("click", async () => {
-      if (!currentUser) {
-        alert("Debes iniciar sesión para comprar créditos");
-        return;
-      }
-
-      const body = {
-        amount: 25, 
-        userId: currentUser.uid,
-        name: currentUser.displayName || "Usuario",
-        email: currentUser.email || "",
-        creditsToAdd: 1, 
-      };
-
-      try {
-        console.log("📤 Enviando a backend:", body);
-        const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-
-        const data = await res.json();
-
-        if (data.init_point) {
-          console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
-          window.location.href = data.init_point;
-        } else {
-          console.error("❌ Respuesta del servidor:", data);
-          alert("No se pudo generar la preferencia de pago.");
-        }
-      } catch (error) {
-        console.error("🚨 Error al crear preferencia:", error);
-        alert("Ocurrió un error al intentar crear la preferencia.");
-      }
-    });
-    </script>
-    
-    <script>
         const db = firebase.firestore();
         let currentUser = null;
         let userCredits = 0;
+
+        // Lógica del Botón de Compras Mercado Pago
+        document.getElementById("comprarCreditos").addEventListener("click", async () => {
+          if (!currentUser) {
+            alert("Debes iniciar sesión para comprar créditos");
+            return;
+          }
+
+          const body = {
+            amount: 25, // Cambiado a 25. Nota: Si sigue cobrando 50, debes cambiar el precio en tu código backend en Render.
+            userId: currentUser.uid,
+            name: currentUser.displayName || "Usuario",
+            email: currentUser.email || "",
+            creditsToAdd: 1, 
+          };
+
+          try {
+            console.log("📤 Enviando a backend:", body);
+            const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body),
+            });
+
+            const data = await res.json();
+
+            if (data.init_point) {
+              console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
+              window.location.href = data.init_point;
+            } else {
+              console.error("❌ Respuesta del servidor:", data);
+              alert("No se pudo generar la preferencia de pago.");
+            }
+          } catch (error) {
+            console.error("🚨 Error al crear preferencia:", error);
+            alert("Ocurrió un error al intentar crear la preferencia.");
+          }
+        });
+
+        // Lógica del Botón de Salir (Cerrar Sesión)
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            firebase.auth().signOut().then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+                alert("No se pudo cerrar la sesión correctamente.");
+            });
+        });
 
         // Cuenta Atrás
         const targetDate = new Date('2026-06-18T19:00:00');
@@ -783,28 +787,6 @@
                 document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
             }
             await mostrarGrupoActual();
-            
-            const grupoId = localStorage.getItem("grupoSeleccionado");
-            if (!grupoId) return;
-            
-            const pronSnapshot = await db.collection('grupos')
-                .doc(grupoId)
-                .collection('pronosticos')
-                .where('userId','==',user.uid)
-                .orderBy('fecha','desc')
-                .limit(1)
-                .get();
-
-            if (!pronSnapshot.empty) {
-                const pron = pronSnapshot.docs[0].data();
-                pron.partidos.forEach((p,index)=>{
-                    const partidoCards = document.querySelectorAll('.partido');
-                    if(partidoCards[index]) {
-                        const opcionBtn = partidoCards[index].querySelector(`.opcion[data-result="${p.prediccion}"]`);
-                        if(opcionBtn) opcionBtn.classList.add('selected');
-                    }
-                });
-            }
         });
     </script>
 </body>
