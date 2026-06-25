@@ -794,10 +794,7 @@
 
             // Botón Messenger (Formato Web Dialog Oficial)
             document.getElementById("invitarMessenger").addEventListener("click", () => {
-                // NOTA: Cambia '9876543210' por tu ID de App de Facebook Real si tienes uno.
-                const appId = "9876543210"; 
-                const urlMessenger = `https://www.facebook.com/dialog/send?app_id=${appId}&link=${encodeURIComponent(linkDeReferido)}&quote=${encodeURIComponent(mensajeCompleto)}&redirect_uri=${encodeURIComponent(linkDeReferido)}`;
-                window.open(urlMessenger, "_blank");
+          window.open(`https://www.facebook.com/dialog/send?app_id=TU_APP_ID&link=${encodeURIComponent(linkDeReferido)}&redirect_uri=${encodeURIComponent(window.location.href)}`, '_blank');
             });
 
             // Botón Copiar Link
