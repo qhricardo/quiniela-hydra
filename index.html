@@ -113,7 +113,7 @@
             background-color: #a00d20;
         }
 
-        /* Estructura Principal: Avisos a la izquierda en PC */
+        /* Estructura Principal */
         .main-wrapper {
             display: flex;
             flex-direction: column;
@@ -374,7 +374,7 @@
                     </div>
                 </li>
             </ul>
-            
+             
             <section id="invitaciones" style="border-top: 1px dashed #ccc; padding-top: 15px; text-align:center;">
                 <h4 style="color:#006847; margin: 0 0 10px 0; font-size: 16px;">Invita y Gana Créditos</h4>
                 <p style="font-size: 13px; margin: 0 0 15px 0;">Recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
@@ -389,7 +389,7 @@
 
             <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
                 <button id="comprarCreditos" style="width: 100%; padding: 12px; margin-bottom: 10px; background-color: #00a650; color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💳 COMPRAR 1 CRÉDITO</button>
-                <a href="https://m.me/439939209212181?text=Quiero%20comprar%20un%20cr%C3%A9dito" target="_blank" style="display: block; text-align: center; width: 100%; box-sizing: border-box; padding: 12px; background-color: #FFD700; color: black; font-weight: bold; border-radius: 8px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💬 SOLICITAR POR CHAT</a>
+                <a href="https://m.me/439939209212181" target="_blank" style="display: block; text-align: center; width: 100%; box-sizing: border-box; padding: 12px; background-color: #FFD700; color: black; font-weight: bold; border-radius: 8px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💬 SOLICITAR POR CHAT</a>
             </div>
         </div>
 
@@ -590,7 +590,7 @@
         const db = firebase.firestore();
         let currentUser = null;
         let userCredits = 0;
-        let linkDeReferido = ""; // Se generará dinámicamente con el UID del usuario
+        let linkDeReferido = "";
 
         // Lógica del Botón de Compras Mercado Pago
         document.getElementById("comprarCreditos").addEventListener("click", async () => {
@@ -774,66 +774,68 @@
             }
         }
 
-        // --- NUEVA LÓGICA AGREGADA: FUNCIONALIDAD DE LOS BOTONES DE INVITACIÓN ---
-
+        // --- FUNCIONALIDAD COMPLETA DE LOS BOTONES DE INVITACIÓN ---
         function configurarInvitaciones(uid) {
-            // Reemplaza con el dominio real de tu aplicación (ej: https://tudominio.com/registro.html)
             const baseProdUrl = window.location.origin + "/registro.html"; 
             linkDeReferido = `${baseProdUrl}?ref=${uid}`;
             
             // Mostrar enlace en el contenedor HTML
             document.getElementById("miLink").textContent = linkDeReferido;
 
-            const mensajeCompleto = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉: ${linkDeReferido}`;
-
-            // Botón WhatsApp
-            document.getElementById("invitarWhatsApp").addEventListener("click", () => {
-                const urlWhatsapp = `https://api.whatsapp.com/send?text=${encodeURIComponent(mensajeCompleto)}`;
-                window.open(urlWhatsapp, "_blank");
+            // Funcionalidad unificada para el botón de Messenger
+            document.getElementById("invitarMessenger").addEventListener("click", async () => {
+                try {
+                    // 1. Copia el link automáticamente al portapapeles
+                    await navigator.clipboard.writeText(linkDeReferido);
+                    
+                    // 2. Avisa al usuario mediante un recuadro interactivo
+                    alert("¡Enlace de invitación copiado! 📋\nAhora se abrirá Messenger; solo mantén presionado y dale a 'Pegar' para mandárselo a tu amigo.");
+                    
+                    // 3. Abre el chat directo limpio de la página sin errores 404
+                    window.open("https://m.me/439939209212181", "_blank");
+                } catch (err) {
+                    console.error("Error al copiar enlace en Messenger:", err);
+                    alert("No se pudo copiar automáticamente. Por favor copia el link de abajo manualmente.");
+                }
             });
 
-            // Botón Messenger (Formato Web Dialog Oficial)
-             function invitarMessenger(link) {
-      const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
-      window.open(url, "_blank");
-    }
+            // Funcionalidad para el botón de WhatsApp
+            document.getElementById("invitarWhatsApp").addEventListener("click", () => {
+                const textoWA = encodeURIComponent(`¡Hola! Te invito a unirte a mi quiniela en Quiniela 360. Regístrate con mi enlace: ${linkDeReferido}`);
+                window.open(`https://wa.me/?text=${textoWA}`, "_blank");
+            });
 
-            // Botón Copiar Link
-            document.getElementById("copiarLink").addEventListener("click", () => {
-                navigator.clipboard.writeText(linkDeReferido).then(() => {
-                    alert("¡Enlace de invitación copiado al portapapeles! 🔗");
-                }).catch(err => {
-                    console.error("Error al copiar link: ", err);
-                });
+            // Funcionalidad para el botón de Copiar Enlace directo
+            document.getElementById("copiarLink").addEventListener("click", async () => {
+                try {
+                    await navigator.clipboard.writeText(linkDeReferido);
+                    alert("📋 Enlace copiado al portapapeles.");
+                } catch (err) {
+                    alert("No se pudo copiar el enlace automáticamente.");
+                }
             });
         }
 
-        // Control de Estado de Autenticación e Invitaciones
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            currentUser = user;
-            
-            // Cargar datos del usuario y créditos
-            try {
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    userCredits = userData.creditos ?? 0;
-                    document.getElementById('username').textContent = `${user.displayName || user.email} | Créditos: ${userCredits}`;
-                } else {
-                    document.getElementById('username').textContent = `${user.displayName || user.email} | Créditos: 0`;
-                }
-                
-                // Inicializar visualización del grupo y configurar enlaces con el ID del usuario
+        // Simulación o disparador de estado de autenticación (Firebase Auth Observables)
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
                 mostrarGrupoActual();
-                configurarInvitaciones(user.uid);
+                
+                // Buscamos los datos dinámicos del usuario en Firestore (ej. créditos)
+                db.collection('users').doc(user.uid).onSnapshot((doc) => {
+                    if (doc.exists) {
+                        userCredits = doc.data().creditos ?? 0;
+                    }
+                    document.getElementById('username').textContent = `${user.displayName || user.email} | Créditos: ${userCredits}`;
+                });
 
-            } catch (error) {
-                console.error("Error al cargar los datos de usuario de Firestore:", error);
+                // Inicializamos los botones pasándole el UID real
+                configurarInvitaciones(user.uid);
+            } else {
+                document.getElementById('username').textContent = "Invitado";
+                // Redirigir al login si no hay usuario (opcional según tu lógica)
+                // window.location.href = 'login.html';
             }
         });
     </script>
