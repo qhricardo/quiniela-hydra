@@ -391,10 +391,19 @@
       }
 
       const snapshot = await db.collection("grupos")
-        .doc(grupoActual)
-        .collection("pronosticos")
-        .orderBy("fecha", "desc")
-        .get({ source: 'server' });
+  .doc(grupoActual)
+  .collection("pronosticos")
+  .orderBy("fecha", "desc")
+  .get({ source: 'server' }) // <--- Esto obliga a ir al servidor y no usar caché local
+  .catch(async (error) => {
+    // En caso de que falle por falta de conexión, intentamos obtener datos
+    console.warn("No se pudo conectar al servidor, intentando caché:", error);
+    return await db.collection("grupos")
+      .doc(grupoActual)
+      .collection("pronosticos")
+      .orderBy("fecha", "desc")
+      .get({ source: 'cache' });
+  });
 
       const totalPronosticos = snapshot.size;
       const montoTotal = totalPronosticos * 25;
