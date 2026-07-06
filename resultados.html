@@ -327,38 +327,37 @@
   </div>
 
   <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th colspan="3">Resultados Oficiales</th>
-          <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
-          <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
-        </tr>
-        <tr id="input-resultados">
-          <td colspan="3" style="font-weight:bold; color:#00a86b;">Resultados Oficiales</td>
-          <td><input type="text" maxlength="1" size="1" id="res-1" value="e" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-2" value="V" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-3" value="V" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-4" value="L" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-5" value="L" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-6" value="L" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-7" value="V" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-8" value="L" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-9" value="L" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-10" value="L" readonly /></td>
-          <td><input type="text" maxlength="1" size="1" id="res-11" value="L" readonly /></td>
-        </tr>
-        <tr>
-          <th>Usuario</th>
-          <th>Fecha</th>
-          <th>Hora</th>
-          <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
-          <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody id="resultados-body"></tbody>
-    </table>
+    <table id="tabla-pronosticos">
+    <thead>
+      <tr>
+        <th colspan="3">Resultados Oficiales</th>
+        <th colspan="11"></th>
+      </tr>
+      <tr id="input-resultados">
+        <td colspan="3" style="font-weight:bold; color:#00a86b;">Resultados Oficiales</td>
+        <td><input type="text" maxlength="1" size="1" id="res-1" value="L" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-2" value="V" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-3" value="V" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-4" value="L" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-5" value="L" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-6" value="L" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-7" value="V" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-8" value="L" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-9" value="L" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-10" value="L" readonly /></td>
+        <td><input type="text" maxlength="1" size="1" id="res-11" value="L" readonly /></td>
+      </tr>
+      <tr>
+        <th>Usuario</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+        <th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th>
+        <th>P6</th><th>P7</th><th>P8</th><th>P9</th><th>P10</th><th>P11</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody id="resultados-body"></tbody>
+  </table>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
