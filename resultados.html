@@ -394,7 +394,7 @@
         .doc(grupoActual)
         .collection("pronosticos")
         .orderBy("fecha", "desc")
-        .get();
+        .get({ source: 'server' });
 
       const totalPronosticos = snapshot.size;
       const montoTotal = totalPronosticos * 25;
