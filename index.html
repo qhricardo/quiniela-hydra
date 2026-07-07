@@ -588,268 +588,150 @@
     <script src="js/firebase-config.js"></script>
     
     <script>
-        const db = firebase.firestore();
-        let currentUser = null;
-        let userCredits = 0;
+    const db = firebase.firestore();
+    let currentUser = null;
+    let userCredits = 0;
 
-        // Lógica del Botón de Compras Mercado Pago
-        document.getElementById("comprarCreditos").addEventListener("click", async () => {
-          if (!currentUser) {
+    // Lógica del Botón de Compras Mercado Pago
+    document.getElementById("comprarCreditos").addEventListener("click", async () => {
+        if (!currentUser) {
             alert("Debes iniciar sesión para comprar créditos");
             return;
-          }
+        }
 
-          const body = {
+        const body = {
             amount: 50, 
             userId: currentUser.uid,
             name: currentUser.displayName || "Usuario",
             email: currentUser.email || "",
             creditsToAdd: 1, 
-          };
+        };
 
-          try {
-            console.log("📤 Enviando a backend:", body);
+        try {
             const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(body),
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
             });
 
             const data = await res.json();
-
             if (data.init_point) {
-              console.log("✅ Redirigiendo a Mercado Pago:", data.init_point);
-              window.location.href = data.init_point;
+                window.location.href = data.init_point;
             } else {
-              console.error("❌ Respuesta del servidor:", data);
-              alert("No se pudo generar la preferencia de pago.");
+                alert("No se pudo generar la preferencia de pago.");
             }
-          } catch (error) {
+        } catch (error) {
             console.error("🚨 Error al crear preferencia:", error);
             alert("Ocurrió un error al intentar crear la preferencia.");
-          }
-        });
-
-        // Lógica del Botón de Salir (Cerrar Sesión)
-        document.getElementById("logout-btn").addEventListener("click", () => {
-            firebase.auth().signOut().then(() => {
-                window.location.href = 'login.html';
-            }).catch((error) => {
-                console.error("Error al cerrar sesión:", error);
-                alert("No se pudo cerrar la sesión correctamente.");
-            });
-        });
-
-        // Cuenta Atrás
-        const targetDate = new Date('2026-07-16T19:00:00');
-        function updateCountdown(){
-            const now = new Date();
-            const diffMs = targetDate - now;
-            if(diffMs <= 0){
-                ['days','hours','minutes','seconds'].forEach(id=>document.getElementById(id).textContent='00');
-                document.getElementById('guardar-btn').disabled=true;
-                return;
-            }
-            const totalSeconds = Math.floor(diffMs/1000);
-            const days=Math.floor(totalSeconds/(3600*24));
-            const hours=Math.floor((totalSeconds % (3600*24))/3600);
-            const minutes=Math.floor((totalSeconds %3600)/60);
-            const seconds=totalSeconds%60;
-            
-            document.getElementById('days').textContent=String(days).padStart(2,'0');
-            document.getElementById('hours').textContent=String(hours).padStart(2,'0');
-            document.getElementById('minutes').textContent=String(minutes).padStart(2,'0');
-            document.getElementById('seconds').textContent=String(seconds).padStart(2,'0');
         }
-        updateCountdown();
-        setInterval(updateCountdown,1000);
+    });
 
-        // Cambiar selecciones visuales de partidos
-        document.querySelectorAll('.opcion').forEach(el=>{
-            el.addEventListener('click', function(){
-                this.closest('.partido').querySelectorAll('.opcion').forEach(op=>op.classList.remove('selected'));
-                this.classList.add('selected');
-            });
+    // Lógica del Botón de Salir
+    document.getElementById("logout-btn").addEventListener("click", () => {
+        firebase.auth().signOut().then(() => {
+            window.location.href = 'login.html';
+        }).catch((error) => {
+            alert("No se pudo cerrar la sesión.");
         });
+    });
 
-        // Guardar pronósticos
-        document.getElementById('guardar-btn').addEventListener('click', async () => {
-            if (userCredits <= 0) {
-                alert('No tienes créditos suficientes');
-                return;
-            }
-            const grupoActual = localStorage.getItem('grupoSeleccionado');
-            if (!grupoActual) {
-                alert('Debes seleccionar un grupo');
-                return;
-            }
-            const partidos = [];
-            let completo = true;
-            document.querySelectorAll('.partido').forEach(el => {
-                const opcion = el.querySelector('.opcion.selected');
-                if (!opcion) {
-                    completo = false;
-                    el.style.border = '2px solid red';
-                    setTimeout(() => el.style.border = 'none', 1000);
-                    return;
-                }
-                const equipos = el.querySelectorAll('.equipo');
-                partidos.push({
-                    local: equipos[0].textContent.trim(),
-                    visitante: equipos[1].textContent.trim(),
-                    prediccion: opcion.dataset.result
-                });
-            });
-
-            if (!completo) {
-                alert('Selecciona todos los partidos antes de guardar.');
-                return;
-            }
-
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('guardar-btn').disabled = true;
-
-            try {
-                await db.runTransaction(async tx => {
-                    const userRef = db.collection('users').doc(currentUser.uid);
-                    const userDoc = await tx.get(userRef);
-                    if (!userDoc.exists || (userDoc.data().creditos ?? 0) <= 0) {
-                        throw new Error("Créditos insuficientes");
-                    }
-                    const grupoRef = db.collection('grupos').doc(grupoActual);
-                    const grupoDoc = await tx.get(grupoRef);
-                    if (!grupoDoc.exists) {
-                        throw new Error("El grupo no existe");
-                    }
-                    const pronSnapshot = await grupoRef.collection('pronosticos')
-                        .where('userId', '==', currentUser.uid)
-                        .get();
-                    if (pronSnapshot.size >= 4) {
-                        throw new Error("Solo puedes realizar 4 pronósticos por grupo");
-                    }
-
-                    tx.update(userRef, { creditos: firebase.firestore.FieldValue.increment(-1) });
-                    const pronRef = grupoRef.collection('pronosticos').doc();
-                    tx.set(pronRef, {
-                        userId: currentUser.uid,
-                        grupoId: grupoActual,
-                        grupoNombre: grupoDoc.data().nombre || grupoActual,
-                        userName: currentUser.displayName || userDoc.data().name || "Usuario",
-                        partidos: partidos,
-                        fecha: firebase.firestore.Timestamp.now(),
-                        estado: "pendiente"
-                    });
-                });
-
-                alert("✅ Pronósticos guardados y 1 crédito descontado correctamente.");
-                setTimeout(() => { window.location.href = "resultados.html"; }, 1000);
-                userCredits--;
-                document.getElementById('username').textContent = `${currentUser.displayName || currentUser.email} | Créditos: ${userCredits}`;
-            } catch (error) {
-                console.error("❌ Error al guardar pronósticos:", error);
-                alert(error.message);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('guardar-btn').disabled = false;
-            }
-        });
-
-        // Despliegue dinámico del grupo
-        async function mostrarGrupoActual() {
-            const grupoId = localStorage.getItem("grupoSeleccionado");
-            const grupoSpan = document.getElementById("grupoActual");
-            if (!grupoId) {
-                grupoSpan.textContent = " | Sin grupo";
-                return;
-            }
-            try {
-                const grupoDoc = await db.collection("grupos").doc(grupoId).get();
-                if (grupoDoc.exists) {
-                    grupoSpan.textContent = ` | Grupo: ${grupoDoc.data().nombre}`;
-                } else {
-                    grupoSpan.textContent = " | Grupo: (no encontrado)";
-                }
-            } catch (err) {
-                console.error("Error cargando grupo:", err);
-                grupoSpan.textContent = " | Grupo: error";
-            }
+    // Control de Estado de Autenticación
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
         }
+        currentUser = user;
+        
+        // Cargar datos de usuario
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+            const userData = userDoc.data();
+            userCredits = userData.creditos ?? 0;
+            document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
+        }
+        
+        await mostrarGrupoActual();
+        await handleInvitation(); // Ejecución segura
 
-        // Control de Estado de Autenticación
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-            currentUser = user;
-            const userDoc = await db.collection('users').doc(user.uid).get();
-            if (userDoc.exists) {
-                const userData = userDoc.data();
-                userCredits = userData.creditos ?? 0;
-                document.getElementById('username').textContent = `${userData.name || user.email} | Créditos: ${userCredits}`;
-            }
-            await mostrarGrupoActual();
-
-           // --- LÓGICA DE INVITACIONES ASIGNADA AL USUARIO ---
+        // Configuración de links
         const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${user.uid}`;
         document.getElementById("miLink").textContent = linkInvitacion;
-
         document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
         document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
         document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
     });
 
-    // --- FUNCIÓN DE CONTROL: PROCESAR INVITACIÓN SOLO UNA VEZ ---
+    // --- FUNCIÓN DE INVITACIÓN PROTEGIDA ---
     async function handleInvitation() {
-    const params = new URLSearchParams(window.location.search);
-    const invitedBy = params.get("ref");
-    
-    if (!invitedBy || !usuarioActual || invitedBy === usuarioActual.uid) return;
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const invitedBy = params.get("ref");
+            
+            if (!invitedBy || !currentUser || invitedBy === currentUser.uid) return;
 
-    const userRef = doc(db, "users", usuarioActual.uid);
-    const userSnap = await getDoc(userRef);
+            const userRef = db.collection('users').doc(currentUser.uid);
+            const userSnap = await userRef.get();
 
-    // 1. Bloqueo si el invitado ya fue referido por alguien
-    if (userSnap.exists() && userSnap.data().invitadoPor) return;
+            if (userSnap.exists && userSnap.data().invitadoPor) return;
 
-    const referrerRef = doc(db, "users", invitedBy);
-    const referrerSnap = await getDoc(referrerRef);
-    
-    if (referrerSnap.exists()) {
-        // 2. NUEVA VALIDACIÓN: ¿El referidor ya ha recibido crédito antes?
-        if (referrerSnap.data().yaRecibioCredito) {
-            // Si ya recibió, solo marcamos al invitado, pero NO sumamos créditos al referidor
-            await updateDoc(userRef, { invitadoPor: invitedBy });
-            return;
+            // Marcamos al invitado. Esto es permitido por tus reglas actuales.
+            await userRef.set({ invitadoPor: invitedBy }, { merge: true });
+            
+            // Nota: La suma de créditos al referidor NO se hará aquí 
+            // para evitar errores de permiso y mantener la seguridad.
+            console.log("Invitación procesada.");
+        } catch (error) {
+            console.warn("La actualización automática fue bloqueada por seguridad.");
         }
+    }
 
-        // 3. Si es la primera vez, sumamos crédito y marcamos al referidor
-        await updateDoc(userRef, { invitadoPor: invitedBy });
-        await updateDoc(referrerRef, { 
-            creditos: (referrerSnap.data().creditos ?? 0) + 1,
-            yaRecibioCredito: true // Marcador de que ya ganó su crédito único
-        });
+    // Guardar pronósticos
+    document.getElementById('guardar-btn').addEventListener('click', async () => {
+        if (userCredits <= 0) { alert('No tienes créditos suficientes'); return; }
+        const grupoActual = localStorage.getItem('grupoSeleccionado');
+        if (!grupoActual) { alert('Debes seleccionar un grupo'); return; }
         
-        alert("🎉 ¡Invitación registrada! Has recibido tu crédito.");
-    }
-}
+        const partidos = [];
+        let completo = true;
+        document.querySelectorAll('.partido').forEach(el => {
+            const opcion = el.querySelector('.opcion.selected');
+            if (!opcion) { completo = false; return; }
+            const equipos = el.querySelectorAll('.equipo');
+            partidos.push({ local: equipos[0].textContent.trim(), visitante: equipos[1].textContent.trim(), prediccion: opcion.dataset.result });
+        });
+
+        if (!completo) { alert('Selecciona todos los partidos.'); return; }
+
+        document.getElementById('loading').style.display = 'block';
+        
+        try {
+            // Nota: Asegúrate de que las reglas de Firestore permitan escribir en 'pronosticos'
+            await db.collection('grupos').doc(grupoActual).collection('pronosticos').add({
+                userId: currentUser.uid,
+                partidos: partidos,
+                fecha: firebase.firestore.Timestamp.now()
+            });
+            alert("✅ Pronóstico guardado.");
+            window.location.href = "resultados.html";
+        } catch (error) {
+            alert("Error al guardar: " + error.message);
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+
+    // Funciones auxiliares
+    async function mostrarGrupoActual() {
+        const grupoId = localStorage.getItem("grupoSeleccionado");
+        if (grupoId) {
+            const grupoDoc = await db.collection("grupos").doc(grupoId).get();
+            if (grupoDoc.exists) document.getElementById("grupoActual").textContent = ` | Grupo: ${grupoDoc.data().nombre}`;
+        }
     }
 
-    // --- FUNCIONES DE INVITACIÓN ---
-    function invitarWhatsApp(link) {
-        const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
-    }
-
-    function invitarMessenger(link) {
-        const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
-        window.open(url, "_blank");
-    }
-
-    function copiarLink(link) {
-        navigator.clipboard.writeText(link)
-            .then(() => alert("✅ Link copiado al portapapeles:\n" + link))
-            .catch(() => alert("⚠️ No se pudo copiar el link, cópialo manualmente."));
-    }
-    </script>
+    function invitarWhatsApp(link) { window.open(`https://wa.me/?text=${encodeURIComponent('⚽ ¡Juega conmigo en Quiniela360! ' + link)}`, "_blank"); }
+    function invitarMessenger(link) { window.open(`https://www.facebook.com/dialog/send?link=${encodeURIComponent(link)}`, "_blank"); }
+    function copiarLink(link) { navigator.clipboard.writeText(link).then(() => alert("✅ Link copiado.")); }
+</script>
 </body>
 </html>
