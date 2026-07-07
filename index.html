@@ -799,6 +799,40 @@
         });
 
         // --- FUNCIONES DE INVITACIÓN INTEGRADAS ---
+   // Configuración de links
+        const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${user.uid}`;
+        document.getElementById("miLink").textContent = linkInvitacion;
+        document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
+        document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
+        document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
+    });
+
+    // --- FUNCIÓN DE INVITACIÓN PROTEGIDA ---
+    async function handleInvitation() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const invitedBy = params.get("ref");
+            
+            if (!invitedBy || !currentUser || invitedBy === currentUser.uid) return;
+
+            const userRef = db.collection('users').doc(currentUser.uid);
+            const userSnap = await userRef.get();
+
+            if (userSnap.exists && userSnap.data().invitadoPor) return;
+
+            // Marcamos al invitado. Esto es permitido por tus reglas actuales.
+            await userRef.set({ invitadoPor: invitedBy }, { merge: true });
+            
+            // Nota: La suma de créditos al referidor NO se hará aquí 
+            // para evitar errores de permiso y mantener la seguridad.
+            console.log("Invitación procesada.");
+        } catch (error) {
+            console.warn("La actualización automática fue bloqueada por seguridad.");
+        }
+    }
+
+
+        
         function invitarWhatsApp(link) {
             const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
