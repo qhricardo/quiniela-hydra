@@ -800,34 +800,38 @@
 
     // --- FUNCIÓN DE CONTROL: PROCESAR INVITACIÓN SOLO UNA VEZ ---
     async function handleInvitation() {
-        const params = new URLSearchParams(window.location.search);
-        const invitedBy = params.get("ref");
-        
-        // Si no hay código de referido o es el mismo usuario, salir
-        if (!invitedBy || !usuarioActual || invitedBy === usuarioActual.uid) return;
+    const params = new URLSearchParams(window.location.search);
+    const invitedBy = params.get("ref");
+    
+    if (!invitedBy || !usuarioActual || invitedBy === usuarioActual.uid) return;
 
-        const userRef = doc(db, "users", usuarioActual.uid);
-        const userSnap = await getDoc(userRef);
+    const userRef = doc(db, "users", usuarioActual.uid);
+    const userSnap = await getDoc(userRef);
 
-        // CONTROL: Si el usuario ya tiene registrado un 'invitadoPor', no hacer nada
-        if (userSnap.exists() && userSnap.data().invitadoPor) {
-            console.log("Este usuario ya fue invitado anteriormente.");
+    // 1. Bloqueo si el invitado ya fue referido por alguien
+    if (userSnap.exists() && userSnap.data().invitadoPor) return;
+
+    const referrerRef = doc(db, "users", invitedBy);
+    const referrerSnap = await getDoc(referrerRef);
+    
+    if (referrerSnap.exists()) {
+        // 2. NUEVA VALIDACIÓN: ¿El referidor ya ha recibido crédito antes?
+        if (referrerSnap.data().yaRecibioCredito) {
+            // Si ya recibió, solo marcamos al invitado, pero NO sumamos créditos al referidor
+            await updateDoc(userRef, { invitadoPor: invitedBy });
             return;
         }
 
-        const referrerRef = doc(db, "users", invitedBy);
-        const referrerSnap = await getDoc(referrerRef);
+        // 3. Si es la primera vez, sumamos crédito y marcamos al referidor
+        await updateDoc(userRef, { invitadoPor: invitedBy });
+        await updateDoc(referrerRef, { 
+            creditos: (referrerSnap.data().creditos ?? 0) + 1,
+            yaRecibioCredito: true // Marcador de que ya ganó su crédito único
+        });
         
-        if (referrerSnap.exists()) {
-            // Guardamos que este usuario fue invitado por 'invitedBy' para bloquear futuras ejecuciones
-            await updateDoc(userRef, { invitadoPor: invitedBy });
-            
-            // Sumamos el crédito al referidor
-            const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
-            await updateDoc(referrerRef, { creditos: nuevosCreditos });
-            
-            alert("🎉 ¡Invitación registrada con éxito!");
-        }
+        alert("🎉 ¡Invitación registrada! Has recibido tu crédito.");
+    }
+}
     }
 
     // --- FUNCIONES DE INVITACIÓN ---
