@@ -1,23 +1,329 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <!-- Etiqueta viewport obligatoria para que sea 100% responsivo en móviles -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quiniela360 | Interfaz</title>
   <style>
-    body { font-family: 'Poppins', sans-serif; background: linear-gradient(145deg, #001f12 0%, #004d2a 100%); background-attachment: fixed; margin: 0; color: #fff; overflow-x: hidden; }
-    body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top center, rgba(0,255,150,0.15), rgba(0,0,0,0.8)); z-index: -1; }
-    header { background: linear-gradient(90deg, #007a33, #00c853); box-shadow: 0 5px 25px rgba(0,0,0,0.5); padding: 25px 15px; text-align: center; border-radius: 0 0 25px 25px; }
-    .card { background: rgba(255,255,255,0.08); border: 1px solid rgba(0,255,150,0.3); border-radius: 18px; padding: 30px 20px; width: 90%; max-width: 900px; margin: 30px auto; text-align: center; }
-    input { width: 100%; max-width: 500px; padding: 12px; border-radius: 10px; border: none; margin: 8px 0; background: rgba(0,255,150,0.1); border: 1px solid rgba(0,255,150,0.3); color: #fff; text-align: center; }
-    button { border: none; border-radius: 50px; padding: 12px 25px; cursor: pointer; font-size: 15px; font-weight: bold; transition: 0.3s; box-shadow: 0 5px 12px rgba(0,0,0,0.3); }
-    button:hover { transform: scale(1.05); }
-    #btnEntrar { background: linear-gradient(135deg, #00ff99, #00b36b); color: #111; }
-    #gruposContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; width: 90%; max-width: 950px; margin: 30px auto; }
-    .grupo-card { background: linear-gradient(145deg, rgba(0,104,71,0.9), rgba(0,200,100,0.4)); border-radius: 18px; padding: 25px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.15); transition: 0.3s; }
-    .grupo-card:hover { transform: scale(1.04); }
-    #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 1000; }
-    #modalContent { background: linear-gradient(160deg, #002f1a, #004d2a); width: 90%; max-width: 400px; margin: 15% auto; padding: 30px; border-radius: 20px; text-align: center; }
+    /* 🌍 Fondo principal */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(145deg, #001f12 0%, #004d2a 100%);
+      background-attachment: fixed;
+      margin: 0;
+      padding: 0;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* 🏟️ Capa superior con efecto de iluminación */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at top center, rgba(0,255,150,0.15), rgba(0,0,0,0.8));
+      z-index: -1;
+    }
+
+    /* 🔹 Header estilo deportivo */
+    header {
+      background: linear-gradient(90deg, #007a33, #00c853);
+      box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+      padding: 25px 15px;
+      text-align: center;
+      border-radius: 0 0 25px 25px;
+      animation: glowHeader 3s infinite alternate;
+      box-sizing: border-box;
+    }
+
+    @keyframes glowHeader {
+      from { box-shadow: 0 0 15px #00e676; }
+      to { box-shadow: 0 0 25px #b2ff59; }
+    }
+
+    header h2 {
+      margin: 0;
+      font-size: 2rem; /* Adaptable a pantallas */
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.6);
+      word-wrap: break-word;
+    }
+
+    .info {
+      font-size: 18px;
+      margin-top: 10px;
+      color: #e0ffe0;
+    }
+
+    /* 💬 Botón invitar */
+    #btn-invitar {
+      background: linear-gradient(135deg, #ffcc00, #ff8800);
+      color: #222;
+      font-weight: bold;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 25px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-size: 16px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+      transition: all 0.25s ease;
+    }
+
+    #btn-invitar:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    }
+
+    /* Contenedor Semántico Adaptable */
+    section {
+      width: 90%;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    /* Contenedor flexible de botones de compartir */
+    .share-buttons-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .share-buttons-container button {
+      flex: 1;
+      min-width: 200px;
+      max-width: 280px;
+      margin: 0 !important;
+    }
+
+    /* Enlace de invitación responsivo para que no rompa la pantalla */
+    #miLink {
+      color: #00ff99;
+      font-weight: bold;
+      margin-top: 15px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px dashed rgba(0, 255, 150, 0.4);
+      word-break: break-all; /* Evita que el enlace largo empuje los bordes del móvil */
+      font-size: 14px;
+    }
+
+    /* 🎯 Card general */
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(0,255,150,0.3);
+      border-radius: 18px;
+      padding: 30px 20px;
+      width: 90%;
+      max-width: 900px;
+      margin: 30px auto;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,255,150,0.1);
+      transition: 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .card:hover {
+      box-shadow: 0 0 25px rgba(0,255,150,0.3);
+      transform: translateY(-5px);
+    }
+
+    .card h3 {
+      color: #00ff99;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 15px;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      max-width: 500px;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      margin: 8px 0;
+      font-size: 15px;
+      text-align: center;
+      color: #fff;
+      background: rgba(0,255,150,0.1);
+      border: 1px solid rgba(0,255,150,0.3);
+      transition: 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      background: rgba(0,255,150,0.2);
+      box-shadow: 0 0 10px rgba(0,255,150,0.5);
+    }
+
+    button {
+      border: none;
+      border-radius: 50px;
+      padding: 12px 25px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-size: 15px;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      box-shadow: 0 5px 12 rgba(0,0,0,0.3);
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    /* 🟩 Botones específicos */
+    #invitarWhatsApp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; }
+    #invitarMessenger { background: linear-gradient(135deg, #0084FF, #005FCC); color: white; }
+    #copiarLink { background: linear-gradient(135deg, #FFD700, #FFB300); color: #222; }
+
+    /* 🏆 CSS Grid para visualización de grupos */
+    #gruposContainer {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 25px;
+      width: 90%;
+      max-width: 950px;
+      margin: 30px auto 50px auto;
+    }
+
+    .grupo-card {
+      background: linear-gradient(145deg, rgba(0,104,71,0.9), rgba(0,200,100,0.4));
+      border-radius: 18px;
+      padding: 25px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-sizing: border-box;
+    }
+
+    .grupo-card:hover {
+      transform: scale(1.04);
+      background: linear-gradient(145deg, rgba(0,255,150,0.9), rgba(0,150,80,0.4));
+      box-shadow: 0 12px 30px rgba(0,255,100,0.3);
+    }
+
+    .grupo-card h3 {
+      font-size: 22px;
+      margin: 0 0 10px 0;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .grupo-card small {
+      color: #b2ffd6;
+    }
+
+    .grupo-card::before {
+      content: "⚽";
+      position: absolute;
+      font-size: 70px;
+      color: rgba(255,255,255,0.08);
+      right: 15px;
+      bottom: 10px;
+      transform: rotate(-10deg);
+      pointer-events: none;
+    }
+
+    /* 💫 Modal de ingreso adaptable */
+    #modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      box-sizing: border-box;
+    }
+
+    #modalContent {
+      background: linear-gradient(160deg, #002f1a, #004d2a);
+      border: 2px solid rgba(0,255,150,0.4);
+      box-shadow: 0 0 25px rgba(0,255,150,0.3);
+      width: 90%;
+      max-width: 400px;
+      margin: 15% auto;
+      padding: 30px 20px;
+      border-radius: 20px;
+      color: #fff;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    #modalContent::before {
+      content: "";
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(0,255,150,0.15) 10%, transparent 70%);
+      animation: pulse 3s infinite;
+      z-index: 0;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(1.4); opacity: 0.2; }
+    }
+
+    #modalContent h3 {
+      position: relative;
+      z-index: 1;
+      text-transform: uppercase;
+      color: #00ff99;
+      margin-top: 10px;
+    }
+
+    #modalContent p, #passwordInput, #btnEntrar {
+      position: relative;
+      z-index: 1;
+    }
+
+    #closeModal {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      cursor: pointer;
+      font-size: 24px;
+      font-weight: bold;
+      color: #00ff99;
+      z-index: 10;
+    }
+
+    #closeModal:hover {
+      color: #fff;
+    }
+
+    #btnEntrar {
+      background: linear-gradient(135deg, #00ff99, #00b36b);
+      color: #111;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    /* 📱 Breakpoints extras de ajuste fino para Celulares muy Pequeños */
+    @media (max-width: 480px) {
+      header h2 { font-size: 1.6rem; }
+      .card h3, section h2 { font-size: 1.4rem; }
+      .share-buttons-container button { min-width: 100%; }
+      #modalContent { margin: 30% auto; }
+    }
   </style>
 </head>
 <body>
@@ -26,7 +332,25 @@
     <h2 id="usuario">Cargando...</h2>
     <div class="info">Créditos: <span id="creditos">0</span></div>
   </header>
+  
+  <!-- 🟢 SECCIÓN DE INVITACIONES RESPONSIVA -->
+  <!--  <section id="invitaciones">
+    <h2 style="color:#5DF70A; text-align:center;">Invita a tus amigos y gana créditos</h2>
+    <p style="text-align:center;">Comparte tu enlace y recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
 
+    <!-- Botones organizados -->
+   <!--  <div class="share-buttons-container">
+      <button id="invitarWhatsApp">📱 Invitar por WhatsApp</button>
+      <button id="invitarMessenger">💬 Invitar por Messenger</button>
+      <button id="copiarLink">📋 Copiar mi link</button>
+    </div>
+
+    <!-- Mostrar el link personalizado sin romper cajas -->
+   <!--  <p style="margin-top:25px; text-align:center; margin-bottom:5px;">Tu enlace de invitación:</p>
+    <div id="miLink">Generando enlace personal...</div>
+  </section>
+
+  <!-- Crear Grupo -->
   <div class="card">
     <h3>Crear Nuevo Grupo</h3>
     <input type="text" id="nombreGrupo" placeholder="Nombre del grupo">
@@ -35,89 +359,222 @@
     <button onclick="crearGrupo()">Crear Grupo</button>
   </div>
 
-  <h3 style="text-align: center; color: #00ff99;">Grupos Disponibles</h3>
+  <h3 style="text-align: center; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 40px; color: #00ff99;">Grupos Disponibles</h3>
   <div id="gruposContainer"></div>
 
+  <div id="modalExito" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#006847; color:white; padding:20px 30px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.3); font-size:16px; z-index:1000; text-align:center; width:80%; max-width:300px;">
+    ✅ Grupo creado con éxito
+  </div>
+
+  <!-- Modal Detalle Grupo -->
   <div id="modal">
     <div id="modalContent">
+      <span id="closeModal">&times;</span>
       <h3 id="modalTitulo">Detalle del Grupo</h3>
+      <p id="modalInfo"></p>
       <div id="passwordDiv" style="display:none;">
         <input type="password" id="passwordInput" placeholder="Ingresa la contraseña">
       </div>
-      <button id="btnEntrar" onclick="entrarAlGrupo()">Entrar al Grupo</button>
-      <br>
-      <button onclick="document.getElementById('modal').style.display='none'" style="background:transparent; color:#aaa; margin-top: 10px;">Cancelar</button>
+      <button id="btnEntrar">Entrar al Grupo</button>
     </div>
   </div>
 
+  <!-- 🔹 Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDocs, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, getCountFromServer, updateDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    const firebaseConfig = { /* Tu config aquí */ };
+    const firebaseConfig = {
+      apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
+      authDomain: "quiniela-hydra.firebaseapp.com",
+      projectId: "quiniela-hydra",
+      storageBucket: "quiniela-hydra.firebasestorage.app",
+      messagingSenderId: "329849216739",
+      appId: "1:329849216739:web:83d23ff1424eb167172fd6",
+      measurementId: "G-FWDDQ5HQYV"
+    };
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
     let usuarioActual = null;
-    // Variables globales para el grupo seleccionado
-    window.grupoSeleccionado = null; 
-    window.grupoPassword = null;
+    let grupoSeleccionado = null;
+    let grupoPassword = null;
+
+    async function login() {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    }
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) await signInWithPopup(auth, new GoogleAuthProvider());
-      else {
-        usuarioActual = user;
-        document.getElementById("usuario").innerText = `Bienvenido, ${user.displayName}`;
-        cargarGrupos();
+      if (!user) return login();
+      usuarioActual = user;
+
+      const nombreUsuario = user.displayName || user.email.split("@")[0];
+      document.getElementById("usuario").innerText = `Bienvenido, ${nombreUsuario}`;
+
+      const userRef = doc(db, "users", user.uid);
+      const docUser = await getDoc(userRef);
+      if (!docUser.exists()) {
+        await setDoc(userRef, { nombre: nombreUsuario, creditos: 0 });
       }
+
+      const updatedUserDoc = await getDoc(userRef);
+      document.getElementById("creditos").innerText = updatedUserDoc.data().creditos ?? 0;
+
+      handleInvitation();
+      cargarGrupos();
+
+      const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${user.uid}`;
+      document.getElementById("miLink").textContent = linkInvitacion;
+
+      document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
+      document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
+      document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
     });
 
+    async function handleInvitation() {
+      const params = new URLSearchParams(window.location.search);
+      const invitedBy = params.get("ref");
+      if (!invitedBy || !usuarioActual) return;
+      if (invitedBy === usuarioActual.uid) return;
+
+      const referrerRef = doc(db, "users", invitedBy);
+      const referrerSnap = await getDoc(referrerRef);
+      if (!referrerSnap.exists()) return;
+
+      const invitedUsersRef = doc(db, "invites", invitedBy);
+      const invitedSnap = await getDoc(invitedUsersRef);
+      let invitedUsers = [];
+      if (invitedSnap.exists()) invitedUsers = invitedSnap.data().invitedUsers || [];
+
+      if (!invitedUsers.includes(usuarioActual.uid)) {
+        invitedUsers.push(usuarioActual.uid);
+        await setDoc(invitedUsersRef, { invitedUsers }, { merge: true });
+
+        const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
+        await updateDoc(referrerRef, { creditos: nuevosCreditos });
+
+        document.getElementById("creditos").innerText = nuevosCreditos;
+        alert("🎉 Se registró tu invitación correctamente.");
+      }
+    }
+
+    async function crearGrupo() {
+      const nombre = document.getElementById("nombreGrupo").value;
+      const pass = document.getElementById("passwordGrupo").value || null;
+      if (!nombre || !usuarioActual) return alert("Debes poner un nombre y estar logueado");
+
+      const nombreCreador = usuarioActual.displayName || usuarioActual.email.split("@")[0];
+
+      try {
+        const docRef = await addDoc(collection(db, "grupos"), {
+          nombre,
+          creadoPor: usuarioActual.uid,
+          creadorNombre: nombreCreador,
+          password: pass,
+          creadoEn: new Date()
+        });
+
+        await setDoc(doc(db, "grupos", docRef.id, "miembros", usuarioActual.uid), {
+          nombre: nombreCreador,
+          agregadoPor: usuarioActual.uid,
+          fechaIngreso: new Date()
+        }, { merge: true });
+
+        document.getElementById("nombreGrupo").value = "";
+        document.getElementById("passwordGrupo").value = "";
+
+        const modalExito = document.getElementById("modalExito");
+        modalExito.style.display = "block";
+        setTimeout(() => {
+          modalExito.style.display = "none";
+          location.reload();
+        }, 1500);
+      } catch (e) {
+        console.error("Error al crear grupo:", e);
+        alert("❌ Error al crear el grupo: " + e.message);
+      }
+    }
+    window.crearGrupo = crearGrupo;
+
     async function cargarGrupos() {
-      const snap = await getDocs(collection(db, "grupos"));
-      const cont = document.getElementById("gruposContainer");
-      cont.innerHTML = "";
-      snap.forEach(docSnap => {
-        const data = docSnap.data();
+      const contenedor = document.getElementById("gruposContainer");
+      contenedor.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "grupos"));
+      querySnapshot.forEach(async (docSnap) => {
+        const grupo = docSnap.data();
+        const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
+        const countSnap = await getCountFromServer(miembrosRef);
+        const numParticipantes = countSnap.data().count;
+
         const div = document.createElement("div");
         div.className = "grupo-card";
-        div.innerHTML = `<h3>${data.nombre}</h3>`;
-        // AQUÍ SE ASIGNA EL ID ÚNICO DEL GRUPO AL HACER CLIC
-        div.onclick = () => {
-          window.grupoSeleccionado = docSnap.id; 
-          window.grupoPassword = data.password;
-          document.getElementById("modalTitulo").innerText = data.nombre;
-          document.getElementById("passwordDiv").style.display = data.password ? "block" : "none";
-          document.getElementById("modal").style.display = "block";
-        };
-        cont.appendChild(div);
+        div.innerHTML = `
+          <h3>${grupo.nombre}</h3>
+          <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
+          <small>Participantes: ${numParticipantes}</small>
+        `;
+        div.onclick = () => abrirModal(docSnap.id, grupo);
+        contenedor.appendChild(div);
       });
     }
 
-    window.crearGrupo = async () => {
-      const nombre = document.getElementById("nombreGrupo").value;
-      const pass = document.getElementById("passwordGrupo").value;
-      if(!nombre) return alert("Pon un nombre");
-      await addDoc(collection(db, "grupos"), { nombre, password: pass, creador: usuarioActual.uid });
-      location.reload();
+    function abrirModal(grupoId, grupo) {
+      grupoSeleccionado = grupoId;
+      grupoPassword = grupo.password || null;
+      document.getElementById("modalTitulo").innerText = grupo.nombre;
+      document.getElementById("modalInfo").innerText = `Creado por: ${grupo.creadorNombre || "Sin nombre"}`;
+      document.getElementById("passwordDiv").style.display = grupoPassword ? "block" : "none";
+      document.getElementById("modal").style.display = "block";
+    }
+
+    document.getElementById("closeModal").onclick = () => {
+      document.getElementById("modal").style.display = "none";
     };
 
-    window.entrarAlGrupo = async () => {
-      // Usamos window.grupoSeleccionado que se llenó en cargarGrupos
-      if (!window.grupoSeleccionado) return alert("Selecciona un grupo válido");
-      
-      const passIngresada = document.getElementById("passwordInput").value;
-      if (window.grupoPassword && passIngresada !== window.grupoPassword) return alert("Contraseña incorrecta ❌");
-      
-      await setDoc(doc(db, "grupos", window.grupoSeleccionado, "miembros", usuarioActual.uid), {
-        nombre: usuarioActual.displayName
-      });
-      
-      localStorage.setItem("grupoActivo", window.grupoSeleccionado);
-      alert("Entrando a: " + window.grupoSeleccionado);
-      window.location.replace("index.html");
+    document.getElementById("btnEntrar").onclick = async () => {
+      if (!usuarioActual) return alert("Debes iniciar sesión primero.");
+      if (grupoSeleccionado) {
+        if (grupoPassword) {
+          const passIngresada = document.getElementById("passwordInput").value;
+          if ((passIngresada || "").trim() !== (grupoPassword || "").trim()) {
+            alert("Contraseña incorrecta ❌");
+            return;
+          }
+        }
+        const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
+        try {
+          await setDoc(doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid), {
+            nombre: nombreUsuario,
+            agregadoPor: usuarioActual.uid,
+            fechaIngreso: new Date()
+          }, { merge: true });
+
+          localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+          window.location.href = "index.html";
+        } catch (error) {
+          console.error("Error al entrar al grupo:", error);
+          alert("No se pudo entrar al grupo. Revisa permisos en Firestore.");
+        }
+      }
     };
+
+    function invitarWhatsApp(link) {
+      const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
+    }
+    function invitarMessenger(link) {
+      const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
+      window.open(url, "_blank");
+    }
+    function copiarLink(link) {
+      navigator.clipboard.writeText(link)
+        .then(() => alert("✅ Link copiado al portapapeles:\n" + link))
+        .catch(() => alert("⚠️ No se pudo copiar el link, cópialo manualmente."));
+    }
   </script>
 </body>
 </html>
