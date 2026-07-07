@@ -5,135 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quiniela 360 - Login</title>
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      margin: 0;
-      color: #fff;
-    }
-
-    header {
-      text-align: center;
-      background: rgba(0, 104, 71, 0.95);
-      padding: 15px 0;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    header h1 {
-      font-size: 28px;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-    }
-
-    header img { width: 45px; }
-
-    .login-container {
-      background: rgba(255,255,255,0.95);
-      color: #333;
-      margin: 40px auto;
-      padding: 2rem;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 350px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    }
-
-    .login-container h2 { color: #006847; margin-top: 0; text-align: center; }
-
+    body { font-family: 'Poppins', sans-serif; background: #f4f4f4; margin: 0; }
+    .login-container { background: white; margin: 50px auto; padding: 2rem; border-radius: 10px; width: 90%; max-width: 350px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    h2 { color: #006847; text-align: center; }
     input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      color: white;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    button:hover { transform: scale(1.03); opacity: 0.9; }
-
+    button { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; color: white; font-size: 16px; margin-bottom: 10px; transition: 0.3s; }
     #btn-whatsapp { background: #25D366; }
-    #google-login { background-color: #4285F4; }
-
-    .content-section, .stats-container { width: 90%; max-width: 800px; margin: 30px auto; text-align: center; }
-    .img-responsive { width: 100%; max-width: 500px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-    #noticias { background: rgba(0,0,0,0.75); padding: 20px; border-radius: 10px; max-height: 500px; overflow-y: auto; }
-    #tabla-liga { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.8); }
-    #tabla-liga th { background: #00a86b; color: white; padding: 12px; }
-    #tabla-liga td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    #google-login { background-color: #4285F4; display: flex; align-items: center; justify-content: center; gap: 10px; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Quiniela 360 <img src="https://i.postimg.cc/Sx6wL6gR/504667444-122141205488674048-8857650743605451691-n.jpg" alt="logo"></h1>
-  </header>
-
   <div class="login-container">
     <h2>Iniciar Sesión</h2>
     
-    <input type="tel" id="user-phone" placeholder="Celular (WhatsApp)">
-    <button id="btn-whatsapp" onclick="enviarMagicLink()">Recibir acceso por WhatsApp</button>
-    <div id="login-message" style="margin-bottom:10px; text-align:center; font-size:13px; color:#555; display:none;"></div>
+    <input type="tel" id="user-phone" placeholder="Celular (ej: 5512345678)">
+    <button id="btn-whatsapp" onclick="prepararLink()">Generar enlace de acceso</button>
+    
+    <!-- Aquí aparecerá el botón seguro -->
+    <div id="login-message" style="margin-top:15px; text-align:center;"></div>
 
-    <div style="text-align: center; margin: 10px 0; color: #888; font-size: 14px;">o</div>
+    <div style="text-align: center; margin: 15px 0; color: #888;">o</div>
 
-    <button id="google-login">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20" height="20">
-      Entrar con Google
-    </button>
+    <button id="google-login">Entrar con Google</button>
   </div>
-
-  <div class="content-section">
-    <h2>📋 INSTRUCCIONES</h2>
-    <img src="img/instruccion.jpg" alt="Instrucciones" class="img-responsive">
-  </div>
-
-  <h2 style="text-align: center;">📰 Últimas Noticias</h2>
-  <div id="noticias">Cargando...</div>
 
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
 
   <script>
-    const db = firebase.firestore();
-
-    // Lógica WhatsApp
-    function enviarMagicLink() {
+    function prepararLink() {
       const phone = document.getElementById('user-phone').value;
       const msgDiv = document.getElementById('login-message');
-      if (phone.length < 10) { alert("Ingresa un número válido"); return; }
-      msgDiv.style.display = "block";
-      msgDiv.innerHTML = "Generando enlace...";
       
+      if (phone.length < 10) { 
+        alert("Ingresa un número válido de 10 dígitos"); 
+        return; 
+      }
+
+      // En lugar de redireccionar, creamos un enlace seguro
       const magicLink = `https://quiniela360.com/auth/verify?token=XYZ123`;
-      const whatsappUrl = `https://wa.me/${phone}?text=Tu enlace de acceso a Quiniela360 es: ${encodeURIComponent(magicLink)}`;
+      const whatsappUrl = `https://wa.me/${phone}?text=Tu enlace de acceso seguro: ${encodeURIComponent(magicLink)}`;
       
-      setTimeout(() => {
-        msgDiv.innerHTML = `<a href="${whatsappUrl}" target="_blank" style="color:#25D366; font-weight:bold;">Toca aquí para enviar tu acceso vía WhatsApp</a>`;
-      }, 1000);
+      // Creamos un botón HTML seguro en lugar de usar window.open o redirección
+      msgDiv.innerHTML = `
+        <a href="${whatsappUrl}" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           style="background:#25D366; color:white; padding:12px; border-radius:6px; text-decoration:none; display:block; font-weight:bold;">
+           Enviar mi enlace por WhatsApp
+        </a>`;
     }
 
-    // Lógica Google
+    // Google Login original
     document.getElementById('google-login').addEventListener('click', async () => {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
@@ -141,20 +66,6 @@
         window.location.href = "interfaz.html";
       } catch (e) { alert("Error: " + e.message); }
     });
-
-    // Carga noticias inicial
-    async function cargarNoticias() {
-      try {
-        const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.mediotiempo.com%2Frss%2Ffutbol%2Fliga-mx');
-        const data = await res.json();
-        let html = "";
-        data.items.slice(0, 5).forEach(item => {
-          html += `<div style="margin-bottom:15px;"><h3>${item.title}</h3><a href="${item.link}" target="_blank">Leer más</a></div>`;
-        });
-        document.getElementById("noticias").innerHTML = html;
-      } catch(e) { document.getElementById("noticias").innerHTML = "Error al cargar noticias."; }
-    }
-    cargarNoticias();
   </script>
 </body>
 </html>
