@@ -438,28 +438,38 @@
     async function handleInvitation() {
       const params = new URLSearchParams(window.location.search);
       const invitedBy = params.get("ref");
-      if (!invitedBy || !usuarioActual) return;
-      if (invitedBy === usuarioActual.uid) return;
+      
+      // 1. Validaciones básicas
+      if (!invitedBy || !usuarioActual || invitedBy === usuarioActual.uid) return;
 
+      const userRef = doc(db, "users", usuarioActual.uid);
       const referrerRef = doc(db, "users", invitedBy);
-      const referrerSnap = await getDoc(referrerRef);
+      
+      const [userSnap, referrerSnap] = await Promise.all([getDoc(userRef), getDoc(referrerRef)]);
+
+      // 2. Si el usuario ya fue invitado por alguien, no hacer nada
+      if (userSnap.exists() && userSnap.data().invitadoPor) return;
+
       if (!referrerSnap.exists()) return;
 
-      const invitedUsersRef = doc(db, "invites", invitedBy);
-      const invitedSnap = await getDoc(invitedUsersRef);
-      let invitedUsers = [];
-      if (invitedSnap.exists()) invitedUsers = invitedSnap.data().invitedUsers || [];
-
-      if (!invitedUsers.includes(usuarioActual.uid)) {
-        invitedUsers.push(usuarioActual.uid);
-        await setDoc(invitedUsersRef, { invitedUsers }, { merge: true });
-
-        const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
-        await updateDoc(referrerRef, { creditos: nuevosCreditos });
-
-        document.getElementById("creditos").innerText = nuevosCreditos;
-        alert("🎉 Se registró tu invitación correctamente.");
+      // 3. VERIFICACIÓN DE LÍMITE: ¿El referidor ya recibió su único crédito?
+      if (referrerSnap.data().haRecibidoCredito === true) {
+        // Opcional: alert("Este usuario ya alcanzó su límite de créditos.");
+        return; 
       }
+
+      // 4. Registrar la invitación y sumar el crédito
+      // Marcamos al invitado con 'invitadoPor'
+      await updateDoc(userRef, { invitadoPor: invitedBy });
+      
+      // Sumamos el crédito y marcamos al referidor para que no pueda ganar más
+      await updateDoc(referrerRef, { 
+        creditos: (referrerSnap.data().creditos ?? 0) + 1,
+        haRecibidoCredito: true 
+      });
+      
+      alert("🎉 ¡Invitación registrada! Has recibido tu crédito único.");
+    }
     }
 
     async function crearGrupo() {
