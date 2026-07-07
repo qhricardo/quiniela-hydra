@@ -435,32 +435,48 @@
       document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
     });
 
-    async function handleInvitation() {
-      const params = new URLSearchParams(window.location.search);
-      const invitedBy = params.get("ref");
-      if (!invitedBy || !usuarioActual) return;
-      if (invitedBy === usuarioActual.uid) return;
+   async function handleInvitation() {
+    const params = new URLSearchParams(window.location.search);
+    const invitedBy = params.get("ref");
+    
+    // 1. Validaciones básicas
+    if (!invitedBy || !usuarioActual) return;
+    if (invitedBy === usuarioActual.uid) return;
 
-      const referrerRef = doc(db, "users", invitedBy);
-      const referrerSnap = await getDoc(referrerRef);
-      if (!referrerSnap.exists()) return;
+    // 2. Comprobar si este usuario ya usó una invitación anteriormente
+    const userRef = doc(db, "users", usuarioActual.uid);
+    const userSnap = await getDoc(userRef);
+    
+    // Si el usuario ya tiene el campo 'invitacionProcesada' en true, salimos
+    if (userSnap.exists() && userSnap.data().invitacionProcesada === true) {
+        console.log("Este usuario ya usó una invitación previamente.");
+        return;
+    }
 
-      const invitedUsersRef = doc(db, "invites", invitedBy);
-      const invitedSnap = await getDoc(invitedUsersRef);
-      let invitedUsers = [];
-      if (invitedSnap.exists()) invitedUsers = invitedSnap.data().invitedUsers || [];
+    // 3. Obtener al referidor
+    const referrerRef = doc(db, "users", invitedBy);
+    const referrerSnap = await getDoc(referrerRef);
+    if (!referrerSnap.exists()) return;
 
-      if (!invitedUsers.includes(usuarioActual.uid)) {
-        invitedUsers.push(usuarioActual.uid);
-        await setDoc(invitedUsersRef, { invitedUsers }, { merge: true });
+    // 4. Registrar la invitación de forma atómica
+    try {
+        // Marcamos que este usuario ya procesó su invitación
+        await updateDoc(userRef, { invitacionProcesada: true });
 
+        // Sumamos el crédito al referidor
         const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
         await updateDoc(referrerRef, { creditos: nuevosCreditos });
 
-        document.getElementById("creditos").innerText = nuevosCreditos;
-        alert("🎉 Se registró tu invitación correctamente.");
-      }
+        // Actualizamos visualmente si el usuario es el referidor (aunque aquí estamos en la sesión del invitado)
+        alert("🎉 ¡Tu registro con invitación fue exitoso! Se han sumado créditos a tu amigo.");
+        
+        // Limpiar URL para que no vuelva a procesar si recarga la página
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+    } catch (error) {
+        console.error("Error al procesar invitación:", error);
     }
+}
 
     async function crearGrupo() {
       const nombre = document.getElementById("nombreGrupo").value;
