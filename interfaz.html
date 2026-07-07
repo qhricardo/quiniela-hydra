@@ -5,14 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quiniela360 | Interfaz</title>
   <style>
-    /* Estilos base */
-    body { font-family: 'Poppins', sans-serif; background: linear-gradient(145deg, #001f12 0%, #004d2a 100%); color: #fff; margin: 0; padding: 0; }
-    header { background: linear-gradient(90deg, #007a33, #00c853); padding: 25px; text-align: center; border-radius: 0 0 25px 25px; }
-    .card { background: rgba(255,255,255,0.08); border-radius: 18px; padding: 30px; width: 90%; max-width: 500px; margin: 30px auto; text-align: center; }
-    button { background: #00ff99; color: #111; border: none; border-radius: 50px; padding: 12px 25px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-    #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; }
-    #modalContent { background: #004d2a; width: 90%; max-width: 400px; margin: 20% auto; padding: 30px; border-radius: 20px; text-align: center; }
-    .grupo-card { background: rgba(0,255,150,0.2); border: 1px solid #00ff99; padding: 20px; margin: 10px; border-radius: 15px; cursor: pointer; }
+    body { font-family: 'Poppins', sans-serif; background: linear-gradient(145deg, #001f12 0%, #004d2a 100%); background-attachment: fixed; margin: 0; color: #fff; overflow-x: hidden; }
+    body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top center, rgba(0,255,150,0.15), rgba(0,0,0,0.8)); z-index: -1; }
+    header { background: linear-gradient(90deg, #007a33, #00c853); box-shadow: 0 5px 25px rgba(0,0,0,0.5); padding: 25px 15px; text-align: center; border-radius: 0 0 25px 25px; animation: glowHeader 3s infinite alternate; }
+    @keyframes glowHeader { from { box-shadow: 0 0 15px #00e676; } to { box-shadow: 0 0 25px #b2ff59; } }
+    header h2 { margin: 0; font-size: 2rem; font-weight: 800; text-transform: uppercase; text-shadow: 0 3px 10px rgba(0,0,0,0.6); }
+    .card { background: rgba(255,255,255,0.08); border: 1px solid rgba(0,255,150,0.3); border-radius: 18px; padding: 30px 20px; width: 90%; max-width: 900px; margin: 30px auto; text-align: center; }
+    input[type="text"], input[type="password"] { width: 100%; max-width: 500px; padding: 12px; border-radius: 10px; border: none; margin: 8px 0; background: rgba(0,255,150,0.1); border: 1px solid rgba(0,255,150,0.3); color: #fff; text-align: center; }
+    button { border: none; border-radius: 50px; padding: 12px 25px; cursor: pointer; font-size: 15px; font-weight: bold; transition: 0.3s; box-shadow: 0 5px 12px rgba(0,0,0,0.3); }
+    button:hover { transform: scale(1.05); }
+    #btnEntrar { background: linear-gradient(135deg, #00ff99, #00b36b); color: #111; }
+    #gruposContainer { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; width: 90%; max-width: 950px; margin: 30px auto; }
+    .grupo-card { background: linear-gradient(145deg, rgba(0,104,71,0.9), rgba(0,200,100,0.4)); border-radius: 18px; padding: 25px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.15); transition: 0.3s; }
+    .grupo-card:hover { transform: scale(1.04); background: linear-gradient(145deg, rgba(0,255,150,0.9), rgba(0,150,80,0.4)); }
+    #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 1000; }
+    #modalContent { background: linear-gradient(160deg, #002f1a, #004d2a); width: 90%; max-width: 400px; margin: 15% auto; padding: 30px; border-radius: 20px; text-align: center; border: 2px solid rgba(0,255,150,0.4); }
   </style>
 </head>
 <body>
@@ -30,24 +37,25 @@
     <button onclick="crearGrupo()">Crear Grupo</button>
   </div>
 
-  <h3 style="text-align: center;">Grupos Disponibles</h3>
+  <h3 style="text-align: center; color: #00ff99;">Grupos Disponibles</h3>
   <div id="gruposContainer"></div>
 
   <div id="modal">
     <div id="modalContent">
       <h3 id="modalTitulo">Detalle del Grupo</h3>
       <div id="passwordDiv" style="display:none;">
-        <input type="password" id="passwordInput" placeholder="Contraseña">
+        <input type="password" id="passwordInput" placeholder="Ingresa la contraseña">
       </div>
-      <button onclick="entrarAlGrupo()">Entrar al Grupo</button>
-      <button onclick="document.getElementById('modal').style.display='none'">Cancelar</button>
+      <button id="btnEntrar" onclick="entrarAlGrupo()">Entrar al Grupo</button>
+      <br>
+      <button onclick="document.getElementById('modal').style.display='none'" style="background:transparent; color:#aaa;">Cancelar</button>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, getDocs, collection, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, getDocs, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC8itN53SkagtwJPqw6XSllsUP8w7-o7d8",
@@ -67,9 +75,8 @@
     window.grupoPassword = null;
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        await signInWithPopup(auth, new GoogleAuthProvider());
-      } else {
+      if (!user) await signInWithPopup(auth, new GoogleAuthProvider());
+      else {
         usuarioActual = user;
         document.getElementById("usuario").innerText = `Bienvenido, ${user.displayName}`;
         cargarGrupos();
@@ -80,13 +87,13 @@
       const snap = await getDocs(collection(db, "grupos"));
       const cont = document.getElementById("gruposContainer");
       cont.innerHTML = "";
-      snap.forEach(doc => {
-        const data = doc.data();
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
         const div = document.createElement("div");
         div.className = "grupo-card";
         div.innerHTML = `<h3>${data.nombre}</h3>`;
         div.onclick = () => {
-          window.grupoSeleccionado = doc.id;
+          window.grupoSeleccionado = docSnap.id;
           window.grupoPassword = data.password;
           document.getElementById("modalTitulo").innerText = data.nombre;
           document.getElementById("passwordDiv").style.display = data.password ? "block" : "none";
@@ -99,22 +106,20 @@
     window.crearGrupo = async () => {
       const nombre = document.getElementById("nombreGrupo").value;
       const pass = document.getElementById("passwordGrupo").value;
+      if(!nombre) return alert("Pon un nombre");
       await addDoc(collection(db, "grupos"), { nombre, password: pass, creador: usuarioActual.uid });
       location.reload();
     };
 
     window.entrarAlGrupo = async () => {
       const passIngresada = document.getElementById("passwordInput").value;
-      if (window.grupoPassword && passIngresada !== window.grupoPassword) {
-        return alert("Contraseña incorrecta");
-      }
+      if (window.grupoPassword && passIngresada !== window.grupoPassword) return alert("Contraseña incorrecta ❌");
       
       await setDoc(doc(db, "grupos", window.grupoSeleccionado, "miembros", usuarioActual.uid), {
         nombre: usuarioActual.displayName
       });
       
       localStorage.setItem("grupoActivo", window.grupoSeleccionado);
-      // Redirección forzada
       window.location.replace("index.html");
     };
   </script>
