@@ -254,15 +254,16 @@
         }
 
         .opcion {
-            padding: 10px 5px;
-            border-radius: 5px;
-            cursor: pointer;
-            border: 1px solid #ddd;
-            transition: all 0.3s;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 500;
-            flex: 1; 
+    padding: 10px 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    transition: all 0.3s;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    flex: 1;
+    background-color: #f9f9f9; /* Color base neutro */
         }
 
         @media (min-width: 576px) {
@@ -280,10 +281,11 @@
         }
 
         .opcion.selected {
-            background-color: var(--verde);
-            color: white;
-            border-color: var(--verde);
-        }
+    background-color: var(--verde) !important;
+    color: white !important;
+    border-color: var(--verde) !important;
+    font-weight: bold;
+}
 
         .local { background-color: #e8f5e9; }
         .empate { background-color: #fff8e1; }
