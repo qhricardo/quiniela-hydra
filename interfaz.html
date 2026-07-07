@@ -334,7 +334,7 @@
   </header>
   
   <!-- 🟢 SECCIÓN DE INVITACIONES RESPONSIVA -->
-  <!--  <section id="invitaciones">
+    <section id="invitaciones">
     <h2 style="color:#5DF70A; text-align:center;">Invita a tus amigos y gana créditos</h2>
     <p style="text-align:center;">Comparte tu enlace y recibe <b>1 crédito</b> por cada amigo que se registre con tu invitación 🎁</p>
 
@@ -516,27 +516,44 @@
     }
     window.crearGrupo = crearGrupo;
 
-    async function cargarGrupos() {
-      const contenedor = document.getElementById("gruposContainer");
-      contenedor.innerHTML = "";
-      const querySnapshot = await getDocs(collection(db, "grupos"));
-      querySnapshot.forEach(async (docSnap) => {
-        const grupo = docSnap.data();
-        const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
-        const countSnap = await getCountFromServer(miembrosRef);
-        const numParticipantes = countSnap.data().count;
+   async function cargarGrupos() {
+  const contenedor = document.getElementById("gruposContainer");
+  contenedor.innerHTML = "<p>Cargando grupos...</p>";
 
-        const div = document.createElement("div");
-        div.className = "grupo-card";
-        div.innerHTML = `
-          <h3>${grupo.nombre}</h3>
-          <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
-          <small>Participantes: ${numParticipantes}</small>
-        `;
-        div.onclick = () => abrirModal(docSnap.id, grupo);
-        contenedor.appendChild(div);
-      });
+  try {
+    const querySnapshot = await getDocs(collection(db, "grupos"));
+    contenedor.innerHTML = ""; // Limpiamos el mensaje de carga
+
+    if (querySnapshot.empty) {
+      contenedor.innerHTML = "<p>No hay grupos creados aún.</p>";
+      return;
     }
+
+    // Usamos for...of para esperar secuencialmente cada conteo
+    for (const docSnap of querySnapshot.docs) {
+      const grupo = docSnap.data();
+      const miembrosRef = collection(db, "grupos", docSnap.id, "miembros");
+      
+      // Obtenemos el conteo
+      const countSnap = await getCountFromServer(miembrosRef);
+      const numParticipantes = countSnap.data().count;
+
+      // Creamos el elemento
+      const div = document.createElement("div");
+      div.className = "grupo-card";
+      div.innerHTML = `
+        <h3>${grupo.nombre}</h3>
+        <small>Creado por: ${grupo.creadorNombre || "Sin nombre"}</small><br>
+        <small>Participantes: ${numParticipantes}</small>
+      `;
+      div.onclick = () => abrirModal(docSnap.id, grupo);
+      contenedor.appendChild(div);
+    }
+  } catch (error) {
+    console.error("Error al cargar los grupos:", error);
+    contenedor.innerHTML = "<p>Error al cargar los grupos.</p>";
+  }
+}
 
     function abrirModal(grupoId, grupo) {
       grupoSeleccionado = grupoId;
