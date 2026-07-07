@@ -789,31 +789,63 @@
             }
             await mostrarGrupoActual();
 
-            // --- LÓGICA DE INVITACIONES ASIGNADA AL USUARIO ---
-            const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${user.uid}`;
-            document.getElementById("miLink").textContent = linkInvitacion;
+           // --- LÓGICA DE INVITACIONES ASIGNADA AL USUARIO ---
+        const linkInvitacion = `https://qhricardo.github.io/quiniela-hydra/login.html?ref=${user.uid}`;
+        document.getElementById("miLink").textContent = linkInvitacion;
 
-            document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
-            document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
-            document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
-        });
+        document.getElementById("invitarWhatsApp").onclick = () => invitarWhatsApp(linkInvitacion);
+        document.getElementById("invitarMessenger").onclick = () => invitarMessenger(linkInvitacion);
+        document.getElementById("copiarLink").onclick = () => copiarLink(linkInvitacion);
+    });
 
-        // --- FUNCIONES DE INVITACIÓN INTEGRADAS ---
-        function invitarWhatsApp(link) {
-            const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
+    // --- FUNCIÓN DE CONTROL: PROCESAR INVITACIÓN SOLO UNA VEZ ---
+    async function handleInvitation() {
+        const params = new URLSearchParams(window.location.search);
+        const invitedBy = params.get("ref");
+        
+        // Si no hay código de referido o es el mismo usuario, salir
+        if (!invitedBy || !usuarioActual || invitedBy === usuarioActual.uid) return;
+
+        const userRef = doc(db, "users", usuarioActual.uid);
+        const userSnap = await getDoc(userRef);
+
+        // CONTROL: Si el usuario ya tiene registrado un 'invitadoPor', no hacer nada
+        if (userSnap.exists() && userSnap.data().invitadoPor) {
+            console.log("Este usuario ya fue invitado anteriormente.");
+            return;
         }
 
-        function invitarMessenger(link) {
-            const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
-            window.open(url, "_blank");
+        const referrerRef = doc(db, "users", invitedBy);
+        const referrerSnap = await getDoc(referrerRef);
+        
+        if (referrerSnap.exists()) {
+            // Guardamos que este usuario fue invitado por 'invitedBy' para bloquear futuras ejecuciones
+            await updateDoc(userRef, { invitadoPor: invitedBy });
+            
+            // Sumamos el crédito al referidor
+            const nuevosCreditos = (referrerSnap.data().creditos ?? 0) + 1;
+            await updateDoc(referrerRef, { creditos: nuevosCreditos });
+            
+            alert("🎉 ¡Invitación registrada con éxito!");
         }
+    }
 
-        function copiarLink(link) {
-            navigator.clipboard.writeText(link)
-                .then(() => alert("✅ Link copiado al portapapeles:\n" + link))
-                .catch(() => alert("⚠️ No se pudo copiar el link, cópialo manualmente."));
-        }
+    // --- FUNCIONES DE INVITACIÓN ---
+    function invitarWhatsApp(link) {
+        const mensaje = `⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ${link}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(mensaje)}`, "_blank");
+    }
+
+    function invitarMessenger(link) {
+        const url = `https://www.facebook.com/dialog/send?app_id=9876543210&link=${encodeURIComponent(link)}&redirect_uri=${encodeURIComponent(link)}`;
+        window.open(url, "_blank");
+    }
+
+    function copiarLink(link) {
+        navigator.clipboard.writeText(link)
+            .then(() => alert("✅ Link copiado al portapapeles:\n" + link))
+            .catch(() => alert("⚠️ No se pudo copiar el link, cópialo manualmente."));
+    }
     </script>
 </body>
 </html>
