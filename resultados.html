@@ -370,45 +370,40 @@
     const db = firebase.firestore();
     const tbody = document.querySelector("#resultados-body");
 
-    async function cargarResultados() {
-  const contenedor = document.getElementById("resultadosContainer");
-  contenedor.innerHTML = "<p>Cargando todos los pronósticos...</p>";
+     async function cargarResultados() {
+      const grupoActual = localStorage.getItem("grupoSeleccionado");
+      if (!grupoActual) {
+        alert("No se seleccionó un grupo. Regresa e ingresa a un grupo primero.");
+        return;
+      }
 
-  try {
-    // 1. Obtenemos todos los grupos primero
-    const gruposSnapshot = await getDocs(collection(db, "grupos"));
-    
-    if (gruposSnapshot.empty) {
-      contenedor.innerHTML = "<p>No hay grupos para mostrar.</p>";
-      return;
-    }
+      try {
+        const grupoDoc = await db.collection("grupos").doc(grupoActual).get();
+        if (grupoDoc.exists) {
+          document.querySelector(".header h2").textContent = 
+            `Resultados del Grupo: ${grupoDoc.data().nombre}`;
+        } else {
+          document.querySelector(".header h2").textContent = 
+            `Resultados del Grupo: ${grupoActual}`;
+        }
+      } catch (err) {
+        console.error("Error obteniendo grupo:", err);
+      }
 
-    contenedor.innerHTML = ""; // Limpiamos el mensaje de carga
-
-    // 2. Por cada grupo, buscamos sus pronósticos
-    for (const grupoDoc of gruposSnapshot.docs) {
-      const pronosticosRef = collection(db, "grupos", grupoDoc.id, "pronosticos");
-      const pronosticosSnapshot = await getDocs(pronosticosRef);
-
-      // 3. Si el grupo tiene pronósticos, los renderizamos
-      pronosticosSnapshot.forEach((pronosticoDoc) => {
-        const item = pronosticoDoc.data();
-        const div = document.createElement("div");
-        div.className = "resultado-card";
-        div.innerHTML = `
-          <h3>${item.userName || "Usuario"}</h3>
-          <p>Grupo: ${grupoDoc.data().nombre}</p>
-          <p>Estado: ${item.estado || "pendiente"}</p>
-        `;
-        contenedor.appendChild(div);
-      });
-    }
-
-  } catch (error) {
-    console.error("Error al cargar resultados:", error);
-    contenedor.innerHTML = "<p>Error al cargar resultados. Verifica los permisos.</p>";
-  }
-}
+      const snapshot = await db.collection("grupos")
+  .doc(grupoActual)
+  .collection("pronosticos")
+  .orderBy("fecha", "desc")
+  .get({ source: 'server' }) // <--- Esto obliga a ir al servidor y no usar caché local
+  .catch(async (error) => {
+    // En caso de que falle por falta de conexión, intentamos obtener datos
+    console.warn("No se pudo conectar al servidor, intentando caché:", error);
+    return await db.collection("grupos")
+      .doc(grupoActual)
+      .collection("pronosticos")
+      .orderBy("fecha", "desc")
+      .get({ source: 'cache' });
+  });
       const totalPronosticos = snapshot.size;
       const montoTotal = totalPronosticos * 50;
       const premioFinal = montoTotal * 0.90;
