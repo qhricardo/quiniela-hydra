@@ -367,72 +367,70 @@
   <script src="js/partidos-data.js"></script>
 
   <script>
-    (function() {
-    const db = firebase.firestore();
+   async function cargarResultados() {
+    const grupoActual = localStorage.getItem("grupoSeleccionado");
     const tbody = document.querySelector("#resultados-body");
+    
+    if (!grupoActual) {
+      console.log("No hay grupo seleccionado");
+      return;
+    }
 
-    // Definimos la función de forma asíncrona
-    window.cargarResultados = async function() {
-      const grupoActual = localStorage.getItem("grupoSeleccionado");
-      if (!grupoActual) return;
+    tbody.innerHTML = '<tr><td colspan="15">Cargando...</td></tr>';
 
-      tbody.innerHTML = '<tr><td colspan="15">Cargando...</td></tr>';
+    try {
+      const db = firebase.firestore();
+      const snapshot = await db.collection("grupos")
+                               .doc(grupoActual)
+                               .collection("pronosticos")
+                               .orderBy("fecha", "desc")
+                               .get();
 
-      try {
-        const snapshot = await db.collection("grupos")
-                                 .doc(grupoActual)
-                                 .collection("pronosticos")
-                                 .orderBy("fecha", "desc")
-                                 .get();
-
-        if (snapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="15">Sin pronósticos aún.</td></tr>';
-          return;
-        }
-
-        const filas = [];
-        // Usamos un bucle for tradicional para evitar problemas de compatibilidad en móviles
-        for (let i = 0; i < snapshot.docs.length; i++) {
-          const doc = snapshot.docs[i];
-          const data = doc.data();
-          const partidos = data.partidos || [];
-          const nombre = data.userName || "Usuario"; // Asegúrate de guardar userName al crear el pronóstico
-
-          let total = 0;
-          let celdas = "";
-          
-          for (let j = 0; j < 11; j++) {
-            const input = document.getElementById(`res-${j+1}`);
-            const resOficial = input ? input.value.toUpperCase() : "";
-            const pred = partidos[j] ? partidos[j].prediccion : "";
-            const coincide = (resOficial && resOficial === pred);
-            if (coincide) total++;
-            celdas += `<td class="${coincide ? 'highlight' : ''}">${pred}</td>`;
-          }
-
-          filas.push(`<tr>
-            <td>${nombre}</td>
-            <td>${data.fecha?.toDate()?.toLocaleDateString() || ''}</td>
-            <td>${data.fecha?.toDate()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || ''}</td>
-            ${celdas}
-            <td>${total}</td>
-          </tr>`);
-        }
-
-        tbody.innerHTML = filas.join('');
-        if (typeof window.actualizarGanadores === 'function') window.actualizarGanadores();
-
-      } catch (err) {
-        console.error("Error al cargar:", err);
-        tbody.innerHTML = '<tr><td colspan="15">Error. Recarga la página.</td></tr>';
+      if (snapshot.empty) {
+        tbody.innerHTML = '<tr><td colspan="15">Sin pronósticos aún.</td></tr>';
+        return;
       }
-    };
 
-    // Inicialización al cargar el documento
-    document.addEventListener('DOMContentLoaded', () => {
-      window.cargarResultados();
-    });
-  })();
+      let html = "";
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const partidos = data.partidos || [];
+        const nombre = data.userName || "Usuario";
+        
+        // Calcular puntos (sin llamadas asíncronas dentro del bucle)
+        let total = 0;
+        let celdas = "";
+        for (let j = 0; j < 11; j++) {
+          const input = document.getElementById(`res-${j+1}`);
+          const resOficial = input ? input.value.toUpperCase() : "";
+          const pred = partidos[j] ? partidos[j].prediccion : "";
+          const coincide = (resOficial && resOficial === pred);
+          if (coincide) total++;
+          celdas += `<td class="${coincide ? 'highlight' : ''}">${pred || "-"}</td>`;
+        }
+
+        html += `<tr>
+          <td>${nombre}</td>
+          <td>${data.fecha?.toDate()?.toLocaleDateString() || ''}</td>
+          <td>${data.fecha?.toDate()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || ''}</td>
+          ${celdas}
+          <td>${total}</td>
+        </tr>`;
+      });
+
+      tbody.innerHTML = html;
+      if (typeof window.actualizarGanadores === 'function') window.actualizarGanadores();
+
+    } catch (err) {
+      console.error("Error en cargarResultados:", err);
+      tbody.innerHTML = '<tr><td colspan="15">Error al cargar.</td></tr>';
+    }
+  }
+
+  // Ejecutamos la función asíncrona cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarResultados();
+  });
     
       const totalPronosticos = snapshot.size;
       const montoTotal = totalPronosticos * 50;
