@@ -367,6 +367,10 @@
   <script src="js/partidos-data.js"></script>
 
   <script>
+
+    const db = firebase.firestore();
+    const tbody = document.querySelector("#resultados-body");
+    
    async function cargarResultados() {
       const grupoActual = localStorage.getItem("grupoSeleccionado");
       if (!grupoActual) {
