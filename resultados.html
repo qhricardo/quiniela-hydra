@@ -371,65 +371,68 @@
     const db = firebase.firestore();
     const tbody = document.querySelector("#resultados-body");
     
-   async function cargarResultados() {
-  const grupoActual = localStorage.getItem("grupoSeleccionado");
-  const tbody = document.querySelector("#resultados-body");
-  
-  if (!grupoActual) {
-    alert("No se seleccionó un grupo. Regresa e ingresa a un grupo primero.");
-    return;
-  }
-
-  // 1. Intentamos leer primero de caché para que sea instantáneo
-  // 2. Si hay red, Firestore actualizará automáticamente en segundo plano
-  try {
-    const pronosticosRef = db.collection("grupos").doc(grupoActual).collection("pronosticos");
+  async function cargarResultados() {
+    const grupoActual = localStorage.getItem("grupoSeleccionado");
+    const tbody = document.querySelector("#resultados-body");
     
-    // Usamos 'default' que es lo mejor: intenta caché primero, luego servidor
-    const snapshot = await pronosticosRef.orderBy("fecha", "desc").get();
-
-    if (snapshot.empty) {
-      tbody.innerHTML = '<tr><td colspan="15">Sin pronósticos aún.</td></tr>';
+    if (!grupoActual) {
+      alert("No se seleccionó un grupo.");
       return;
     }
 
-    // Procesamiento lineal para evitar saturar el procesador del móvil
-    let html = "";
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      const partidos = data.partidos || [];
-      const nombre = data.userName || "Usuario";
-      
-      let total = 0;
-      let celdas = "";
-      for (let j = 0; j < 11; j++) {
-        const input = document.getElementById(`res-${j+1}`);
-        const resOficial = input ? input.value.toUpperCase() : "";
-        const pred = partidos[j] ? partidos[j].prediccion : "";
-        const coincide = (resOficial && resOficial === pred);
-        if (coincide) total++;
-        celdas += `<td class="${coincide ? 'highlight' : ''}">${pred || "-"}</td>`;
+    tbody.innerHTML = '<tr><td colspan="15">Cargando datos...</td></tr>';
+
+    try {
+      // 2. Consulta estándar (sin forzar 'server' para evitar bloqueos)
+      const ref = db.collection("grupos").doc(grupoActual).collection("pronosticos");
+      const snapshot = await ref.orderBy("fecha", "desc").get();
+
+      if (snapshot.empty) {
+        tbody.innerHTML = '<tr><td colspan="15">Sin pronósticos aún.</td></tr>';
+        return;
       }
 
-      html += `<tr>
-        <td>${nombre}</td>
-        <td>${data.fecha?.toDate()?.toLocaleDateString() || ''}</td>
-        <td>${data.fecha?.toDate()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || ''}</td>
-        ${celdas}
-        <td>${total}</td>
-      </tr>`;
-    });
+      // 3. Renderizado lineal (más ligero para móviles)
+      let html = "";
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const partidos = data.partidos || [];
+        const nombre = data.userName || "Usuario";
+        
+        let total = 0;
+        let celdas = "";
+        
+        for (let j = 0; j < 11; j++) {
+          const input = document.getElementById(`res-${j + 1}`);
+          const resOficial = input ? input.value.toUpperCase() : "";
+          const pred = partidos[j] ? partidos[j].prediccion : "";
+          const coincide = (resOficial && resOficial === pred);
+          if (coincide) total++;
+          celdas += `<td class="${coincide ? 'highlight' : ''}">${pred || "-"}</td>`;
+        }
 
-    tbody.innerHTML = html;
-    if (typeof window.actualizarGanadores === 'function') window.actualizarGanadores();
+        html += `<tr>
+          <td>${nombre}</td>
+          <td>${data.fecha?.toDate()?.toLocaleDateString() || ''}</td>
+          <td>${data.fecha?.toDate()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || ''}</td>
+          ${celdas}
+          <td>${total}</td>
+        </tr>`;
+      });
 
-  } catch (err) {
-    console.error("Error al cargar:", err);
-    // Si falla, intentamos una última vez solo con caché para no dejar vacía la tabla
-    tbody.innerHTML = '<tr><td colspan="15">Error de conexión. Intenta recargar.</td></tr>';
+      tbody.innerHTML = html;
+      if (typeof window.actualizarGanadores === 'function') window.actualizarGanadores();
+
+    } catch (err) {
+      console.error("Error al cargar:", err);
+      tbody.innerHTML = '<tr><td colspan="15">Error de conexión.</td></tr>';
+    }
   }
-}
 
+  // 4. Llamada segura al cargar la página
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarResultados();
+  });
      
       const totalPronosticos = snapshot.size;
       const montoTotal = totalPronosticos * 50;
