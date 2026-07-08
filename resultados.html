@@ -422,9 +422,19 @@
     }
   }
 
+ // Modificación en la función actualizarGanadores
   function actualizarGanadores() {
     const filas = document.querySelectorAll("#resultados-body tr");
     const datos = [];
+    
+    // Verificamos si los 11 resultados están llenos
+    let resultadosCompletos = 0;
+    for (let i = 1; i <= 11; i++) {
+      const val = document.getElementById(`res-${i}`)?.value.toUpperCase();
+      if (["L", "E", "V"].includes(val)) resultadosCompletos++;
+    }
+    const todosResultadosLlenos = (resultadosCompletos === 11);
+
     filas.forEach(fila => {
       const col = fila.querySelectorAll("td");
       if(col.length > 0) {
@@ -440,12 +450,15 @@
     const primerLugarPuntaje = datos[0].total;
     const segundoLugarPuntaje = datos.find(u => u.total < primerLugarPuntaje)?.total;
 
-    // Función para botón SOLAMENTE al primer lugar
+    // Función del botón
     const crearBoton = (usuario, lugar) => {
       const user = firebase.auth().currentUser;
       const usuarioLogueado = user ? user.displayName || user.email : null;
-      if (lugar === "1er Lugar" && usuarioLogueado && usuario === usuarioLogueado) {
-        return `<br><a href="https://m.me/439939209212181?text=Solicito%20mi%20premio%201er%20Lugar" target="_blank" style="padding:4px 10px; background:#006847; color:#fff; font-weight:bold; text-decoration:none; border-radius:5px; font-size:12px;">💬 Solicitar Premio</a>`;
+      
+      // Solo si es 1er lugar, el usuario es el logueado Y ya se llenaron los 11 resultados
+      if (lugar === "1er Lugar" && usuarioLogueado && usuario === usuarioLogueado && todosResultadosLlenos) {
+        const mensaje = encodeURIComponent("Hola, solicito mi premio por el 1er Lugar");
+        return `<br><a href="https://wa.me/527122239378?text=${mensaje}" target="_blank" style="display:inline-block; margin-top:5px; padding:6px 12px; background:#25d366; color:#fff; font-weight:bold; text-decoration:none; border-radius:5px; font-size:12px;">💬 Solicitar Premio</a>`;
       }
       return "";
     };
@@ -457,7 +470,6 @@
 
     if (segundoLugarPuntaje !== undefined) {
       datos.filter(u => u.total === segundoLugarPuntaje).forEach(u => {
-        // Se quitó crearBoton para el segundo lugar
         tablaGanadores.innerHTML += `<tr class="segundo-lugar"><td>🥈 2do Lugar</td><td>${u.usuario}</td><td>${u.total}</td></tr>`;
       });
     }
