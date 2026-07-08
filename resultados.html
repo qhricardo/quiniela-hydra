@@ -371,28 +371,31 @@
     const db = firebase.firestore();
     const tbody = document.querySelector("#resultados-body");
     
-  async function cargarResultados() {
+async function iniciarCarga() {
+    const db = firebase.firestore();
     const grupoActual = localStorage.getItem("grupoSeleccionado");
     const tbody = document.querySelector("#resultados-body");
     
     if (!grupoActual) {
-      alert("No se seleccionó un grupo.");
+      console.warn("No hay grupo seleccionado");
       return;
     }
 
-    tbody.innerHTML = '<tr><td colspan="15">Cargando datos...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="15">Cargando resultados...</td></tr>';
 
     try {
-      // 2. Consulta estándar (sin forzar 'server' para evitar bloqueos)
-      const ref = db.collection("grupos").doc(grupoActual).collection("pronosticos");
-      const snapshot = await ref.orderBy("fecha", "desc").get();
+      // Consulta optimizada a la subcolección
+      const snapshot = await db.collection("grupos")
+                               .doc(grupoActual)
+                               .collection("pronosticos")
+                               .orderBy("fecha", "desc")
+                               .get();
 
       if (snapshot.empty) {
         tbody.innerHTML = '<tr><td colspan="15">Sin pronósticos aún.</td></tr>';
         return;
       }
 
-      // 3. Renderizado lineal (más ligero para móviles)
       let html = "";
       snapshot.forEach((doc) => {
         const data = doc.data();
@@ -402,6 +405,7 @@
         let total = 0;
         let celdas = "";
         
+        // Iteración simple sobre los 11 partidos
         for (let j = 0; j < 11; j++) {
           const input = document.getElementById(`res-${j + 1}`);
           const resOficial = input ? input.value.toUpperCase() : "";
@@ -421,7 +425,11 @@
       });
 
       tbody.innerHTML = html;
-      if (typeof window.actualizarGanadores === 'function') window.actualizarGanadores();
+      
+      // Llamamos a la función de ganadores si existe
+      if (typeof window.actualizarGanadores === 'function') {
+        window.actualizarGanadores();
+      }
 
     } catch (err) {
       console.error("Error al cargar:", err);
@@ -429,10 +437,8 @@
     }
   }
 
-  // 4. Llamada segura al cargar la página
-  document.addEventListener('DOMContentLoaded', () => {
-    cargarResultados();
-  });
+  // Llamada segura cuando el DOM está listo
+  document.addEventListener('DOMContentLoaded', iniciarCarga);
      
       const totalPronosticos = snapshot.size;
       const montoTotal = totalPronosticos * 50;
