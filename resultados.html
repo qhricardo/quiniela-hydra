@@ -371,39 +371,68 @@
     const tbody = document.querySelector("#resultados-body");
 
      async function cargarResultados() {
-      const grupoActual = localStorage.getItem("grupoSeleccionado");
-      if (!grupoActual) {
-        alert("No se seleccionó un grupo. Regresa e ingresa a un grupo primero.");
-        return;
-      }
+  const grupoActual = localStorage.getItem("grupoSeleccionado");
+  const tbody = document.querySelector("#resultados-body");
+  
+  if (!grupoActual) {
+    alert("No se seleccionó un grupo.");
+    return;
+  }
 
+  tbody.innerHTML = '<tr><td colspan="15">Cargando...</td></tr>';
+
+  try {
+    // 1. Acceso directo a la subcolección del grupo (como lo tienes ahora)
+    const pronosticosRef = db.collection("grupos")
+                             .doc(grupoActual)
+                             .collection("pronosticos");
+
+    // 2. Traemos los documentos ordenados
+    const snapshot = await pronosticosRef.orderBy("fecha", "desc").get();
+
+    if (snapshot.empty) {
+      tbody.innerHTML = '<tr><td colspan="15">No hay pronósticos en este grupo.</td></tr>';
+      return;
+    }
+
+    // 3. Procesamos en paralelo para no bloquear el hilo del navegador
+    const filasHtml = await Promise.all(snapshot.docs.map(async (doc) => {
+      const data = doc.data();
+      const partidos = data.partidos || [];
+      
+      // Obtener el nombre del usuario
+      let nombre = 'Usuario';
       try {
-        const grupoDoc = await db.collection("grupos").doc(grupoActual).get();
-        if (grupoDoc.exists) {
-          document.querySelector(".header h2").textContent = 
-            `Resultados del Grupo: ${grupoDoc.data().nombre}`;
-        } else {
-          document.querySelector(".header h2").textContent = 
-            `Resultados del Grupo: ${grupoActual}`;
-        }
-      } catch (err) {
-        console.error("Error obteniendo grupo:", err);
-      }
+        const userDoc = await db.collection('users').doc(data.userId).get();
+        if (userDoc.exists) nombre = userDoc.data().name || userDoc.data().email || 'Usuario';
+      } catch (e) { console.error("Error al obtener usuario", e); }
 
-      const snapshot = await db.collection("grupos")
-  .doc(grupoActual)
-  .collection("pronosticos")
-  .orderBy("fecha", "desc")
-  .get({ source: 'server' }) // <--- Esto obliga a ir al servidor y no usar caché local
-  .catch(async (error) => {
-    // En caso de que falle por falta de conexión, intentamos obtener datos
-    console.warn("No se pudo conectar al servidor, intentando caché:", error);
-    return await db.collection("grupos")
-      .doc(grupoActual)
-      .collection("pronosticos")
-      .orderBy("fecha", "desc")
-      .get({ source: 'cache' });
-  });
+      // Generar filas
+      let total = 0;
+      const celdas = partidos.map((p, i) => {
+        const resOficial = document.getElementById(`res-${i+1}`)?.value.toUpperCase();
+        const coincide = resOficial && resOficial === p.prediccion;
+        if (coincide) total++;
+        return `<td class="${coincide ? 'highlight' : ''}">${p.prediccion}</td>`;
+      }).join('');
+
+      return `<tr>
+        <td>${nombre}</td>
+        <td>${data.fecha?.toDate().toLocaleDateString() || ''}</td>
+        <td>${data.fecha?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || ''}</td>
+        ${celdas}
+        <td>${total}</td>
+      </tr>`;
+    }));
+
+    tbody.innerHTML = filasHtml.join('');
+    actualizarGanadores();
+
+  } catch (err) {
+    console.error("Error al cargar:", err);
+    tbody.innerHTML = '<tr><td colspan="15">Error de conexión.</td></tr>';
+  }
+}
 
     
       const totalPronosticos = snapshot.size;
