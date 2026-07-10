@@ -1,0 +1,24 @@
+<div id="feed-container">
+    </div>
+
+<script>
+// Cargar noticias en tiempo real
+db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+    const container = document.getElementById('feed-container');
+    container.innerHTML = ""; // Limpiar antes de actualizar
+    
+    snapshot.forEach(doc => {
+        const post = doc.data();
+        container.innerHTML += `
+            <div class="post-card" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+                <p>${post.contenido}</p>
+                <button onclick="darLike('${doc.id}')">👍 Like</button>
+                <div class="comentarios">
+                    <input type="text" id="comentario-${doc.id}" placeholder="Escribe un comentario...">
+                    <button onclick="comentar('${doc.id}')">Enviar</button>
+                </div>
+            </div>
+        `;
+    });
+});
+</script>
