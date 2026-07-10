@@ -370,63 +370,103 @@ c
     /* QUITAMOS: pointer-events: none; */
 }
 
-
-       /* Contenedor principal centrado */
-.feed-container {
-    width: 350px; 
-    margin: 20px auto; /* Centrado automático */
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    font-family: sans-serif;
-}
-
-.feed-title { text-align: center; color: #333; margin-bottom: 15px; }
-
-/* Caja de publicación */
-.post-creator {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #f0f2f5;
-}
-
-#user-name {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-#post-text {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    resize: none;
-    height: 60px;
-}
-
-/* Scroll independiente */
-.feed-scroll {
-    height: 300px;
-    overflow-y: auto;
-    margin-top: 15px;
-    padding-right: 5px;
-}
-
-/* Tarjetas de post */
-.post-card {
-    background: #f8f9fa;
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 12px;
-    border-left: 4px solid #006847; /* Toque de color */
-}
-
-.author-name { font-weight: bold; color: #006847; font-size: 13px; margin-bottom: 5px; }
         
+        /* --- Contenedor del Feed --- */
+.feed-container {
+    background-color: #f0f2f5;
+    padding: 20px;
+    border-radius: 16px;
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+/* --- Tarjeta de Post (Estilo Moderno) --- */
+.post-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+    padding: 16px;
+    transition: transform 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.post-card:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Encabezado del Post --- */
+.author-name {
+    font-weight: 800;
+    font-size: 15px;
+    color: #1c1e21;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+/* --- Texto del post --- */
+.post-card p {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #050505;
+    margin: 0 0 12px 0;
+}
+
+/* --- Imagen del post --- */
+.post-img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain; /* Cambiado a contain para no cortar la imagen */
+    border-radius: 8px;
+    margin: 8px 0;
+    background-color: #f7f7f7;
+}
+
+/* --- Pie de post (Acciones) --- */
+.post-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top: 1px solid #e4e6eb;
+}
+
+.post-footer button {
+    background: #f0f2f5;
+    border: none;
+    font-weight: 600;
+    color: #4b4f56;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.post-footer button:hover {
+    background-color: #e4e6eb;
+    color: #000;
+}
+
+/* --- Botones de publicación --- */
+.btn-upload, .btn-post {
+    border-radius: 6px;
+    padding: 8px 15px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-post {
+    background-color: #006847;
+    color: white;
+}
+
+.btn-upload {
+    background-color: #e4e6eb;
+}
     </style>
 </head>
 <body>
