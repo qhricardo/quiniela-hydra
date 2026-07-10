@@ -984,7 +984,6 @@ async function publicarPost() {
 function cargarPosts() {
     db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         const feed = document.getElementById('feed-items');
-        if(!feed) return;
         feed.innerHTML = "";
         
         snapshot.forEach(doc => {
@@ -992,8 +991,10 @@ function cargarPosts() {
             feed.innerHTML += `
                 <div class="post-card">
                     <div class="author-name">${data.autor || 'Anónimo'}</div>
-                    <p>${data.contenido}</p>
+                    <p style="margin: 0 0 10px 0;">${data.contenido}</p>
+                    
                     ${data.mediaUrl ? `<img src="${data.mediaUrl}" class="post-img">` : ''}
+                    
                     <div class="post-footer">
                         <button onclick="darLike('${doc.id}')">👍 Like (${data.likes || 0})</button>
                         <button onclick="abrirComentarios('${doc.id}')">💬 Comentar</button>
