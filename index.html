@@ -638,10 +638,17 @@ function toggleFlotante() {
     </div>
 
 
-<div id="quick-post-box" style="position: fixed; bottom: 20px; left: 20px; width: 300px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 9999;">
-    <input type="text" id="post-input" placeholder="¿Qué está pasando?" style="width: 100%; margin-bottom: 5px;">
-    <button onclick="enviarPost()">Publicar</button>
-    <a href="post.html" style="display: block; margin-top: 5px; font-size: 12px;">Ver todas las noticias</a>
+<div id="social-feed-container" style="height: 400px; overflow-y: auto; background: #f0f2f5; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+    <h4 style="margin-top: 0;">Muro de Noticias</h4>
+    
+    <div style="background: white; padding: 10px; border-radius: 8px;">
+        <textarea id="post-text" placeholder="¿Qué estás pensando?" style="width: 100%; height: 60px;"></textarea>
+        <input type="file" id="media-upload" accept="image/*,video/*">
+        <button onclick="publicarContenido()" style="margin-top: 5px;">Publicar</button>
+    </div>
+
+    <div id="feed-items">
+        </div>
 </div>
 
 <script>
