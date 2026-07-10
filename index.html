@@ -627,7 +627,7 @@
             alert("Debes iniciar sesión para comprar créditos");
             return;
         }
-        const body = { amount: 25, userId: currentUser.uid, name: currentUser.displayName || "Usuario", email: currentUser.email || "", creditsToAdd: 1 };
+        const body = { amount: 50, userId: currentUser.uid, name: currentUser.displayName || "Usuario", email: currentUser.email || "", creditsToAdd: 1 };
         try {
             const res = await fetch("https://quiniela-hydra.onrender.com/create-preference", {
                 method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
