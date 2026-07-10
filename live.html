@@ -4,14 +4,16 @@
     <script src="//cdn.jsdelivr.net/npm/@clappr/player@0.8/dist/clappr.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/@swarmcloud/hls/p2p-engine.min.js"></script>
     <style>
-        body, html {margin: 0;padding: 0;width: 100%;height: 100%;overflow: hidden;background: #000;}
+        body, html {margin: 0;padding: 0;width: 100%;height: 100%;overflow: hidden; background: #000;}
         #player {position: absolute;top: 0;left: 0;width: 100%;height: 100%;}
+        .media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar] .bar-background[data-seekbar] { height: 5px !important; }
+        .media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar]:hover .bar-background[data-seekbar] { height: 7px !important; }
     </style>
 </head>
 <body>
 <div id="player"></div>
 <script>
-    var playbackURL = "https://cxm2.futbolonlinehd.com:443/telemundo/mono.m3u8?token=3ef8ccbf12cca4a8e16d0cd006a958812e331790-69-1783728169-1783710169";
+    var playbackURL = "https://cxm4.futbolonlinehd.com:443/even4/mono.m3u8?token=6cb4ffb7dcfc5bc64b1a1691860821be5ccd6732-b7-1783734933-1783716933";
     var p2pConfig = { live: true, trackerZone: "us" }
     
     P2PEngineHls.tryRegisterServiceWorker(p2pConfig).then(() => {
@@ -20,8 +22,8 @@
             parentId: "#player",
             width: "100%",
             height: "100%",
-            autoPlay: true,  // Activado
-            mute: false,      // Necesario para autoplay en navegadores
+            autoPlay: true,  // Habilitado para inicio automático
+            mute: true,      // Mantenlo en true si el navegador bloquea el sonido
             plugins: [],
             mediacontrol: {seekbar: "#D4ED31", buttons: "#FFFFFF"},
         });
