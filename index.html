@@ -417,8 +417,18 @@
             <div id="tv-box" class="tv-sidebar-box" style="position: relative;">
     <h4 style="color: #fff; margin: 0 0 10px 0; text-align: center; font-size: 14px;">EN VIVO 🔴</h4>
     
-    <!-- Escudo invisible para el clic -->
-    <div onclick="toggleFlotante()" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: pointer;"></div>
+    <button onclick="toggleFlotante()" style="
+        width: 100%; 
+        padding: 5px; 
+        background: #006847; 
+        color: white; 
+        border: none; 
+        cursor: pointer; 
+        font-weight: bold;
+        margin-bottom: 5px;
+        border-radius: 4px;">
+        ⛶ Expandir / Flotar
+    </button>
     
     <iframe 
         class="tv-player"
@@ -429,8 +439,6 @@
     </iframe>
 </div>
         </div>
-
-       
 
 <script>
 function toggleFlotante() {
