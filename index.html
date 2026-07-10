@@ -690,13 +690,12 @@ function toggleFlotante() {
     <h3 class="feed-title">Muro de Noticias 📢</h3>
     
     <div class="post-creator">
-        <input type="text" id="user-name" placeholder="Tu nombre" class="input-name">
-        <textarea id="post-text" placeholder="¿Qué estás pensando?" class="input-text"></textarea>
-        <div class="post-actions">
-            <button id="upload_widget" class="btn-upload">📷 Subir Foto</button>
-            <button onclick="publicarPost()" class="btn-post">Publicar</button>
-        </div>
+    <textarea id="post-text" placeholder="¿Qué estás pensando?" class="input-text"></textarea>
+    <div class="post-actions">
+        <button id="upload_widget" class="btn-upload">📷 Foto/Video</button>
+        <button onclick="publicarPost()" class="btn-post">Publicar</button>
     </div>
+</div>
 
     <div id="feed-items" class="feed-scroll">
         </div>
@@ -873,33 +872,37 @@ function toggleFlotante() {
 
 // --- LÓGICA DE PUBLICACIÓN Y FEED ---
 
-// 1. Widget de Cloudinary para fotos
+// 1. Widget de Cloudinary para fotos Y videos
 var myWidget = cloudinary.createUploadWidget({
-  cloudName: 'zvrnarxa', 
-  uploadPreset: 'quiniela-present'
+    cloudName: 'zvrnarxa', 
+    uploadPreset: 'quiniela-present',
+    sources: ['local', 'url', 'camera'],
+    resourceType: 'auto'
 }, (error, result) => { 
-  if (!error && result && result.event === "success") { 
-    // Guardar en Firestore con la URL de Cloudinary
-    db.collection("posts").add({
-        autor: document.getElementById('user-name') ? document.getElementById('user-name').value : "Usuario",
-        contenido: document.getElementById('post-text').value,
-        mediaUrl: result.info.secure_url,
-        likes: 0,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-        alert("Publicado con éxito");
-        document.getElementById('post-text').value = "";
-    });
-  }
+    if (!error && result && result.event === "success") { 
+        const isVideo = result.info.resource_type === 'video';
+        // Guardar en Firestore usando el usuario logueado
+        db.collection("posts").add({
+            autor: currentUser.displayName || currentUser.email.split('@')[0] || "Usuario",
+            autorId: currentUser.uid,
+            contenido: document.getElementById('post-text').value,
+            mediaUrl: result.info.secure_url,
+            tipo: isVideo ? 'video' : 'imagen',
+            likes: 0,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            alert("Publicado con éxito");
+            document.getElementById('post-text').value = "";
+        });
+    }
 });
 
-// Evento para abrir el widget
 const uploadBtn = document.getElementById("upload_widget");
 if(uploadBtn) {
     uploadBtn.addEventListener("click", () => myWidget.open());
 }
 
-// 2. Lógica de Likes (Punto 4)
+// 2. Lógica de Likes (Punto 4 - Corazón pequeño)
 async function darLike(postId) {
     const postRef = db.collection("posts").doc(postId);
     try {
@@ -914,33 +917,51 @@ async function darLike(postId) {
     }
 }
 
-// 3. Lógica de Comentarios (Punto 3)
-async function comentar(postId) {
-    const input = document.getElementById(`comentario-input-${postId}`);
+// 3. Lógica de Comentarios (Punto 3 - Desplegable)
+async function enviarComentario(postId) {
+    const input = document.getElementById(`input-comentario-${postId}`);
     const texto = input.value;
-    const autor = document.getElementById('user-name') ? document.getElementById('user-name').value : "Usuario";
+    const autor = currentUser.displayName || currentUser.email.split('@')[0] || "Usuario";
 
     if (!texto) return alert("Escribe un comentario primero");
 
     await db.collection("posts").doc(postId).collection("comentarios").add({
         texto: texto,
         autor: autor,
+        autorId: currentUser.uid,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
     
     input.value = "";
-    alert("¡Comentario publicado!");
 }
 
-// Función para publicar solo texto
+function toggleComentarios(postId) {
+    const div = document.getElementById(`div-comentarios-${postId}`);
+    div.style.display = (div.style.display === "none") ? "block" : "none";
+}
+
+function cargarComentarios(postId) {
+    db.collection("posts").doc(postId).collection("comentarios").orderBy("timestamp", "asc")
+    .onSnapshot(snapshot => {
+        const lista = document.getElementById(`lista-comentarios-${postId}`);
+        lista.innerHTML = "";
+        snapshot.forEach(doc => {
+            const cData = doc.data();
+            lista.innerHTML += `<div style="margin-bottom:6px;"><b>${cData.autor}:</b> ${cData.texto}</div>`;
+        });
+    });
+}
+
+// Función para publicar texto
 async function publicarPost() {
     const texto = document.getElementById('post-text').value;
-    const nombre = document.getElementById('user-name') ? document.getElementById('user-name').value : "Usuario";
+    const nombre = currentUser.displayName || currentUser.email.split('@')[0] || "Usuario";
     
     if(!texto) return alert("Escribe algo primero");
 
     await db.collection("posts").add({
         autor: nombre,
+        autorId: currentUser.uid,
         contenido: texto,
         likes: 0,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -953,6 +974,7 @@ async function publicarPost() {
 function cargarPosts() {
     db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         const feed = document.getElementById('feed-items');
+        if(!feed) return;
         feed.innerHTML = "";
         
         snapshot.forEach(doc => {
@@ -964,63 +986,29 @@ function cargarPosts() {
             feed.innerHTML += `
                 <div class="post-card">
                     <div class="author-name">${data.autor}</div>
-                    <p>${data.contenido}</p>
+                    <p style="margin: 0 0 10px 0;">${data.contenido}</p>
                     ${data.mediaUrl ? mediaElement : ''}
                     
                     <div class="post-footer">
                         <button onclick="darLike('${doc.id}')" style="border:none; background:none; font-size: 16px; cursor:pointer;">❤️ ${data.likes || 0}</button>
-                        
-                        <button onclick="toggleComentarios('${doc.id}')" style="background:none; border:none; color:gray; font-size: 14px; cursor:pointer;">💬 Comentarios</button>
+                        <button onclick="toggleComentarios('${doc.id}')" style="background:none; border:none; color:gray; font-size: 14px; cursor:pointer; margin-left: 10px;">💬 Comentarios</button>
                     </div>
 
                     <div id="div-comentarios-${doc.id}" style="display:none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-                        <div id="lista-comentarios-${doc.id}" style="font-size: 13px; margin-bottom: 5px;"></div>
-                        <input type="text" id="input-comentario-${doc.id}" placeholder="Escribe un comentario..." style="width: 80%; padding: 5px;">
-                        <button onclick="enviarComentario('${doc.id}')">Enviar</button>
+                        <div id="lista-comentarios-${doc.id}" style="font-size: 13px; margin-bottom: 8px;"></div>
+                        <div style="display:flex; gap:5px;">
+                            <input type="text" id="input-comentario-${doc.id}" placeholder="Comentar..." style="flex:1; padding:5px; border-radius:4px; border:1px solid #ddd;">
+                            <button onclick="enviarComentario('${doc.id}')" style="padding: 5px 10px;">Enviar</button>
+                        </div>
                     </div>
                 </div>
             `;
-            // Cargar comentarios en tiempo real para este post
             cargarComentarios(doc.id);
         });
     });
 }
 
-// Abrir/Cerrar sección de comentarios
-function toggleComentarios(postId) {
-    const div = document.getElementById(`div-comentarios-${postId}`);
-    div.style.display = (div.style.display === "none") ? "block" : "none";
-}
-
-// Guardar comentario en Firestore
-async function enviarComentario(postId) {
-    const input = document.getElementById(`input-comentario-${postId}`);
-    const texto = input.value;
-    if(!texto) return;
-
-    await db.collection("posts").doc(postId).collection("comentarios").add({
-        texto: texto,
-        autor: document.getElementById('user-name').value || "Usuario",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    input.value = ""; // Limpiar
-}
-
-// Leer comentarios en tiempo real
-function cargarComentarios(postId) {
-    db.collection("posts").doc(postId).collection("comentarios").orderBy("timestamp", "asc")
-    .onSnapshot(snapshot => {
-        const lista = document.getElementById(`lista-comentarios-${postId}`);
-        lista.innerHTML = "";
-        snapshot.forEach(doc => {
-            lista.innerHTML += `<div style="margin-bottom:4px;"><b>${doc.data().autor}:</b> ${doc.data().texto}</div>`;
-        });
-    });
-}
-
-
-        
-// Inicializar al cargar la página
+// Inicializar
 document.addEventListener('DOMContentLoaded', () => {
     cargarPosts();
 });
