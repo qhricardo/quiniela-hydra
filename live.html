@@ -4,33 +4,24 @@
     <script src="//cdn.jsdelivr.net/npm/@clappr/player@0.8/dist/clappr.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/@swarmcloud/hls/p2p-engine.min.js"></script>
     <style>
-    body, html {margin: 0;padding: 0;width: 100%;height: 100%;overflow: hidden;}
-    #player {position: absolute;top: 0;left: 0;width: 100%;height: 100%;}
-    /* CSS de la12hd.com/cssm.css incluido directamente */
-    .media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar] .bar-background[data-seekbar] {
-        height: 5px !important;
-    }
-    .media-control[data-media-control] .media-control-layer[data-controls] .bar-container[data-seekbar]:hover .bar-background[data-seekbar] {
-        height: 7px !important;
-    }
+        body, html {margin: 0;padding: 0;width: 100%;height: 100%;overflow: hidden;background: #000;}
+        #player {position: absolute;top: 0;left: 0;width: 100%;height: 100%;}
     </style>
 </head>
 <body>
 <div id="player"></div>
 <script>
     var playbackURL = "https://cxm2.futbolonlinehd.com:443/telemundo/mono.m3u8?token=3ef8ccbf12cca4a8e16d0cd006a958812e331790-69-1783728169-1783710169";
-    var p2pConfig = {
-        live: true,
-        trackerZone: "us",    
-    }
+    var p2pConfig = { live: true, trackerZone: "us" }
+    
     P2PEngineHls.tryRegisterServiceWorker(p2pConfig).then(() => {
         var player = new Clappr.Player({
             source: playbackURL,
             parentId: "#player",
-            poster: "",
             width: "100%",
             height: "100%",
-            autoPlay: false,
+            autoPlay: true,  // Activado
+            mute: true,      // Necesario para autoplay en navegadores
             plugins: [],
             mediacontrol: {seekbar: "#D4ED31", buttons: "#FFFFFF"},
         });
@@ -40,4 +31,3 @@
 </script>
 </body>
 </html>
-<script>(function(s){s.dataset.zone='10853324',s.src='https://llvpn.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
