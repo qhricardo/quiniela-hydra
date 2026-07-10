@@ -346,6 +346,44 @@
         #countdown span {
             font-weight: bold;
         }
+
+        /* Estilos para el mini televisor */
+        .tv-container {
+            margin-top: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .tv-container:hover { transform: scale(1.05); }
+        .tv-frame {
+            background: #333;
+            padding: 10px;
+            border-radius: 10px;
+            border: 5px solid #000;
+            display: inline-block;
+        }
+        .tv-screen {
+            background: #000;
+            width: 150px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #25d366;
+            font-size: 30px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .tv-screen::after {
+            content: "▶";
+            font-size: 40px;
+        }
+        .tv-label {
+            margin-top: 8px;
+            font-weight: bold;
+            color: #ce1126;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -392,6 +430,14 @@
                  <a href="https://m.me/439939209212181?text=Quiero%20comprar%20un%20cr%C3%A9dito" target="_blank" style="display: block; text-align: center; width: 100%; box-sizing: border-box; padding: 12px; background-color: #FFD700; color: black; font-weight: bold; border-radius: 8px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💬 $50 por Transferencia</a>
             </div>
         </div>
+
+        <!-- Seccion TV -->
+            <div class="tv-container" onclick="window.location.href='live.html'">
+                <div class="tv-frame">
+                    <div class="tv-screen"></div>
+                </div>
+                <div class="tv-label">EN VIVO</div>
+            </div>
 
         <div class="container">
             <h1>Liga Mx Jornada 1</h1>
