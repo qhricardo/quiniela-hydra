@@ -637,6 +637,28 @@ function toggleFlotante() {
         </div>
     </div>
 
+
+<div id="quick-post-box" style="position: fixed; bottom: 20px; left: 20px; width: 300px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 9999;">
+    <input type="text" id="post-input" placeholder="¿Qué está pasando?" style="width: 100%; margin-bottom: 5px;">
+    <button onclick="enviarPost()">Publicar</button>
+    <a href="post.html" style="display: block; margin-top: 5px; font-size: 12px;">Ver todas las noticias</a>
+</div>
+
+<script>
+function enviarPost() {
+    const texto = document.getElementById('post-input').value;
+    // Aquí iría tu código de Firebase para guardar en la colección 'posts'
+    db.collection("posts").add({
+        contenido: texto,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        alert("Publicado con éxito");
+        document.getElementById('post-input').value = "";
+    });
+}
+</script>
+    
+
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
