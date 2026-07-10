@@ -347,43 +347,56 @@
             font-weight: bold;
         }
 
-        /* Estilos para el mini televisor */
-        .tv-container {
-            margin-top: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .tv-container:hover { transform: scale(1.05); }
-        .tv-frame {
-            background: #333;
-            padding: 10px;
-            border-radius: 10px;
-            border: 5px solid #000;
-            display: inline-block;
-        }
-        .tv-screen {
-            background: #000;
-            width: 150px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #25d366;
-            font-size: 30px;
-            border-radius: 5px;
-            position: relative;
-        }
-        .tv-screen::after {
-            content: "▶";
-            font-size: 40px;
-        }
-        .tv-label {
-            margin-top: 8px;
-            font-weight: bold;
-            color: #ce1126;
-            font-size: 14px;
-        }
+       /* Contenedor del TV */
+.tv-sidebar-box {
+    margin-top: 25px;
+    padding: 10px;
+    background: #000;
+    border: 6px solid #444;
+    border-radius: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Estado normal del reproductor */
+.tv-player {
+    width: 100%;
+    height: 170px;
+    background: #000;
+    border-radius: 5px;
+    pointer-events: none; /* Esto permite que el clic lo reciba el div padre */
+}
+
+/* Clase para expandir el video (Full Screen o Modal) */
+.tv-sidebar-box.expanded {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background: rgba(0,0,0,0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    border-radius: 0;
+}
+
+.tv-sidebar-box.expanded .tv-player {
+    width: 90%;
+    height: 70vh;
+}
+
+.tv-sidebar-box.expanded::after {
+    content: "✖ CERRAR";
+    color: white;
+    margin-top: 20px;
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -431,14 +444,15 @@
             </div>
         </div>
 
-        <!-- Seccion TV -->
-            <div class="tv-container" onclick="window.location.href='live.html'">
-                <div class="tv-frame">
-                    <div class="tv-screen"></div>
-                </div>
-                <div class="tv-label">EN VIVO</div>
-            </div>
-
+        <div class="tv-sidebar-box" onclick="this.classList.toggle('expanded')">
+    <h4 style="color: #fff; margin: 0 0 10px 0; text-align: center; font-size: 14px;">EN VIVO 🔴 (Click para expandir)</h4>
+    <iframe 
+        class="tv-player"
+        src="live.html" 
+        frameborder="0" 
+        allowfullscreen>
+    </iframe>
+</div>
         <div class="container">
             <h1>Liga Mx Jornada 1</h1>
             <div class="partidos-lista">
