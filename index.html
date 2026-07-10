@@ -403,6 +403,20 @@ c
 .post-footer { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #eee; padding-top: 10px; }
 .comment-box { display: flex; gap: 5px; }
 .comment-box input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 20px; }
+
+.post-footer button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px !important; /* Más compacto */
+}
+
+.post-img {
+    width: 100%;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+        
     </style>
 </head>
 <body>
@@ -939,31 +953,73 @@ async function publicarPost() {
 function cargarPosts() {
     db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         const feed = document.getElementById('feed-items');
-        if(!feed) return;
         feed.innerHTML = "";
         
         snapshot.forEach(doc => {
             const data = doc.data();
+            const mediaElement = data.tipo === 'video' 
+                ? `<video src="${data.mediaUrl}" controls class="post-img"></video>` 
+                : `<img src="${data.mediaUrl}" class="post-img">`;
+
             feed.innerHTML += `
                 <div class="post-card">
-                    <div class="author-name">${data.autor || 'Anónimo'}</div>
-                    <p style="margin: 0 0 10px 0;">${data.contenido}</p>
-                    
-                    ${data.mediaUrl ? `<img src="${data.mediaUrl}" class="post-img">` : ''}
+                    <div class="author-name">${data.autor}</div>
+                    <p>${data.contenido}</p>
+                    ${data.mediaUrl ? mediaElement : ''}
                     
                     <div class="post-footer">
-                        <button onclick="darLike('${doc.id}')">👍 Like (${data.likes || 0})</button>
-                        <div class="comment-box" style="margin-top: 10px; display: flex; gap: 5px;">
-                            <input type="text" id="comentario-input-${doc.id}" placeholder="Escribe un comentario..." style="flex: 1; padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
-                            <button onclick="comentar('${doc.id}')">💬</button>
-                        </div>
+                        <button onclick="darLike('${doc.id}')" style="border:none; background:none; font-size: 16px; cursor:pointer;">❤️ ${data.likes || 0}</button>
+                        
+                        <button onclick="toggleComentarios('${doc.id}')" style="background:none; border:none; color:gray; font-size: 14px; cursor:pointer;">💬 Comentarios</button>
+                    </div>
+
+                    <div id="div-comentarios-${doc.id}" style="display:none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                        <div id="lista-comentarios-${doc.id}" style="font-size: 13px; margin-bottom: 5px;"></div>
+                        <input type="text" id="input-comentario-${doc.id}" placeholder="Escribe un comentario..." style="width: 80%; padding: 5px;">
+                        <button onclick="enviarComentario('${doc.id}')">Enviar</button>
                     </div>
                 </div>
             `;
+            // Cargar comentarios en tiempo real para este post
+            cargarComentarios(doc.id);
         });
     });
 }
 
+// Abrir/Cerrar sección de comentarios
+function toggleComentarios(postId) {
+    const div = document.getElementById(`div-comentarios-${postId}`);
+    div.style.display = (div.style.display === "none") ? "block" : "none";
+}
+
+// Guardar comentario en Firestore
+async function enviarComentario(postId) {
+    const input = document.getElementById(`input-comentario-${postId}`);
+    const texto = input.value;
+    if(!texto) return;
+
+    await db.collection("posts").doc(postId).collection("comentarios").add({
+        texto: texto,
+        autor: document.getElementById('user-name').value || "Usuario",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    input.value = ""; // Limpiar
+}
+
+// Leer comentarios en tiempo real
+function cargarComentarios(postId) {
+    db.collection("posts").doc(postId).collection("comentarios").orderBy("timestamp", "asc")
+    .onSnapshot(snapshot => {
+        const lista = document.getElementById(`lista-comentarios-${postId}`);
+        lista.innerHTML = "";
+        snapshot.forEach(doc => {
+            lista.innerHTML += `<div style="margin-bottom:4px;"><b>${doc.data().autor}:</b> ${doc.data().texto}</div>`;
+        });
+    });
+}
+
+
+        
 // Inicializar al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
     cargarPosts();
