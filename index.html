@@ -361,7 +361,7 @@
     position: relative; /* Importante para el clic */
 }
 
-/* El iframe ya no necesita pointer-events: none */
+c
 .tv-player {
     width: 100%;
     height: 170px;
@@ -369,6 +369,47 @@
     border-radius: 5px;
     /* QUITAMOS: pointer-events: none; */
 }
+
+
+        /* El post de comentarios */
+        .feed-container {
+    width: 100%;
+    max-width: 400px; /* Ajusta al ancho de tu sidebar */
+    background: #f0f2f5;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.feed-scroll {
+    height: 350px; /* Altura fija para activar el scroll */
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.post-card {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.post-img {
+    width: 100%;
+    border-radius: 5px;
+    margin: 8px 0;
+}
+
+.post-footer {
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+}
+
+.btn-upload { background: #e4e6eb; border: none; padding: 5px 10px; cursor: pointer; }
+.btn-post { background: #006847; color: white; border: none; padding: 5px 10px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -638,16 +679,18 @@ function toggleFlotante() {
     </div>
 
 
-<div id="social-feed-container" style="height: 400px; overflow-y: auto; background: #f0f2f5; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-    <h4 style="margin-top: 0;">Muro de Noticias</h4>
+<div class="feed-container">
+    <h3 class="feed-title">Noticias en Vivo</h3>
     
-    <div style="background: white; padding: 10px; border-radius: 8px;">
-        <textarea id="post-text" placeholder="¿Qué estás pensando?" style="width: 100%; height: 60px;"></textarea>
-        <input type="file" id="media-upload" accept="image/*,video/*">
-        <button onclick="publicarContenido()" style="margin-top: 5px;">Publicar</button>
+    <div class="post-creator">
+        <textarea id="post-text" placeholder="¿Qué quieres compartir?"></textarea>
+        <div class="post-actions">
+            <button id="upload_widget" class="btn-upload">📷 Subir Foto</button>
+            <button onclick="publicarPost()" class="btn-post">Publicar</button>
+        </div>
     </div>
 
-    <div id="feed-items">
+    <div id="feed-items" class="feed-scroll">
         </div>
 </div>
 
@@ -829,6 +872,33 @@ function enviarPost() {
     function invitarWhatsApp(link) { window.open(`https://wa.me/?text=${encodeURIComponent('⚽ ¡Juega conmigo en Quiniela360! Regístrate aquí 👉 ' + link)}`, "_blank"); }
     function invitarMessenger(link) { window.open(`https://www.facebook.com/dialog/send?link=${encodeURIComponent(link)}`, "_blank"); }
     function copiarLink(link) { navigator.clipboard.writeText(link).then(() => alert("✅ Link copiado!")); }
+
+
+// Renderizar Posts
+function cargarPosts() {
+    db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+        const feed = document.getElementById('feed-items');
+        feed.innerHTML = "";
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            feed.innerHTML += `
+                <div class="post-card">
+                    <p>${data.contenido}</p>
+                    ${data.mediaUrl ? `<img src="${data.mediaUrl}" class="post-img">` : ''}
+                    <div class="post-footer">
+                        <button onclick="darLike('${doc.id}')">👍 Like (${data.likes || 0})</button>
+                        <button onclick="abrirComentarios('${doc.id}')">💬 Comentar</button>
+                    </div>
+                </div>
+            `;
+        });
+    });
+}
+
+// Inicializar al cargar la página
+cargarPosts();
+        
 </script>
 </body>
 </html>
