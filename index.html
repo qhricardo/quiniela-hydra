@@ -371,102 +371,38 @@ c
 }
 
         
-        /* --- Contenedor del Feed --- */
+      /* Contenedor Principal Responsivo */
 .feed-container {
-    background-color: #f0f2f5;
-    padding: 20px;
-    border-radius: 16px;
-    max-width: 450px;
-    margin: 0 auto;
-}
-
-/* --- Tarjeta de Post (Estilo Moderno) --- */
-.post-card {
+    width: 95%;
+    max-width: 600px;
+    margin: 20px auto;
     background: #ffffff;
+    padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    margin-bottom: 20px;
-    padding: 16px;
-    transition: transform 0.2s ease;
-    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.post-card:hover {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-}
+.feed-title { text-align: center; color: #333; margin-bottom: 20px; }
 
-/* --- Encabezado del Post --- */
-.author-name {
-    font-weight: 800;
-    font-size: 15px;
-    color: #1c1e21;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-}
+/* Formulario */
+.post-creator { display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px; border-bottom: 4px solid #f0f2f5; margin-bottom: 20px; }
+.input-name, .input-text { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; }
+.post-actions { display: flex; justify-content: space-between; gap: 10px; }
 
-/* --- Texto del post --- */
-.post-card p {
-    font-size: 15px;
-    line-height: 1.5;
-    color: #050505;
-    margin: 0 0 12px 0;
-}
+/* Botones */
+.btn-upload { background: #e4e6eb; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1; }
+.btn-post { background: #006847; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; flex: 1; }
 
-/* --- Imagen del post --- */
-.post-img {
-    width: 100%;
-    max-height: 400px;
-    object-fit: contain; /* Cambiado a contain para no cortar la imagen */
-    border-radius: 8px;
-    margin: 8px 0;
-    background-color: #f7f7f7;
-}
+/* Scroll del Feed */
+.feed-scroll { height: 500px; overflow-y: auto; }
 
-/* --- Pie de post (Acciones) --- */
-.post-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 12px;
-    margin-top: 8px;
-    border-top: 1px solid #e4e6eb;
-}
-
-.post-footer button {
-    background: #f0f2f5;
-    border: none;
-    font-weight: 600;
-    color: #4b4f56;
-    cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 13px;
-    transition: all 0.2s;
-}
-
-.post-footer button:hover {
-    background-color: #e4e6eb;
-    color: #000;
-}
-
-/* --- Botones de publicación --- */
-.btn-upload, .btn-post {
-    border-radius: 6px;
-    padding: 8px 15px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-post {
-    background-color: #006847;
-    color: white;
-}
-
-.btn-upload {
-    background-color: #e4e6eb;
-}
+/* Tarjetas */
+.post-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 16px; border: 1px solid #eee; }
+.author-name { font-weight: 800; color: #1c1e21; margin-bottom: 8px; }
+.post-img { width: 100%; border-radius: 8px; margin: 10px 0; }
+.post-footer { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #eee; padding-top: 10px; }
+.comment-box { display: flex; gap: 5px; }
+.comment-box input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 20px; }
     </style>
 </head>
 <body>
@@ -742,7 +678,6 @@ function toggleFlotante() {
     <div class="post-creator">
         <input type="text" id="user-name" placeholder="Tu nombre" class="input-name">
         <textarea id="post-text" placeholder="¿Qué estás pensando?" class="input-text"></textarea>
-        
         <div class="post-actions">
             <button id="upload_widget" class="btn-upload">📷 Subir Foto</button>
             <button onclick="publicarPost()" class="btn-post">Publicar</button>
@@ -752,7 +687,6 @@ function toggleFlotante() {
     <div id="feed-items" class="feed-scroll">
         </div>
 </div>
-
 <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
 <link rel="stylesheet" href="css/estilos.css">
 
@@ -938,11 +872,14 @@ var myWidget = cloudinary.createUploadWidget({
         mediaUrl: result.info.secure_url,
         likes: 0,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => alert("Publicado con éxito"));
+    }).then(() => {
+        alert("Publicado con éxito");
+        document.getElementById('post-text').value = "";
+    });
   }
 });
 
-// Evento para abrir el widget (asegúrate de que tu botón en HTML tenga id="upload_widget")
+// Evento para abrir el widget
 const uploadBtn = document.getElementById("upload_widget");
 if(uploadBtn) {
     uploadBtn.addEventListener("click", () => myWidget.open());
@@ -961,6 +898,24 @@ async function darLike(postId) {
     } catch (e) {
         console.error("Error al dar like: ", e);
     }
+}
+
+// 3. Lógica de Comentarios (Punto 3)
+async function comentar(postId) {
+    const input = document.getElementById(`comentario-input-${postId}`);
+    const texto = input.value;
+    const autor = document.getElementById('user-name') ? document.getElementById('user-name').value : "Usuario";
+
+    if (!texto) return alert("Escribe un comentario primero");
+
+    await db.collection("posts").doc(postId).collection("comentarios").add({
+        texto: texto,
+        autor: autor,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    input.value = "";
+    alert("¡Comentario publicado!");
 }
 
 // Función para publicar solo texto
@@ -984,6 +939,7 @@ async function publicarPost() {
 function cargarPosts() {
     db.collection("posts").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         const feed = document.getElementById('feed-items');
+        if(!feed) return;
         feed.innerHTML = "";
         
         snapshot.forEach(doc => {
@@ -997,7 +953,10 @@ function cargarPosts() {
                     
                     <div class="post-footer">
                         <button onclick="darLike('${doc.id}')">👍 Like (${data.likes || 0})</button>
-                        <button onclick="abrirComentarios('${doc.id}')">💬 Comentar</button>
+                        <div class="comment-box" style="margin-top: 10px; display: flex; gap: 5px;">
+                            <input type="text" id="comentario-input-${doc.id}" placeholder="Escribe un comentario..." style="flex: 1; padding: 5px; border-radius: 4px; border: 1px solid #ddd;">
+                            <button onclick="comentar('${doc.id}')">💬</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1006,8 +965,9 @@ function cargarPosts() {
 }
 
 // Inicializar al cargar la página
-cargarPosts();
-        
+document.addEventListener('DOMContentLoaded', () => {
+    cargarPosts();
+});
 </script>
 </body>
 </html>
