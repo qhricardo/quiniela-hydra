@@ -347,7 +347,7 @@
             font-weight: bold;
         }
 
-       /* Contenedor del TV */
+      /* Contenedor del TV */
 .tv-sidebar-box {
     margin-top: 25px;
     padding: 10px;
@@ -357,45 +357,33 @@
     width: 100%;
     box-sizing: border-box;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
 }
 
-/* Estado normal del reproductor */
 .tv-player {
     width: 100%;
     height: 170px;
     background: #000;
     border-radius: 5px;
-    pointer-events: none; /* Esto permite que el clic lo reciba el div padre */
+    pointer-events: none; /* Crucial para que el clic lo capture el contenedor */
 }
 
-/* Clase para expandir el video (Full Screen o Modal) */
-.tv-sidebar-box.expanded {
+/* ESTILO FLOTANTE */
+.tv-sidebar-box.flotante {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    height: 220px;
     z-index: 9999;
-    background: rgba(0,0,0,0.95);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border: none;
-    border-radius: 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    border: 3px solid #006847; /* Color verde corporativo */
+    animation: aparecer 0.5s ease;
 }
 
-.tv-sidebar-box.expanded .tv-player {
-    width: 90%;
-    height: 70vh;
-}
-
-.tv-sidebar-box.expanded::after {
-    content: "✖ CERRAR";
-    color: white;
-    margin-top: 20px;
-    font-weight: bold;
+@keyframes aparecer {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
 }
     </style>
 </head>
@@ -436,23 +424,33 @@
                 </div>
                 <p style="margin-top:15px; font-size: 12px; margin-bottom: 5px;">Tu enlace de invitación:</p>
                 <div id="miLink" style="color:#006847; font-weight:bold; font-size: 12px; word-break: break-all; background: #f0f0f0; padding: 5px; border-radius: 4px;">Generando enlace personal...</div>
-            </section> -->
+            </section> 
 
             <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
                 <button id="comprarCreditos" style="width: 100%; padding: 12px; margin-bottom: 10px; background-color: #00a650; color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💳 Mercado Pago $50 </button>
                  <a href="https://m.me/439939209212181?text=Quiero%20comprar%20un%20cr%C3%A9dito" target="_blank" style="display: block; text-align: center; width: 100%; box-sizing: border-box; padding: 12px; background-color: #FFD700; color: black; font-weight: bold; border-radius: 8px; text-decoration: none; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">💬 $50 por Transferencia</a>
             </div>
-        </div>
+        </div>-->
 
-        <div class="tv-sidebar-box" onclick="this.classList.toggle('expanded')">
-    <h4 style="color: #fff; margin: 0 0 10px 0; text-align: center; font-size: 14px;">EN VIVO 🔴 (Click para expandir)</h4>
+       <div id="tv-box" class="tv-sidebar-box" onclick="toggleFlotante()">
+    <h4 style="color: #fff; margin: 0 0 10px 0; text-align: center; font-size: 14px;">EN VIVO 🔴</h4>
     <iframe 
         class="tv-player"
-        src="live.html" 
+        src="live.html?autoplay=1&mute=1" 
         frameborder="0" 
+        allow="autoplay; fullscreen"
         allowfullscreen>
     </iframe>
 </div>
+
+<script>
+function toggleFlotante() {
+    const box = document.getElementById('tv-box');
+    box.classList.toggle('flotante');
+}
+</script>
+
+            
         <div class="container">
             <h1>Liga Mx Jornada 1</h1>
             <div class="partidos-lista">
