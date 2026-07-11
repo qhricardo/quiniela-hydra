@@ -18,6 +18,24 @@
             margin: 0 auto; 
             text-align: center; 
         }
+
+        /* 🏠 BOTÓN REGRESAR */
+        .btn-regresar {
+            display: inline-block;
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.2s;
+            border: 1px solid #444;
+        }
+        .btn-regresar:hover {
+            background-color: #444;
+        }
         
         /* 📺 CONTENEDOR DE LA TV MÁS GRANDE */
         .tv-wrapper { 
@@ -111,8 +129,12 @@
 
 <div class="container">
     
+    <div style="text-align: left;">
+        <a href="index.html" class="btn-regresar">⬅️ Regresar a la Quiniela</a>
+    </div>
+    
     <div class="tv-wrapper">
-        <iframe src="https://rojadirectatvhd.se/en-vivo/fox-sports-1/" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <iframe src="live.html" allow="autoplay; encrypted-media" allowfullscreen></iframe>
     </div>
 
     <div class="audio-controls">
