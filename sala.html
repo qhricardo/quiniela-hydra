@@ -3,114 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala de Voz en Vivo</title>
+    <title>Quiniela360 | Sala de TV y Voz en Vivo</title>
+    
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #1a1a1a; color: white; text-align: center; padding: 50px; }
-        .btn { background-color: #28a745; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn:hover { background-color: #218838; }
-        .btn.mutear { background-color: #dc3545; }
-        .btn.mutear:hover { background-color: #c82333; }
-        #status { margin-top: 20px; color: #aaa; }
-        .usuarios-lista { margin-top: 30px; display: flex; justify-content: center; gap: 10px; }
-        .usuario-burbuja { background: #333; padding: 10px 20px; border-radius: 20px; border: 1px solid #555; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #121212; 
+            color: #ffffff;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            text-align: center; 
+        }
+        
+        /* 📺 CONTENEDOR DE LA TV MÁS GRANDE */
+        .tv-wrapper { 
+            width: 100%; 
+            background: #000; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
+            margin-bottom: 20px;
+            aspect-ratio: 16 / 9; /* Mantiene proporción de pantalla ancha */
+        }
+        .tv-wrapper iframe, .tv-wrapper video {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 🎙️ SECCIÓN DE CONTROLES DE AUDIO */
+        .audio-controls {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+        }
+        .btn-mic { 
+            background-color: #28a745; 
+            color: white; 
+            border: none; 
+            padding: 15px 40px; 
+            font-size: 18px; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+        }
+        .btn-mic:hover { background-color: #218838; }
+        .btn-mic.mutear { background-color: #dc3545; box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3); }
+        .btn-mic.mutear:hover { background-color: #c82333; }
+        
+        #status-voz { 
+            margin-top: 10px; 
+            font-size: 14px; 
+            color: #aaa; 
+        }
+
+        /* 👥 LISTA DE USUARIOS CONECTADOS */
+        .usuarios-seccion {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            text-align: left;
+        }
+        .usuarios-seccion h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            color: #0084ff;
+        }
+        .usuarios-lista { 
+            display: flex; 
+            flex-wrap: wrap;
+            gap: 10px; 
+            margin-top: 15px;
+        }
+        .usuario-burbuja { 
+            background: #2a2a2a; 
+            padding: 10px 20px; 
+            border-radius: 20px; 
+            border: 1px solid #444; 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #28a745;
+            border-radius: 50%;
+            display: inline-block;
+        }
     </style>
+
+    <!-- Librerías de comunicación necesarias -->
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
 
-    <h1>🎙️ Sala de Voz Colectiva</h1>
-    <p>Todos los que entren a esta página podrán hablar escucharse entre sí.</p>
+<div class="container">
+    
+    <!-- 📺 SECCIÓN 1: REPRODUCTOR DE TV (GRANDE) -->
+    <div class="tv-wrapper">
+        <!-- Reemplaza este iframe por el código exacto de tu reproductor Clappr/reproductor de index -->
+        <iframe src="https://rojadirectatvhd.se/en-vivo/fox-sports-1/" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
 
-    <button id="btn-microfono" class="btn">Activar Micrófono e Entrar</button>
-    <div id="status">Desconectado - Haz clic en el botón para iniciar</div>
+    <!-- 🎙️ SECCIÓN 2: CONTROL DEL MICRÓFONO -->
+    <div class="audio-controls">
+        <button id="btn-microfono" class="btn-mic">🎙️ Activar Micrófono e Hablar</button>
+        <div id="status-voz">Desconectado del canal de voz. Presiona el botón para hablar.</div>
+    </div>
 
-    <div class="usuarios-lista" id="usuarios">
+    <!-- 👥 SECCIÓN 3: USUARIOS CONECTADOS ABAJO -->
+    <div class="usuarios-seccion">
+        <h3>En la sala de voz en vivo:</h3>
+        <div class="usuarios-lista" id="usuarios-lista">
+            <!-- Las burbujas de los usuarios aparecerán aquí dinámicamente -->
         </div>
+    </div>
 
-    <div id="audios-contenedor" style="display:none;"></div>
+</div>
+
+<!-- Contenedor técnico oculto para reproducir los flujos de audio -->
+<div id="audios-ocultos" style="display:none;"></div>
 
 <script>
+    // 🔗 CONFIGURACIÓN DE URLS
+    const URL_CHAT = "https://quiniela-chat-server.onrender.com"; // Reemplaza con tu URL de server1.js
+    
+    // Conexión principal de coordinación (Socket.io)
+    const socket = io(URL_CHAT);
+    
     const btnMicrofono = document.getElementById('btn-microfono');
-    const statusDiv = document.getElementById('status');
-    const audiosContenedor = document.getElementById('audios-contenedor');
+    const statusVoz = document.getElementById('status-voz');
+    const usuariosLista = document.getElementById('usuarios-lista');
+    const audiosOcultos = document.getElementById('audios-ocultos');
 
     let miStreamLocal = null;
-    let peer = null;
+    let miPeer = null;
     
-    // ⚠️ ID fijo para la sala. Todos los que usen el mismo prefijo se conectarán juntos.
-    const SALA_ID = "quiniela360_sala_global"; 
+    // Generar nombre de usuario aleatorio o recuperar el tuyo del sistema
+    const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
 
+    // 🟢 ACCIÓN: Al presionar el botón de activar micrófono
     btnMicrofono.addEventListener('click', async () => {
         if (!miStreamLocal) {
             try {
-                // 1. Solicitar acceso al micrófono del usuario
+                // 1. Pedir permisos reales del micrófono
                 miStreamLocal = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                statusDiv.innerText = "🎙️ Micrófono activado. Conectando a la sala...";
-                btnMicrofono.innerText = "Mutear Micrófono";
+                
+                statusVoz.innerText = "🎙️ Conectando tu voz con la sala...";
+                btnMicrofono.innerText = "🔇 Mutear Micrófono";
                 btnMicrofono.classList.add('mutear');
 
-                // 2. Inicializar PeerJS (Usa los servidores en la nube gratuitos de PeerJS)
-                // Generamos un ID único para este usuario
-                const miIdUnico = SALA_ID + "_" + Math.floor(Math.random() * 10000);
-                peer = new Peer(miIdUnico);
+                // 2. Crear nodo de comunicación de voz uno a uno (PeerJS)
+                miPeer = new Peer();
 
-                peer.on('open', (id) => {
-                    statusDiv.innerText = "✅ Conectado a la sala de voz en vivo.";
-                    // Aquí le avisarías a tu server1.js (vía socket.io) que entraste
-                    // para que los demás sepan tu ID y te llamen.
+                miPeer.on('open', (peerId) => {
+                    statusVoz.innerText = `✅ En línea como: ${miNombre}`;
+                    
+                    // Agregar nuestra propia burbuja visual
+                    agregarBurbujaUsuario(miPeer.id, `${miNombre} (Tú)`);
+
+                    // 3. Avisar a todo el servidor mediante Socket.io que entramos a hablar
+                    socket.emit('join-voice', { peerId: peerId, nombre: miNombre });
                 });
 
-                // 3. Escuchar llamadas entrantes de otros usuarios que se unan
-                peer.on('call', (llamada) => {
-                    // Responder la llamada enviando nuestro propio audio
-                    llamada.answer(miStreamLocal);
-                    
-                    // Recibir el audio de la otra persona y reproducirlo
+                // 4. Responder llamadas de voz entrantes automáticamente
+                miPeer.on('call', (llamada) => {
+                    llamada.answer(miStreamLocal); // Enviamos nuestro audio
                     llamada.on('stream', (streamRemoto) => {
-                        reproducirAudioRemoto(streamRemoto, llamada.peer);
+                        reproducirAudioEntrante(streamRemoto, llamada.peer);
                     });
                 });
 
             } catch (error) {
-                console.error("Error al acceder al micrófono:", error);
-                statusDiv.innerText = "❌ Error: Debes permitir el acceso al micrófono.";
+                console.error("Error accediendo al micrófono:", error);
+                statusVoz.innerText = "❌ Error: Activa los permisos de micrófono en tu navegador.";
             }
         } else {
-            // Lógica básica para Mutear / Desmutear
+            // Alternar Mute / Desmute si ya está activo
             const audioTrack = miStreamLocal.getAudioTracks()[0];
             if (audioTrack.enabled) {
                 audioTrack.enabled = false;
-                btnMicrofono.innerText = "Encender Micrófono";
+                btnMicrofono.innerText = "🎙️ Activar Micrófono";
                 btnMicrofono.classList.remove('mutear');
-                statusDiv.innerText = "🔇 Micrófono silenciado";
+                statusVoz.innerText = "🔇 Tu micrófono está silenciado.";
             } else {
                 audioTrack.enabled = true;
-                btnMicrofono.innerText = "Mutear Micrófono";
+                btnMicrofono.innerText = "🔇 Mutear Micrófono";
                 btnMicrofono.classList.add('mutear');
-                statusDiv.innerText = "🎙️ Hablando en vivo...";
+                statusVoz.innerText = "🗣️ Hablando en vivo...";
             }
         }
     });
 
-    // Función para crear un reproductor de audio invisible para cada participante nuevo
-    function reproducirAudioRemoto(stream, peerId) {
-        // Evitar duplicar el reproductor si ya existe
-        if (document.getElementById(peerId)) return;
+    // 📡 COORDINACIÓN DE LLAMADAS MEDIANTE SOCKET.IO
+    
+    // Si otro usuario se conecta después de nosotros, él nos avisa y nosotros lo llamamos
+    socket.on('user-joined-voice', (data) => {
+        if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
+            // Agregamos visualmente al usuario
+            agregarBurbujaUsuario(data.peerId, data.nombre);
 
-        const audioHtml = document.createElement('audio');
-        audioHtml.id = peerId;
-        audioHtml.srcObject = stream;
-        audioHtml.autoplay = true;
-        audioHtml.controls = false; // Invisible
-        audiosContenedor.appendChild(audioHtml);
+            // Generar la llamada directa de voz hacia él
+            const llamada = miPeer.call(data.peerId, miStreamLocal);
+            llamada.on('stream', (streamRemoto) => {
+                reproducirAudioEntrante(streamRemoto, data.peerId);
+            });
+        }
+    });
+
+    // 🛠️ FUNCIONES AUXILIARES
+
+    function agregarBurbujaUsuario(id, nombre) {
+        if (document.getElementById(`user-${id}`)) return;
         
-        // Agregar burbuja visual
-        const listaUsuarios = document.getElementById('usuarios');
         const burbuja = document.createElement('div');
         burbuja.className = 'usuario-burbuja';
-        burbuja.id = "visual_" + peerId;
-        burbuja.innerText = "🗣️ Oyente/Hablante";
-        listaUsuarios.appendChild(burbuja);
+        burbuja.id = `user-${id}`;
+        burbuja.innerHTML = `<span class="status-dot"></span> ${nombre}`;
+        usuariosLista.appendChild(burbuja);
+    }
+
+    function reproducirAudioEntrante(stream, peerId) {
+        if (document.getElementById(`audio-${peerId}`)) return;
+
+        const elAudio = document.createElement('audio');
+        elAudio.id = `audio-${peerId}`;
+        elAudio.srcObject = stream;
+        elAudio.autoplay = true;
+        audiosOcultos.appendChild(elAudio);
     }
 </script>
 </body>
