@@ -35,16 +35,20 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   console.log("👤 Usuario conectado al chat/voz:", socket.id);
 
-  // 💬 Escuchar cuando un usuario envía un mensaje de texto
+  // 💬 Mensajes de texto
   socket.on("chat message", (data) => {
-    // Reenviar el mensaje a todos los usuarios conectados en la sala
     io.emit("chat message", data);
   });
 
-  // 🎙️ Escuchar cuando un usuario activa su micrófono y entra a la sala de voz
+  // 🎙️ 1. Un usuario nuevo entra a la sala de voz
   socket.on("join-voice", (data) => {
-    // Le retransmite a toda la sala el ID de llamada del nuevo participante
-    io.emit("user-joined-voice", data);
+    // Le avisa a los usuarios existentes (excepto a sí mismo)
+    socket.broadcast.emit("user-joined-voice", data);
+  });
+
+  // 🎙️ 2. Un usuario existente le responde al nuevo para sincronizarse
+  socket.on("reply-voice", (data) => {
+    socket.broadcast.emit("user-replied-voice", data);
   });
 
   socket.on("disconnect", () => {
@@ -53,7 +57,6 @@ io.on("connection", (socket) => {
 });
 
 // ──────────────── CONFIGURACIÓN DE PUERTO ────────────────
-// Usamos el puerto 10001 por defecto para no chocar con el puerto 10000 de server.js
 const PORT = process.env.PORT || 10001;
 
 httpServer.listen(PORT, () => {
