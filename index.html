@@ -466,7 +466,8 @@ c
             <div id="tv-box" class="tv-sidebar-box" style="position: relative;">
     <h4 style="color: #fff; margin: 0 0 10px 0; text-align: center; font-size: 14px;">EN VIVO 🔴</h4>
     
-    <a href="sala.html" style="
+    <!-- Agregamos id="btn-ver-amigos" para poder modificarlo con JS -->
+    <a id="btn-ver-amigos" href="sala.html" style="
         display: block;
         text-align: center;
         box-sizing: border-box;
@@ -507,13 +508,38 @@ c
         allowfullscreen>
     </iframe>
 </div>
-        </div>
 
 <script>
 function toggleFlotante() {
     const box = document.getElementById('tv-box');
     box.classList.toggle('flotante');
 }
+
+// LÓGICA PARA ASIGNAR EL GRUPO AL ENLACE "VER CON AMIGOS"
+document.addEventListener("DOMContentLoaded", function() {
+    const btnAmigos = document.getElementById('btn-ver-amigos');
+    const spanGrupo = document.getElementById('grupoActual');
+
+    if (!btnAmigos || !spanGrupo) return;
+
+    // Escuchamos los cambios en el <span> del grupo (MutationObserver)
+    // Esto asegura que en cuanto Firebase/tu backend ponga el nombre del grupo, el botón se actualice al instante.
+    const observer = new MutationObserver(() => {
+        const grupoDetectado = spanGrupo.innerText.trim();
+        if (grupoDetectado && grupoDetectado !== "") {
+            btnAmigos.href = `sala.html?grupo=${encodeURIComponent(grupoDetectado)}`;
+        }
+    });
+
+    // Configuramos el observador para que mire el texto interno del span
+    observer.observe(spanGrupo, { childList: true, characterData: true, subtree: true });
+
+    // Respaldo inmediato por si el grupo ya se había cargado antes de ejecutar este script
+    const grupoInicial = spanGrupo.innerText.trim();
+    if (grupoInicial && grupoInicial !== "") {
+        btnAmigos.href = `sala.html?grupo=${encodeURIComponent(grupoInicial)}`;
+    }
+});
 </script>
 
             
