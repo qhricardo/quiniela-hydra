@@ -8,8 +8,6 @@ import bodyParser from "body-parser";
 import admin from "firebase-admin";
 import cors from "cors";
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
-import { createServer } from "http"; // 🚀 Importado para Socket.io
-import { Server } from "socket.io";   // 🚀 Importado para Socket.io
 
 // ──────────────── CONFIGURACIÓN BASE ────────────────
 const app = express();
@@ -239,30 +237,7 @@ app.post("/credit-invite", async (req, res) => {
   }
 });
 
-// ──────────────── SALA DE CHAT EN TIEMPO REAL ────────────────
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: "https://qhricardo.github.io",
-    methods: ["GET", "POST"]
-  }
-});
-
-io.on("connection", (socket) => {
-  console.log("👤 Usuario conectado al chat:", socket.id);
-
-  // Escuchar cuando un usuario envía un mensaje
-  socket.on("chat message", (data) => {
-    // Reenviar el mensaje a todos los conectados en la sala
-    io.emit("chat message", data);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("👤 Usuario desconectado del chat:", socket.id);
-  });
-});
 
 // ──────────────── SERVIDOR ────────────────
 const PORT = process.env.PORT || 10000;
-// 🔹 Importante: Ahora escuchamos desde `httpServer` para que el chat y la API corran juntos.
-httpServer.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor activo en puerto ${PORT}`));
