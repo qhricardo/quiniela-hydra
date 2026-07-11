@@ -1,7 +1,7 @@
 {
   "name": "quiniela-hydra",
   "version": "1.0.0",
-  "description": "Backend para Quiniela360 con Firebase y Mercado Pago",
+  "description": "Backend para Quiniela360 con Firebase, Mercado Pago y Chat/Voz",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -18,7 +18,8 @@
     "node-fetch": "^3.3.2",
     "dotenv": "^16.3.1",
     "mercadopago": "^2.0.14",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
@@ -26,4 +27,3 @@
   "author": "Richar",
   "license": "MIT"
 }
-
