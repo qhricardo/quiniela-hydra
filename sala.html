@@ -243,7 +243,6 @@
     const audiosOcultos = document.getElementById('audios-ocultos');
     const chatStatus = document.getElementById('chat-status');
     
-    // Elementos del Chat
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
     const chatMessages = document.getElementById('chat-messages');
@@ -252,27 +251,22 @@
     let miPeer = null;
     const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
 
-    // Monitor visual del estado del Servidor Backend
+    // Estado del Servidor
     socket.on('connect', () => {
         chatStatus.innerText = "En línea";
         chatStatus.style.background = "#28a745";
-        chatStatus.style.color = "#fff";
     });
 
     socket.on('disconnect', () => {
         chatStatus.innerText = "Desconectado";
         chatStatus.style.background = "#cc0000";
-        chatStatus.style.color = "#fff";
     });
 
-    // 💬 LÓGICA DEL CHAT EN VIVO
+    // 💬 CHAT
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         if (chatInput.value.trim()) {
-            socket.emit('chat message', {
-                user: miNombre,
-                text: chatInput.value
-            });
+            socket.emit('chat message', { user: miNombre, text: chatInput.value });
             chatInput.value = '';
         }
     });
@@ -284,27 +278,31 @@
         chatMessages.scrollTop = chatMessages.scrollHeight; 
     });
 
-
-    // 🎙️ LÓGICA DE VOZ (WEBRTC)
+    // 🎙️ VOZ (TOTALMENTE REDISEÑADA PARA POLÍTICAS DE AUDIO)
     btnMicrofono.addEventListener('click', async () => {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-            const ctx = new AudioContextClass();
-            if (ctx.state === 'suspended') ctx.resume();
+        // ACTIVACIÓN FORZADA DEL MOTOR DE AUDIO (Indispensable para PC y Celulares)
+        window.audioContextGlobal = new (window.AudioContext || window.webkitAudioContext)();
+        if (window.audioContextGlobal.state === 'suspended') {
+            await window.audioContextGlobal.resume();
         }
 
         if (!miStreamLocal) {
             try {
+                // Configuración de audio profesional para llamadas
                 miStreamLocal = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
+                    audio: { 
+                        echoCancellation: true, 
+                        noiseSuppression: true, 
+                        autoGainControl: true 
+                    }, 
                     video: false 
                 });
                 
-                statusVoz.innerText = "🎙️ Conectando tu voz con la sala...";
+                statusVoz.innerText = "🎙️ Conectando tu voz...";
                 btnMicrofono.innerText = "🔇 Silenciar mi Micrófono";
                 btnMicrofono.classList.add('mutear');
 
-                // Múltiples servidores STUN de Google para saltar firewalls de operadoras móviles
+                // Servidores STUN públicos y estables de Google
                 miPeer = new Peer(undefined, {
                     config: { 
                         'iceServers': [
@@ -321,7 +319,9 @@
                     socket.emit('join-voice', { peerId: peerId, nombre: miNombre });
                 });
 
+                // ATENDER LLAMADAS ENTRANTES
                 miPeer.on('call', (llamada) => {
+                    console.log("Recibiendo llamada entrante de:", llamada.peer);
                     llamada.answer(miStreamLocal); 
                     llamada.on('stream', (streamRemoto) => {
                         reproducirAudioEntrante(streamRemoto, llamada.peer);
@@ -338,7 +338,7 @@
                 audioTrack.enabled = false;
                 btnMicrofono.innerText = "🎙️ Hablar en el Canal";
                 btnMicrofono.classList.remove('mutear');
-                statusVoz.innerText = "🔇 Tu micrófono está silenciado.";
+                statusVoz.innerText = "🔇 Micrófono silenciado.";
             } else {
                 audioTrack.enabled = true;
                 btnMicrofono.innerText = "🔇 Silenciar mi Micrófono";
@@ -348,23 +348,25 @@
         }
     });
 
-    // Eventos síncronos P2P corregidos con delays protectores
+    // 📡 COORDINACIÓN DE CONEXIONES EN TIEMPO REAL
     socket.on('user-joined-voice', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
             agregarBurbujaUsuario(data.peerId, data.nombre);
+            // Le respondemos al nuevo para sincronizar
             socket.emit('reply-voice', { peerId: miPeer.id, nombre: miNombre });
-            setTimeout(() => { conectarAPeer(data.peerId); }, 600);
+            
+            // Le llamamos después de una pequeña pausa de estabilización
+            setTimeout(() => { conectarAPeer(data.peerId); }, 1000);
         }
     });
 
     socket.on('user-replied-voice', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
             agregarBurbujaUsuario(data.peerId, data.nombre);
-            setTimeout(() => { conectarAPeer(data.peerId); }, 600);
+            setTimeout(() => { conectarAPeer(data.peerId); }, 1000);
         }
     });
 
-    // Eliminar burbuja de la interfaz cuando un usuario refresca o cierra pestaña
     socket.on('user-left-voice', (peerId) => {
         const burbuja = document.getElementById(`user-${peerId}`);
         if (burbuja) burbuja.remove();
@@ -374,6 +376,7 @@
 
     function conectarAPeer(remotePeerId) {
         if (!miPeer || miPeer.destroyed) return;
+        console.log("Llamando al peer:", remotePeerId);
         const llamada = miPeer.call(remotePeerId, miStreamLocal);
         if (llamada) {
             llamada.on('stream', (streamRemoto) => {
@@ -391,20 +394,32 @@
         usuariosLista.appendChild(burbuja);
     }
 
+    // 🔊 REPRODUCTOR DE AUDIO MEJORADO (ANTI-BLOQUEOS)
     function reproducirAudioEntrante(stream, peerId) {
+        console.log("Procesando flujo de audio entrante para:", peerId);
         let elAudio = document.getElementById(`audio-${peerId}`);
+        
         if (!elAudio) {
             elAudio = document.createElement('audio');
             elAudio.id = `audio-${peerId}`;
             audiosOcultos.appendChild(elAudio);
         }
+        
         elAudio.srcObject = stream;
         elAudio.autoplay = true;
-        elAudio.playsInline = true; 
+        elAudio.playsInline = true; // Clave para iOS/Móviles
+        elAudio.muted = false;       // Asegurar que no nazca muteado
         
-        elAudio.play().catch(error => {
-            document.body.addEventListener('click', () => { elAudio.play(); }, { once: true });
-        });
+        // Ejecución forzada
+        const lanzarAudio = () => {
+            elAudio.play().catch(err => console.log("Reintentando reproducción de audio...", err));
+        };
+
+        lanzarAudio();
+
+        // Si el navegador bloquea el autoplay de audio, lo forzamos al primer clic que den en cualquier parte
+        document.body.addEventListener('click', lanzarAudio, { once: false });
+        document.body.addEventListener('touchstart', lanzarAudio, { once: false });
     }
 </script>
 </body>
