@@ -16,17 +16,14 @@
         button { padding: 10px 20px; background: #0084ff; color: white; border: none; border-radius: 4px; margin-left: 5px; cursor: pointer; font-weight: bold; }
         button:hover { background: #0066cc; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
     
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
 </head>
 <body>
 
-
 <div id="chat-container">
-    <!-- Lista donde aparecerán los mensajes -->
     <ul id="messages"></ul>
     
-    <!-- Formulario para escribir -->
     <form id="form" action="">
         <input id="input-name" placeholder="Tu Nombre" autocomplete="off" required />
         <input id="input-message" placeholder="Escribe un mensaje..." autocomplete="off" required />
@@ -34,10 +31,12 @@
     </form>
 </div>
 
-<!-- Cargamos la librería de comunicación en tiempo real -->
-<script src="/socket.io/socket.io.js"></script>
 <script>
-    const socket = io();
+    // ⚠️ CAMBIA ESTA URL por la que te dé Render para tu 'server1.js'
+    const URL_CHAT = "https://quiniela-chat-server.onrender.com"; 
+    
+    // Conectamos apuntando directamente a tu nuevo servidor de chat
+    const socket = io(URL_CHAT);
 
     const form = document.getElementById('form');
     const inputName = document.getElementById('input-name');
