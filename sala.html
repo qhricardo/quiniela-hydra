@@ -3,69 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala de Chat en Vivo</title>
+    <title>Sala de Voz en Vivo</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f0f2f5; }
-        #chat-container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
-        #messages { list-style-type: none; padding: 20px; margin: 0; height: 400px; overflow-y: auto; border-bottom: 1px solid #ddd; }
-        #messages li { padding: 8px 12px; margin-bottom: 8px; border-radius: 15px; max-width: 70%; word-wrap: break-word; }
-        .msg-other { background-color: #e4e6eb; align-self: flex-start; }
-        #form { display: flex; padding: 10px; background: #fff; }
-        #input-name { width: 25%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-right: 5px; }
-        #input-message { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        button { padding: 10px 20px; background: #0084ff; color: white; border: none; border-radius: 4px; margin-left: 5px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0066cc; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #1a1a1a; color: white; text-align: center; padding: 50px; }
+        .btn { background-color: #28a745; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn:hover { background-color: #218838; }
+        .btn.mutear { background-color: #dc3545; }
+        .btn.mutear:hover { background-color: #c82333; }
+        #status { margin-top: 20px; color: #aaa; }
+        .usuarios-lista { margin-top: 30px; display: flex; justify-content: center; gap: 10px; }
+        .usuario-burbuja { background: #333; padding: 10px 20px; border-radius: 20px; border: 1px solid #555; }
     </style>
-    
-    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
 
-<div id="chat-container">
-    <ul id="messages"></ul>
-    
-    <form id="form" action="">
-        <input id="input-name" placeholder="Tu Nombre" autocomplete="off" required />
-        <input id="input-message" placeholder="Escribe un mensaje..." autocomplete="off" required />
-        <button>Enviar</button>
-    </form>
-</div>
+    <h1>🎙️ Sala de Voz Colectiva</h1>
+    <p>Todos los que entren a esta página podrán hablar escucharse entre sí.</p>
+
+    <button id="btn-microfono" class="btn">Activar Micrófono e Entrar</button>
+    <div id="status">Desconectado - Haz clic en el botón para iniciar</div>
+
+    <div class="usuarios-lista" id="usuarios">
+        </div>
+
+    <div id="audios-contenedor" style="display:none;"></div>
 
 <script>
-    // ⚠️ CAMBIA ESTA URL por la que te dé Render para tu 'server1.js'
-    const URL_CHAT = "https://quiniela-hydra-1.onrender.com"; 
+    const btnMicrofono = document.getElementById('btn-microfono');
+    const statusDiv = document.getElementById('status');
+    const audiosContenedor = document.getElementById('audios-contenedor');
+
+    let miStreamLocal = null;
+    let peer = null;
     
-    // Conectamos apuntando directamente a tu nuevo servidor de chat
-    const socket = io(URL_CHAT);
+    // ⚠️ ID fijo para la sala. Todos los que usen el mismo prefijo se conectarán juntos.
+    const SALA_ID = "quiniela360_sala_global"; 
 
-    const form = document.getElementById('form');
-    const inputName = document.getElementById('input-name');
-    const inputMessage = document.getElementById('input-message');
-    const messages = document.getElementById('messages');
+    btnMicrofono.addEventListener('click', async () => {
+        if (!miStreamLocal) {
+            try {
+                // 1. Solicitar acceso al micrófono del usuario
+                miStreamLocal = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                statusDiv.innerText = "🎙️ Micrófono activado. Conectando a la sala...";
+                btnMicrofono.innerText = "Mutear Micrófono";
+                btnMicrofono.classList.add('mutear');
 
-    // Al enviar el formulario
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (inputMessage.value && inputName.value) {
-            // Enviamos el nombre y el mensaje al servidor
-            socket.emit('chat message', {
-                user: inputName.value,
-                text: inputMessage.value
-            });
-            inputMessage.value = ''; // Limpiar el cuadro de texto
+                // 2. Inicializar PeerJS (Usa los servidores en la nube gratuitos de PeerJS)
+                // Generamos un ID único para este usuario
+                const miIdUnico = SALA_ID + "_" + Math.floor(Math.random() * 10000);
+                peer = new Peer(miIdUnico);
+
+                peer.on('open', (id) => {
+                    statusDiv.innerText = "✅ Conectado a la sala de voz en vivo.";
+                    // Aquí le avisarías a tu server1.js (vía socket.io) que entraste
+                    // para que los demás sepan tu ID y te llamen.
+                });
+
+                // 3. Escuchar llamadas entrantes de otros usuarios que se unan
+                peer.on('call', (llamada) => {
+                    // Responder la llamada enviando nuestro propio audio
+                    llamada.answer(miStreamLocal);
+                    
+                    // Recibir el audio de la otra persona y reproducirlo
+                    llamada.on('stream', (streamRemoto) => {
+                        reproducirAudioRemoto(streamRemoto, llamada.peer);
+                    });
+                });
+
+            } catch (error) {
+                console.error("Error al acceder al micrófono:", error);
+                statusDiv.innerText = "❌ Error: Debes permitir el acceso al micrófono.";
+            }
+        } else {
+            // Lógica básica para Mutear / Desmutear
+            const audioTrack = miStreamLocal.getAudioTracks()[0];
+            if (audioTrack.enabled) {
+                audioTrack.enabled = false;
+                btnMicrofono.innerText = "Encender Micrófono";
+                btnMicrofono.classList.remove('mutear');
+                statusDiv.innerText = "🔇 Micrófono silenciado";
+            } else {
+                audioTrack.enabled = true;
+                btnMicrofono.innerText = "Mutear Micrófono";
+                btnMicrofono.classList.add('mutear');
+                statusDiv.innerText = "🎙️ Hablando en vivo...";
+            }
         }
     });
 
-    // Escuchar cuando el servidor nos avisa que hay un nuevo mensaje
-    socket.on('chat message', (data) => {
-        const item = document.createElement('li');
-        item.className = 'msg-other';
-        item.innerHTML = `<strong>${data.user}:</strong> ${data.text}`;
-        messages.appendChild(item);
+    // Función para crear un reproductor de audio invisible para cada participante nuevo
+    function reproducirAudioRemoto(stream, peerId) {
+        // Evitar duplicar el reproductor si ya existe
+        if (document.getElementById(peerId)) return;
+
+        const audioHtml = document.createElement('audio');
+        audioHtml.id = peerId;
+        audioHtml.srcObject = stream;
+        audioHtml.autoplay = true;
+        audioHtml.controls = false; // Invisible
+        audiosContenedor.appendChild(audioHtml);
         
-        // Auto-scroll hacia abajo para ver el último mensaje
-        messages.scrollTop = messages.scrollHeight;
-    });
+        // Agregar burbuja visual
+        const listaUsuarios = document.getElementById('usuarios');
+        const burbuja = document.createElement('div');
+        burbuja.className = 'usuario-burbuja';
+        burbuja.id = "visual_" + peerId;
+        burbuja.innerText = "🗣️ Oyente/Hablante";
+        listaUsuarios.appendChild(burbuja);
+    }
 </script>
 </body>
 </html>
