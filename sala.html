@@ -35,6 +35,7 @@
             font-size: 14px;
             transition: 0.2s;
             border: none;
+            cursor: pointer;
         }
         .btn-regresar:hover { background-color: #3f3f3f; }
 
@@ -70,6 +71,7 @@
             padding: 15px;
             border-radius: 12px;
             text-align: center;
+            border: 1px solid #333;
         }
         .btn-mic { 
             background-color: #cc0000; 
@@ -93,11 +95,13 @@
             border-radius: 12px;
             flex-grow: 1;
             overflow-y: auto;
+            border: 1px solid #333;
         }
         .usuarios-lista { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .usuario-burbuja { 
             background: #333; padding: 6px 14px; border-radius: 15px; 
             display: flex; align-items: center; gap: 6px; font-size: 14px; 
+            border: 1px solid #444;
         }
         .status-dot { width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; }
 
@@ -118,7 +122,12 @@
             border-bottom: 1px solid #333;
             font-weight: bold;
             font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        #chat-status { font-size: 11px; padding: 4px 8px; border-radius: 10px; background: #333; color: #aaa; }
+        
         #chat-messages {
             flex-grow: 1;
             padding: 15px;
@@ -134,7 +143,9 @@
             line-height: 1.4;
             word-break: break-word;
         }
-        #chat-messages .user-name { color: #aaa; font-weight: bold; margin-right: 8px; }
+        #chat-messages .user-name { color: #aaaaaa; font-weight: bold; margin-right: 8px; }
+        #chat-messages .system-msg { color: #28a745; font-style: italic; font-size: 13px; }
+        
         #chat-form {
             padding: 10px;
             border-top: 1px solid #333;
@@ -147,24 +158,34 @@
             background: #2c2c2c;
             border: 1px solid #444;
             color: white;
-            padding: 10px;
+            padding: 10px 15px;
             border-radius: 20px;
             outline: none;
+            font-size: 14px;
         }
+        #chat-input:focus { border-color: #cc0000; }
         #chat-form button {
             background: #cc0000;
             color: white;
             border: none;
-            padding: 0 15px;
+            padding: 0 18px;
             border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
+            transition: 0.2s;
         }
+        #chat-form button:hover { background-color: #990000; }
+
+        /* Barra de scroll estilizada oscura */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #141414; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444; }
 
         /* Responsivo para móviles */
         @media (max-width: 768px) {
             .main-layout { flex-direction: column; height: auto; }
-            .right-column { max-width: 100%; height: 400px; }
+            .right-column { max-width: 100%; height: 350px; }
         }
     </style>
 
@@ -174,7 +195,7 @@
 <body>
 
 <div class="header-sala">
-    <h2>Quiniela360 Live</h2>
+    <h2 style="margin:0; font-size: 20px; letter-spacing: 0.5px;">Quiniela360 Live</h2>
     <a href="index.html" class="btn-regresar">⬅️ Volver</a>
 </div>
 
@@ -191,13 +212,16 @@
         </div>
 
         <div class="usuarios-seccion">
-            <h4 style="margin:0;">🎙️ Hablando ahora:</h4>
+            <h4 style="margin:0; color: #aaa;">🎙️ En el canal de voz:</h4>
             <div class="usuarios-lista" id="usuarios-lista"></div>
         </div>
     </div>
 
     <div class="right-column">
-        <div class="chat-header">💬 Chat en vivo</div>
+        <div class="chat-header">
+            <span>💬 Chat en vivo</span>
+            <span id="chat-status">Conectando...</span>
+        </div>
         <ul id="chat-messages"></ul>
         <form id="chat-form">
             <input id="chat-input" placeholder="Enviar un mensaje..." autocomplete="off" required />
@@ -217,6 +241,7 @@
     const statusVoz = document.getElementById('status-voz');
     const usuariosLista = document.getElementById('usuarios-lista');
     const audiosOcultos = document.getElementById('audios-ocultos');
+    const chatStatus = document.getElementById('chat-status');
     
     // Elementos del Chat
     const chatForm = document.getElementById('chat-form');
@@ -226,6 +251,19 @@
     let miStreamLocal = null;
     let miPeer = null;
     const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
+
+    // Monitor visual del estado del Servidor Backend
+    socket.on('connect', () => {
+        chatStatus.innerText = "En línea";
+        chatStatus.style.background = "#28a745";
+        chatStatus.style.color = "#fff";
+    });
+
+    socket.on('disconnect', () => {
+        chatStatus.innerText = "Desconectado";
+        chatStatus.style.background = "#cc0000";
+        chatStatus.style.color = "#fff";
+    });
 
     // 💬 LÓGICA DEL CHAT EN VIVO
     chatForm.addEventListener('submit', (e) => {
@@ -243,7 +281,7 @@
         const item = document.createElement('li');
         item.innerHTML = `<span class="user-name">${data.user}:</span><span>${data.text}</span>`;
         chatMessages.appendChild(item);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+        chatMessages.scrollTop = chatMessages.scrollHeight; 
     });
 
 
@@ -266,8 +304,15 @@
                 btnMicrofono.innerText = "🔇 Silenciar mi Micrófono";
                 btnMicrofono.classList.add('mutear');
 
+                // Múltiples servidores STUN de Google para saltar firewalls de operadoras móviles
                 miPeer = new Peer(undefined, {
-                    config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] } 
+                    config: { 
+                        'iceServers': [
+                            { 'urls': 'stun:stun.l.google.com:19302' },
+                            { 'urls': 'stun:stun1.l.google.com:19302' },
+                            { 'urls': 'stun:stun2.l.google.com:19302' }
+                        ] 
+                    }
                 });
 
                 miPeer.on('open', (peerId) => {
@@ -303,19 +348,28 @@
         }
     });
 
+    // Eventos síncronos P2P corregidos con delays protectores
     socket.on('user-joined-voice', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
             agregarBurbujaUsuario(data.peerId, data.nombre);
             socket.emit('reply-voice', { peerId: miPeer.id, nombre: miNombre });
-            conectarAPeer(data.peerId);
+            setTimeout(() => { conectarAPeer(data.peerId); }, 600);
         }
     });
 
     socket.on('user-replied-voice', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
             agregarBurbujaUsuario(data.peerId, data.nombre);
-            conectarAPeer(data.peerId);
+            setTimeout(() => { conectarAPeer(data.peerId); }, 600);
         }
+    });
+
+    // Eliminar burbuja de la interfaz cuando un usuario refresca o cierra pestaña
+    socket.on('user-left-voice', (peerId) => {
+        const burbuja = document.getElementById(`user-${peerId}`);
+        if (burbuja) burbuja.remove();
+        const audio = document.getElementById(`audio-${peerId}`);
+        if (audio) audio.remove();
     });
 
     function conectarAPeer(remotePeerId) {
@@ -342,7 +396,7 @@
         if (!elAudio) {
             elAudio = document.createElement('audio');
             elAudio.id = `audio-${peerId}`;
-            audiosOcultos.appendChild(elAudio); // Vinculación corregida
+            audiosOcultos.appendChild(elAudio);
         }
         elAudio.srcObject = stream;
         elAudio.autoplay = true;
