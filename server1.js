@@ -1,65 +1,87 @@
-// ────────────────────────────────────────────────
-// server1.js | Servidor Exclusivo para Chat y Voz en Vivo
-// Versión para Quiniela360 (Render) - Puerto Separado
-// ────────────────────────────────────────────────
-
-import express from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
-import cors from "cors";
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const cors = require('cors');
 
 const app = express();
 
-// 🔹 Configurar CORS para permitir que tu sitio en GitHub Pages se conecte
+// Configuración de CORS para permitir conexiones desde tu dominio de GitHub Pages
 app.use(cors({
-  origin: "https://qhricardo.github.io",
-  methods: ["GET", "POST"],
+    origin: "*", 
+    methods: ["GET", "POST"]
 }));
 
-// Endpoint básico para verificar que el servidor del chat está vivo
-app.get("/", (req, res) => {
-  res.send("🚀 Servidor de Chat y Voz Quiniela360 Activo y Corriendo");
+const server = http.createServer(app);
+
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
 });
 
-const httpServer = createServer(app);
-
-// Inicializar Socket.io con las reglas de CORS
-const io = new Server(httpServer, {
-  cors: {
-    origin: "https://qhricardo.github.io",
-    methods: ["GET", "POST"]
-  }
+// Ruta de prueba para verificar que el backend esté en línea desde el navegador
+app.get('/', (req, res) => {
+    res.send('🚀 Servidor de Quiniela360 Multi-Salas corriendo correctamente.');
 });
 
-// Lógica de comunicación en tiempo real
-io.on("connection", (socket) => {
-  console.log("👤 Usuario conectado al chat/voz:", socket.id);
+// LÓGICA DE CONEXIONES EN TIEMPO REAL (SOCKET.IO)
+io.on('connection', (socket) => {
+    console.log(`📡 Nuevo dispositivo conectado ID: ${socket.id}`);
 
-  // 💬 Mensajes de texto
-  socket.on("chat message", (data) => {
-    io.emit("chat message", data);
-  });
+    // Un usuario solicita ingresar a un grupo/sala específica
+    socket.on('join-room', (data) => {
+        const { peerId, nombre, grupo } = data;
+        
+        // Vincular los datos de identidad a la sesión del socket actual
+        socket.grupo = grupo || "General";
+        socket.peerId = peerId;
+        socket.nombre = nombre;
 
-  // 🎙️ 1. Un usuario nuevo entra a la sala de voz
-  socket.on("join-voice", (data) => {
-    // Le avisa a los usuarios existentes (excepto a sí mismo)
-    socket.broadcast.emit("user-joined-voice", data);
-  });
+        // Unirse formalmente a la sala exclusiva de Socket.io para ese grupo
+        socket.join(socket.grupo);
+        console.log(`👤 [${socket.grupo}] ${nombre} (Peer: ${peerId}) se ha unido.`);
 
-  // 🎙️ 2. Un usuario existente le responde al nuevo para sincronizarse
-  socket.on("reply-voice", (data) => {
-    socket.broadcast.emit("user-replied-voice", data);
-  });
+        // Avisar ÚNICAMENTE a los demás miembros que están dentro de este mismo grupo
+        socket.to(socket.grupo).emit('user-joined-room', {
+            peerId: peerId,
+            nombre: nombre
+        });
+    });
 
-  ssocket.on("disconnect", () => {
-    // Si guardaste el peerId al hacer join, lo transmites aquí:
-    socket.broadcast.emit('user-left-voice', socket.peerId);
-    console.log("👤 Usuario desconectado del chat/voz:", socket.id);
+    // Enrutar los mensajes de texto del chat bajo el contexto de su sala
+    socket.on('chat message', (data) => {
+        if (socket.grupo) {
+            // Envía el mensaje a todos en el grupo, incluido quien lo envió
+            io.to(socket.grupo).emit('chat message', {
+                user: data.user,
+                text: data.text
+            });
+        }
+    });
+
+    // Intercambio de respuestas P2P WebRTC restringido al grupo del usuario
+    socket.on('reply-room', (data) => {
+        if (socket.grupo) {
+            socket.to(socket.grupo).emit('user-replied-room', data);
+        }
+    });
+
+    // Gestión automática cuando un usuario cierra la pestaña o pierde conexión
+    socket.on('disconnect', () => {
+        if (socket.grupo && socket.peerId) {
+            console.log(`❌ [${socket.grupo}] ${socket.nombre} abandonó la sala.`);
+            
+            // Ordenar al resto de miembros del grupo que eliminen su cuadro de video/audio
+            socket.to(socket.grupo).emit('user-left-room', socket.peerId);
+        } else {
+            console.log(`📡 Dispositivo ID: ${socket.id} se ha desconectado de la red.`);
+        }
+    });
 });
 
-// ──────────────── CONFIGURACIÓN DE PUERTO ────────────────
-const PORT = process.env.PORT || 10001;
-
-httpServer.listen(PORT, () => {
-  console.log(`💬 Servidor de Chat y Voz activo en el puerto ${PORT}`);
+// Iniciar el servidor en el puerto proporcionado por Render o por defecto el 3000
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`🔥 Servidor escuchando en el puerto http://localhost:${PORT}`);
 });
