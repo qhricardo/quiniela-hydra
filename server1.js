@@ -51,9 +51,10 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("user-replied-voice", data);
   });
 
-  socket.on("disconnect", () => {
+  ssocket.on("disconnect", () => {
+    // Si guardaste el peerId al hacer join, lo transmites aquí:
+    socket.broadcast.emit('user-left-voice', socket.peerId);
     console.log("👤 Usuario desconectado del chat/voz:", socket.id);
-  });
 });
 
 // ──────────────── CONFIGURACIÓN DE PUERTO ────────────────
