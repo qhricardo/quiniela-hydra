@@ -153,6 +153,7 @@
 <div id="audios-ocultos" style="display:none;"></div>
 
 <script>
+   <script>
     // ⚠️ CONFIGURACIÓN: Reemplaza con tu URL de Render para 'server1.js'
     const URL_CHAT = "https://quiniela-chat-server.onrender.com"; 
     const socket = io(URL_CHAT);
@@ -167,12 +168,16 @@
     const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
 
     btnMicrofono.addEventListener('click', async () => {
-        // Activar el contexto de audio global para celulares/Safari
-        (window.AudioContext || window.webkitAudioContext) && new (window.AudioContext || window.webkitAudioContext)().resume();
+        // Desbloquear el motor de audio del navegador de escritorio inmediatamente al hacer clic
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+            const ctx = new AudioContextClass();
+            if (ctx.state === 'suspended') ctx.resume();
+        }
 
         if (!miStreamLocal) {
             try {
-                // Solicitar micrófono con cancelación de eco y ruido
+                // Solicitar micrófono con alta compatibilidad para PC y Móvil
                 miStreamLocal = await navigator.mediaDevices.getUserMedia({ 
                     audio: { 
                         echoCancellation: true, 
@@ -186,7 +191,10 @@
                 btnMicrofono.innerText = "🔇 Mutear Micrófono";
                 btnMicrofono.classList.add('mutear');
 
-                miPeer = new Peer();
+                // Forzar configuración limpia de PeerJS para evitar bloqueos de cortafuegos en PC
+                miPeer = new Peer(undefined, {
+                    config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] } 
+                });
 
                 miPeer.on('open', (peerId) => {
                     statusVoz.innerText = `✅ En línea como: ${miNombre}`;
@@ -196,12 +204,20 @@
                     socket.emit('join-voice', { peerId: peerId, nombre: miNombre });
                 });
 
-                // Escuchar llamadas entrantes automáticas
+                // Escuchar llamadas entrantes automáticas (Muy importante para la PC)
                 miPeer.on('call', (llamada) => {
                     llamada.answer(miStreamLocal); 
                     llamada.on('stream', (streamRemoto) => {
                         reproducirAudioEntrante(streamRemoto, llamada.peer);
                     });
+                });
+
+                // Manejo de errores de conexión en PC
+                miPeer.on('error', (err) => {
+                    console.error("Error en PeerJS:", err);
+                    if(err.type === 'peer-unavailable') {
+                        statusVoz.innerText = "⚠️ Un usuario se desconectó abruptamente.";
+                    }
                 });
 
             } catch (error) {
@@ -226,34 +242,31 @@
 
     // 📡 ESCUCHAS DE COORDINACIÓN SÍNCRONA
 
-    // Si somos el usuario VIEJO y entra uno NUEVO, lo añadimos, respondemos y llamamos
     socket.on('user-joined-voice', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
             agregarBurbujaUsuario(data.peerId, data.nombre);
-
-            // Le respondemos al nuevo para enviarle nuestra identidad
+            // Responder inmediatamente para romper la asimetría PC/Móvil
             socket.emit('reply-voice', { peerId: miPeer.id, nombre: miNombre });
-
-            // Iniciar llamada hacia él
             conectarAPeer(data.peerId);
         }
     });
 
-    // Si somos el usuario NUEVO y los VIEJOS nos responden, los añadimos y llamamos
     socket.on('user-replied-voice', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
             agregarBurbujaUsuario(data.peerId, data.nombre);
-            
-            // Llamar también de regreso
             conectarAPeer(data.peerId);
         }
     });
 
     function conectarAPeer(remotePeerId) {
+        if (!miPeer || miPeer.destroyed) return;
+        
         const llamada = miPeer.call(remotePeerId, miStreamLocal);
-        llamada.on('stream', (streamRemoto) => {
-            reproducirAudioEntrante(streamRemoto, remotePeerId);
-        });
+        if (llamada) {
+            llamada.on('stream', (streamRemoto) => {
+                reproducirAudioEntrante(streamRemoto, remotePeerId);
+            });
+        }
     }
 
     // 🛠️ RENDERIZADO VISUAL Y AUDIO
@@ -274,11 +287,22 @@
             elAudio.id = `audio-${peerId}`;
             audiosOcultos.appendChild(elAudio);
         }
+        
         elAudio.srcObject = stream;
         elAudio.autoplay = true;
         elAudio.playsInline = true; 
         
-        elAudio.play().catch(e => console.log("Permiso de reproducción pendiente:", e));
+        // Ejecución explícita para obligar a la CPU a reproducir el flujo de audio
+        const playPromise = elAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("El navegador web bloqueó el autoplay. Creando activación por interacción.");
+                // Si el navegador de la PC lo bloquea, dejamos que se active al primer clic que dé en la pantalla
+                document.body.addEventListener('click', () => {
+                    elAudio.play();
+                }, { once: true });
+            });
+        }
     }
 </script>
 </body>
