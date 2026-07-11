@@ -153,7 +153,8 @@
 <div id="audios-ocultos" style="display:none;"></div>
 
 <script>
-    const URL_CHAT = "https://quiniela-chat-server.onrender.com"; // Tu servidor server1.js
+    // ⚠️ CONFIGURACIÓN: Reemplaza con tu URL de Render para 'server1.js'
+    const URL_CHAT = "https://quiniela-chat-server.onrender.com"; 
     const socket = io(URL_CHAT);
     
     const btnMicrofono = document.getElementById('btn-microfono');
@@ -166,14 +167,18 @@
     const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
 
     btnMicrofono.addEventListener('click', async () => {
-        // Forzar activación del contexto de audio del navegador ante restricciones de autoplay
+        // Activar el contexto de audio global para celulares/Safari
         (window.AudioContext || window.webkitAudioContext) && new (window.AudioContext || window.webkitAudioContext)().resume();
 
         if (!miStreamLocal) {
             try {
-                // Solicitar micrófono explícitamente con cancelación de eco y ruido activa
+                // Solicitar micrófono con cancelación de eco y ruido
                 miStreamLocal = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { echoCancellation: true, noiseSuppression: true }, 
+                    audio: { 
+                        echoCancellation: true, 
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }, 
                     video: false 
                 });
                 
@@ -187,11 +192,11 @@
                     statusVoz.innerText = `✅ En línea como: ${miNombre}`;
                     agregarBurbujaUsuario(miPeer.id, `${miNombre} (Tú)`);
                     
-                    // Avisar que entramos
+                    // Avisar a la sala que entramos
                     socket.emit('join-voice', { peerId: peerId, nombre: miNombre });
                 });
 
-                // Escuchar llamadas entrantes de los demás usuarios
+                // Escuchar llamadas entrantes automáticas
                 miPeer.on('call', (llamada) => {
                     llamada.answer(miStreamLocal); 
                     llamada.on('stream', (streamRemoto) => {
@@ -219,19 +224,39 @@
         }
     });
 
-    // Recibir aviso de otro usuario conectado para llamarlo inmediatamente
+    // 📡 ESCUCHAS DE COORDINACIÓN SÍNCRONA
+
+    // Si somos el usuario VIEJO y entra uno NUEVO, lo añadimos, respondemos y llamamos
     socket.on('user-joined-voice', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
             agregarBurbujaUsuario(data.peerId, data.nombre);
 
-            // Iniciar llamada hacia el nuevo usuario
-            const llamada = miPeer.call(data.peerId, miStreamLocal);
-            llamada.on('stream', (streamRemoto) => {
-                reproducirAudioEntrante(streamRemoto, data.peerId);
-            });
+            // Le respondemos al nuevo para enviarle nuestra identidad
+            socket.emit('reply-voice', { peerId: miPeer.id, nombre: miNombre });
+
+            // Iniciar llamada hacia él
+            conectarAPeer(data.peerId);
         }
     });
 
+    // Si somos el usuario NUEVO y los VIEJOS nos responden, los añadimos y llamamos
+    socket.on('user-replied-voice', (data) => {
+        if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
+            agregarBurbujaUsuario(data.peerId, data.nombre);
+            
+            // Llamar también de regreso
+            conectarAPeer(data.peerId);
+        }
+    });
+
+    function conectarAPeer(remotePeerId) {
+        const llamada = miPeer.call(remotePeerId, miStreamLocal);
+        llamada.on('stream', (streamRemoto) => {
+            reproducirAudioEntrante(streamRemoto, remotePeerId);
+        });
+    }
+
+    // 🛠️ RENDERIZADO VISUAL Y AUDIO
     function agregarBurbujaUsuario(id, nombre) {
         if (document.getElementById(`user-${id}`)) return;
         
@@ -251,10 +276,9 @@
         }
         elAudio.srcObject = stream;
         elAudio.autoplay = true;
-        elAudio.playsInline = true; // Requerido para iOS / Safari móvil
+        elAudio.playsInline = true; 
         
-        // Intento explícito de reproducción para mitigar bloqueos del navegador
-        elAudio.play().catch(e => console.log("Esperando interacción para reproducir stream de audio:", e));
+        elAudio.play().catch(e => console.log("Permiso de reproducción pendiente:", e));
     }
 </script>
 </body>
