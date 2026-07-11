@@ -3,189 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiniela360 | Sala en Vivo estilo YouTube</title>
+    <title>Quiniela360 | Sala en Vivo estilo Twitch</title>
     
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             margin: 0; 
-            padding: 15px; 
-            background-color: #0f0f0f; 
-            color: #ffffff;
+            padding: 10px; 
+            background-color: #0e0e10; /* Color oscuro exacto de Twitch */
+            color: #efeff1;
             height: 100vh;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
         }
 
-        /* Encabezado con botón regresar */
+        /* Encabezado */
         .header-sala {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 10px;
+            padding: 5px 10px 10px 10px;
+            border-bottom: 1px solid #26262c;
         }
         .btn-regresar {
-            padding: 8px 16px;
-            background-color: #272727;
+            padding: 6px 14px;
+            background-color: #1f1f23;
             color: #fff;
             text-decoration: none;
             font-weight: bold;
-            border-radius: 18px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 13px;
             transition: 0.2s;
-            border: none;
+            border: 1px solid #3a3a3d;
             cursor: pointer;
         }
-        .btn-regresar:hover { background-color: #3f3f3f; }
+        .btn-regresar:hover { background-color: #26262c; }
 
-        /* Estructura Principal estilo YouTube (Columnas) */
+        /* ESTRUCTURA DE 3 COLUMNAS (ESTILO TWITCH) */
         .main-layout {
             display: flex;
-            gap: 20px;
+            gap: 12px;
             flex-grow: 1;
-            height: calc(100vh - 70px);
+            height: calc(100vh - 65px);
             min-height: 0;
+            margin-top: 10px;
         }
 
-        /* COLUMNA IZQUIERDA: TV Y MICRÓFONO */
+        /* COLUMNA 1 (IZQUIERDA): USUARIOS Y CONTROLES */
         .left-column {
+            flex: 0 0 240px; /* Ancho fijo estilo barra lateral */
+            background: #1f1f23;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #26262c;
+        }
+        .audio-controls {
+            background: #18181b;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #26262c;
+        }
+        .btn-mic { 
+            background-color: #9146ff; /* Morado Twitch */
+            color: white; 
+            border: none; 
+            padding: 10px 15px; 
+            font-size: 13px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            width: 100%;
+            transition: 0.2s;
+        }
+        .btn-mic:hover { background-color: #772ce8; }
+        .btn-mic.mutear { background-color: #eb0400; }
+        .btn-mic.mutear:hover { background-color: #c20300; }
+        #status-voz { margin-top: 8px; font-size: 11px; color: #adadb8; line-height: 1.3; }
+
+        .usuarios-seccion {
+            background: #18181b;
+            padding: 12px;
+            border-radius: 6px;
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid #26262c;
+        }
+        .usuarios-lista { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .usuario-burbuja { 
+            background: #26262c; 
+            padding: 8px 12px; 
+            border-radius: 4px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 13px; 
+        }
+        .status-dot { width: 8px; height: 8px; background-color: #00f593; border-radius: 50%; }
+
+        /* COLUMNA 2 (CENTRO): TRANSMISIÓN FIJA */
+        .center-column {
             flex: 3;
             display: flex;
             flex-direction: column;
-            gap: 15px;
             min-width: 0;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            position: relative;
         }
         .tv-wrapper { 
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .tv-wrapper iframe { 
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%; 
-            background: #000; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
-            aspect-ratio: 16 / 9;
-        }
-        .tv-wrapper iframe { width: 100%; height: 100%; border: none; }
-
-        .audio-controls {
-            background: #212121;
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid #333;
-        }
-        .btn-mic { 
-            background-color: #cc0000; 
-            color: white; 
+            height: 100%; 
             border: none; 
-            padding: 12px 35px; 
-            font-size: 16px; 
-            border-radius: 24px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            transition: 0.3s;
         }
-        .btn-mic:hover { background-color: #990000; }
-        .btn-mic.mutear { background-color: #28a745; }
-        .btn-mic.mutear:hover { background-color: #218838; }
-        #status-voz { margin-top: 8px; font-size: 13px; color: #aaa; }
 
-        .usuarios-seccion {
-            background: #212121;
-            padding: 15px;
-            border-radius: 12px;
-            flex-grow: 1;
-            overflow-y: auto;
-            border: 1px solid #333;
-        }
-        .usuarios-lista { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .usuario-burbuja { 
-            background: #333; padding: 6px 14px; border-radius: 15px; 
-            display: flex; align-items: center; gap: 6px; font-size: 14px; 
-            border: 1px solid #444;
-        }
-        .status-dot { width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; }
-
-        /* COLUMNA DERECHA: CHAT EN VIVO (ESTILO YOUTUBE) */
+        /* COLUMNA 3 (DERECHA): CHAT */
         .right-column {
-            flex: 1;
-            min-width: 320px;
-            max-width: 400px;
-            background: #1f1f1f;
-            border: 1px solid #333;
-            border-radius: 12px;
+            flex: 0 0 340px; /* Ancho fijo para el chat */
+            background: #1f1f23;
+            border: 1px solid #26262c;
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
         .chat-header {
-            padding: 15px;
-            border-bottom: 1px solid #333;
+            padding: 12px;
+            border-bottom: 1px solid #26262c;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: #18181b;
         }
-        #chat-status { font-size: 11px; padding: 4px 8px; border-radius: 10px; background: #333; color: #aaa; }
+        #chat-status { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: #26262c; color: #adadb8; }
         
         #chat-messages {
             flex-grow: 1;
-            padding: 15px;
+            padding: 12px;
             margin: 0;
             list-style: none;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
         #chat-messages li {
-            font-size: 14px;
-            line-height: 1.4;
+            font-size: 13px;
+            line-height: 1.5;
             word-break: break-word;
         }
-        #chat-messages .user-name { color: #aaaaaa; font-weight: bold; margin-right: 8px; }
-        #chat-messages .system-msg { color: #28a745; font-style: italic; font-size: 13px; }
+        #chat-messages .user-name { color: #9146ff; font-weight: bold; margin-right: 6px; }
         
         #chat-form {
             padding: 10px;
-            border-top: 1px solid #333;
+            border-top: 1px solid #26262c;
             display: flex;
-            gap: 5px;
-            background: #181818;
+            flex-direction: column;
+            gap: 6px;
+            background: #18181b;
         }
         #chat-input {
-            flex-grow: 1;
-            background: #2c2c2c;
-            border: 1px solid #444;
+            background: #26262c;
+            border: 2px solid transparent;
             color: white;
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
             outline: none;
-            font-size: 14px;
-        }
-        #chat-input:focus { border-color: #cc0000; }
-        #chat-form button {
-            background: #cc0000;
-            color: white;
-            border: none;
-            padding: 0 18px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
+            font-size: 13px;
             transition: 0.2s;
         }
-        #chat-form button:hover { background-color: #990000; }
+        #chat-input:focus { border-color: #9146ff; background: #000; }
+        
+        .chat-submit-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+        #chat-form button {
+            background: #9146ff;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        #chat-form button:hover { background-color: #772ce8; }
 
-        /* Barra de scroll estilizada oscura */
+        /* Scrollbars oscuros */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #141414; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #444; }
+        ::-webkit-scrollbar-track { background: #0e0e10; }
+        ::-webkit-scrollbar-thumb { background: #464649; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5d5d62; }
 
-        /* Responsivo para móviles */
-        @media (max-width: 768px) {
+        /* Responsivo */
+        @media (max-width: 1024px) {
             .main-layout { flex-direction: column; height: auto; }
-            .right-column { max-width: 100%; height: 350px; }
+            .left-column, .right-column { flex: none; width: 100%; max-width: 100%; }
+            .center-column { aspect-ratio: 16 / 9; height: auto; }
         }
     </style>
 
@@ -195,37 +228,41 @@
 <body>
 
 <div class="header-sala">
-    <h2 style="margin:0; font-size: 20px; letter-spacing: 0.5px;">Quiniela360 Live</h2>
+    <h2 style="margin:0; font-size: 18px; letter-spacing: 0.3px;">Quiniela360 Live</h2>
     <a href="index.html" class="btn-regresar">⬅️ Volver</a>
 </div>
 
 <div class="main-layout">
     
     <div class="left-column">
-        <div class="tv-wrapper">
-            <iframe src="live.html" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-
         <div class="audio-controls">
-            <button id="btn-microfono" class="btn-mic">🎙️ Unirse al Canal de Voz</button>
-            <div id="status-voz">Voz desconectada. Presiona el botón para hablar con el grupo.</div>
+            <button id="btn-microfono" class="btn-mic">🎙️ Conectar Voz</button>
+            <div id="status-voz">Desconectado. Presiona para hablar con la sala.</div>
         </div>
 
         <div class="usuarios-seccion">
-            <h4 style="margin:0; color: #aaa;">🎙️ En el canal de voz:</h4>
+            <h5 style="margin:0; color: #adadb8; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">Hablando Ahora:</h5>
             <div class="usuarios-lista" id="usuarios-lista"></div>
+        </div>
+    </div>
+
+    <div class="center-column">
+        <div class="tv-wrapper">
+            <iframe src="live.html" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
     </div>
 
     <div class="right-column">
         <div class="chat-header">
-            <span>💬 Chat en vivo</span>
+            <span>💬 CHAT DE LA SALA</span>
             <span id="chat-status">Conectando...</span>
         </div>
         <ul id="chat-messages"></ul>
         <form id="chat-form">
             <input id="chat-input" placeholder="Enviar un mensaje..." autocomplete="off" required />
-            <button type="submit">Enviar</button>
+            <div class="chat-submit-container">
+                <button type="submit">Chatear</button>
+            </div>
         </form>
     </div>
 
@@ -251,18 +288,20 @@
     let miPeer = null;
     const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
 
-    // Estado del Servidor
+    // Estados de Conexión del Chat
     socket.on('connect', () => {
-        chatStatus.innerText = "En línea";
-        chatStatus.style.background = "#28a745";
+        chatStatus.innerText = "EN LÍNEA";
+        chatStatus.style.background = "#002b1b";
+        chatStatus.style.color = "#00f593";
     });
 
     socket.on('disconnect', () => {
-        chatStatus.innerText = "Desconectado";
-        chatStatus.style.background = "#cc0000";
+        chatStatus.innerText = "DESCONECTADO";
+        chatStatus.style.background = "#3b0000";
+        chatStatus.style.color = "#ff4a4a";
     });
 
-    // 💬 CHAT
+    // Lógica de Mensajería
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         if (chatInput.value.trim()) {
@@ -278,9 +317,8 @@
         chatMessages.scrollTop = chatMessages.scrollHeight; 
     });
 
-    // 🎙️ VOZ (TOTALMENTE REDISEÑADA PARA POLÍTICAS DE AUDIO)
+    // Lógica del Canales de Voz WebRTC
     btnMicrofono.addEventListener('click', async () => {
-        // ACTIVACIÓN FORZADA DEL MOTOR DE AUDIO (Indispensable para PC y Celulares)
         window.audioContextGlobal = new (window.AudioContext || window.webkitAudioContext)();
         if (window.audioContextGlobal.state === 'suspended') {
             await window.audioContextGlobal.resume();
@@ -288,21 +326,15 @@
 
         if (!miStreamLocal) {
             try {
-                // Configuración de audio profesional para llamadas
                 miStreamLocal = await navigator.mediaDevices.getUserMedia({ 
-                    audio: { 
-                        echoCancellation: true, 
-                        noiseSuppression: true, 
-                        autoGainControl: true 
-                    }, 
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
                     video: false 
                 });
                 
-                statusVoz.innerText = "🎙️ Conectando tu voz...";
-                btnMicrofono.innerText = "🔇 Silenciar mi Micrófono";
+                statusVoz.innerText = "🎙️ Conectando...";
+                btnMicrofono.innerText = "🔇 Silenciar Mic";
                 btnMicrofono.classList.add('mutear');
 
-                // Servidores STUN públicos y estables de Google
                 miPeer = new Peer(undefined, {
                     config: { 
                         'iceServers': [
@@ -314,14 +346,12 @@
                 });
 
                 miPeer.on('open', (peerId) => {
-                    statusVoz.innerText = `✅ Hablando como: ${miNombre}`;
+                    statusVoz.innerText = `✅ Activo: ${miNombre}`;
                     agregarBurbujaUsuario(miPeer.id, `${miNombre} (Tú)`);
                     socket.emit('join-voice', { peerId: peerId, nombre: miNombre });
                 });
 
-                // ATENDER LLAMADAS ENTRANTES
                 miPeer.on('call', (llamada) => {
-                    console.log("Recibiendo llamada entrante de:", llamada.peer);
                     llamada.answer(miStreamLocal); 
                     llamada.on('stream', (streamRemoto) => {
                         reproducirAudioEntrante(streamRemoto, llamada.peer);
@@ -330,32 +360,28 @@
 
             } catch (error) {
                 console.error(error);
-                statusVoz.innerText = "❌ Error: Activa los permisos de micrófono.";
+                statusVoz.innerText = "❌ Permitir micrófono.";
             }
         } else {
             const audioTrack = miStreamLocal.getAudioTracks()[0];
             if (audioTrack.enabled) {
                 audioTrack.enabled = false;
-                btnMicrofono.innerText = "🎙️ Hablar en el Canal";
+                btnMicrofono.innerText = "🎙️ Hablar";
                 btnMicrofono.classList.remove('mutear');
                 statusVoz.innerText = "🔇 Micrófono silenciado.";
             } else {
                 audioTrack.enabled = true;
-                btnMicrofono.innerText = "🔇 Silenciar mi Micrófono";
+                btnMicrofono.innerText = "🔇 Silenciar Mic";
                 btnMicrofono.classList.add('mutear');
-                statusVoz.innerText = "🗣️ Hablando en vivo...";
+                statusVoz.innerText = "🗣️ Transmitiendo voz...";
             }
         }
     });
 
-    // 📡 COORDINACIÓN DE CONEXIONES EN TIEMPO REAL
     socket.on('user-joined-voice', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
             agregarBurbujaUsuario(data.peerId, data.nombre);
-            // Le respondemos al nuevo para sincronizar
             socket.emit('reply-voice', { peerId: miPeer.id, nombre: miNombre });
-            
-            // Le llamamos después de una pequeña pausa de estabilización
             setTimeout(() => { conectarAPeer(data.peerId); }, 1000);
         }
     });
@@ -376,7 +402,6 @@
 
     function conectarAPeer(remotePeerId) {
         if (!miPeer || miPeer.destroyed) return;
-        console.log("Llamando al peer:", remotePeerId);
         const llamada = miPeer.call(remotePeerId, miStreamLocal);
         if (llamada) {
             llamada.on('stream', (streamRemoto) => {
@@ -394,32 +419,23 @@
         usuariosLista.appendChild(burbuja);
     }
 
-    // 🔊 REPRODUCTOR DE AUDIO MEJORADO (ANTI-BLOQUEOS)
     function reproducirAudioEntrante(stream, peerId) {
-        console.log("Procesando flujo de audio entrante para:", peerId);
         let elAudio = document.getElementById(`audio-${peerId}`);
-        
         if (!elAudio) {
             elAudio = document.createElement('audio');
             elAudio.id = `audio-${peerId}`;
             audiosOcultos.appendChild(elAudio);
         }
-        
         elAudio.srcObject = stream;
         elAudio.autoplay = true;
-        elAudio.playsInline = true; // Clave para iOS/Móviles
-        elAudio.muted = false;       // Asegurar que no nazca muteado
+        elAudio.playsInline = true;
+        elAudio.muted = false;
         
-        // Ejecución forzada
-        const lanzarAudio = () => {
-            elAudio.play().catch(err => console.log("Reintentando reproducción de audio...", err));
-        };
+        const forzarPlay = () => { elAudio.play().catch(() => {}); };
+        forzarPlay();
 
-        lanzarAudio();
-
-        // Si el navegador bloquea el autoplay de audio, lo forzamos al primer clic que den en cualquier parte
-        document.body.addEventListener('click', lanzarAudio, { once: false });
-        document.body.addEventListener('touchstart', lanzarAudio, { once: false });
+        document.body.addEventListener('click', forzarPlay, { once: false });
+        document.body.addEventListener('touchstart', forzarPlay, { once: false });
     }
 </script>
 </body>
