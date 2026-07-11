@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiniela360 | Sala de Grupo estilo Twitch</title>
+    <title>Quiniela360 | Sala de Grupo</title>
     
     <style>
         body { 
@@ -16,6 +16,7 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* Evita scrolls dobles en la pantalla completa */
         }
 
         .header-sala {
@@ -24,6 +25,7 @@
             align-items: center;
             padding: 5px 10px 10px 10px;
             border-bottom: 1px solid #26262c;
+            flex-shrink: 0;
         }
         .btn-regresar {
             padding: 6px 14px;
@@ -33,12 +35,10 @@
             font-weight: bold;
             border-radius: 6px;
             font-size: 13px;
-            transition: 0.2s;
             border: 1px solid #3a3a3d;
-            cursor: pointer;
         }
-        .btn-regresar:hover { background-color: #26262c; }
 
+        /* DISEÑO DE ESCRITORIO (TWITCH DE 3 COLUMNAS) */
         .main-layout {
             display: flex;
             gap: 12px;
@@ -48,9 +48,9 @@
             margin-top: 10px;
         }
 
-        /* COLUMNA DERECHA CAMBIADA A REJILLA DE VIDEOS */
+        /* COLUMNA 1: IZQUIERDA (CÁMARAS) */
         .left-column {
-            flex: 0 0 260px; 
+            flex: 0 0 250px; 
             background: #1f1f23;
             border-radius: 8px;
             display: flex;
@@ -77,10 +77,9 @@
             cursor: pointer; 
             font-weight: bold; 
             width: 100%;
-            transition: 0.2s;
         }
-        .btn-mic:hover { background-color: #772ce8; }
         .btn-mic.mutear { background-color: #eb0400; }
+        #status-voz { margin-top: 8px; font-size: 11px; color: #adadb8; }
 
         .usuarios-seccion {
             background: #18181b;
@@ -90,16 +89,12 @@
             overflow-y: auto;
             border: 1px solid #26262c;
         }
-        
-        /* Contenedor vertical de videos de participantes */
         .usuarios-lista { 
             display: flex; 
             flex-direction: column; 
             gap: 10px; 
             margin-top: 10px; 
         }
-        
-        /* Contenedor de cada cámara individual */
         .video-box-container {
             background: #26262c;
             border-radius: 6px;
@@ -113,7 +108,6 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            background: #000;
         }
         .video-label {
             position: absolute;
@@ -123,14 +117,9 @@
             padding: 2px 6px;
             font-size: 11px;
             border-radius: 3px;
-            color: #fff;
-            max-width: 90%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        /* COLUMNA CENTRAL (STREAM) */
+        /* COLUMNA 2: CENTRO (TRANSMISIÓN) */
         .center-column {
             flex: 3;
             display: flex;
@@ -139,12 +128,11 @@
             background: #000;
             border-radius: 8px;
             overflow: hidden;
-            position: relative;
         }
         .tv-wrapper { width: 100%; height: 100%; position: relative; }
         .tv-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
-        /* COLUMNA DERECHA (CHAT) */
+        /* COLUMNA 3: DERECHA (CHAT) */
         .right-column {
             flex: 0 0 340px; 
             background: #1f1f23;
@@ -165,7 +153,6 @@
             background: #18181b;
         }
         #chat-status { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: #26262c; color: #adadb8; }
-        
         #chat-messages {
             flex-grow: 1;
             padding: 12px;
@@ -178,7 +165,6 @@
         }
         #chat-messages li { font-size: 13px; line-height: 1.5; word-break: break-word; }
         #chat-messages .user-name { color: #9146ff; font-weight: bold; margin-right: 6px; }
-        
         #chat-form {
             padding: 10px;
             border-top: 1px solid #26262c;
@@ -196,22 +182,54 @@
             outline: none;
             font-size: 13px;
         }
-        #chat-input:focus { border-color: #9146ff; background: #000; }
-        
         .chat-submit-container { display: flex; justify-content: flex-end; }
         #chat-form button {
             background: #9146ff; color: white; border: none; padding: 6px 12px;
-            border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;
-        }
+            border-radius: 4px; cursor: pointer; font-weight: bold; }
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0e0e10; }
         ::-webkit-scrollbar-thumb { background: #464649; border-radius: 3px; }
 
-        @media (max-width: 1024px) {
-            .main-layout { flex-direction: column; height: auto; }
-            .left-column, .right-column { flex: none; width: 100%; max-width: 100%; }
-            .center-column { aspect-ratio: 16 / 9; height: auto; }
+        /* 📱 RESPONSIVO MEJORADO EXCLUSIVO PARA CELULARES */
+        @media (max-width: 768px) {
+            body { overflow: auto; height: auto; }
+            .main-layout {
+                flex-direction: column;
+                height: auto;
+                gap: 10px;
+            }
+            /* El Stream se queda arriba fijo y se ve perfecto */
+            .center-column {
+                order: 1;
+                width: 100%;
+                aspect-ratio: 16 / 9;
+                height: auto;
+            }
+            /* Control de voz y cámaras pasa abajo del video */
+            .left-column {
+                order: 2;
+                width: 100%;
+                flex: none;
+                height: auto;
+            }
+            /* Los videos de las cámaras se alinean de lado de forma horizontal en celular */
+            .usuarios-lista {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 5px;
+            }
+            .video-box-container {
+                width: 130px;
+                flex-shrink: 0;
+            }
+            /* El chat abajo para interactuar de forma cómoda */
+            .right-column {
+                order: 3;
+                width: 100%;
+                flex: none;
+                height: 400px;
+            }
         }
     </style>
 
@@ -221,30 +239,32 @@
 <body>
 
 <div class="header-sala">
-    <h2 id="titulo-sala" style="margin:0; font-size: 18px; letter-spacing: 0.3px;">Quiniela360 Live</h2>
+    <h2 id="titulo-sala" style="margin:0; font-size: 16px;">Quiniela360 Live</h2>
     <a href="index.html" class="btn-regresar">⬅️ Volver</a>
 </div>
 
 <div class="main-layout">
     
+    <!-- COLUMNA 1: CONTROLES / PARTICIPANTES -->
     <div class="left-column">
         <div class="audio-controls">
             <button id="btn-microfono" class="btn-mic">📹 Activar Cámara y Voz</button>
-            <div id="status-voz">Desconectado. Únete para transmitir a tu grupo.</div>
+            <div id="status-voz">Desconectado.</div>
         </div>
-
         <div class="usuarios-seccion">
-            <h5 style="margin:0; color: #adadb8; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">Participantes:</h5>
+            <h5 style="margin:0; color: #adadb8; text-transform: uppercase; font-size: 10px;">Participantes:</h5>
             <div class="usuarios-lista" id="usuarios-lista"></div>
         </div>
     </div>
 
+    <!-- COLUMNA 2: TRANSMISIÓN (Centro en PC / Arriba en Celular) -->
     <div class="center-column">
         <div class="tv-wrapper">
             <iframe src="live.html" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
     </div>
 
+    <!-- COLUMNA 3: CHAT -->
     <div class="right-column">
         <div class="chat-header">
             <span id="chat-titulo-sala">💬 CHAT</span>
@@ -252,7 +272,7 @@
         </div>
         <ul id="chat-messages"></ul>
         <form id="chat-form">
-            <input id="chat-input" placeholder="Enviar un mensaje al grupo..." autocomplete="off" required />
+            <input id="chat-input" placeholder="Enviar un mensaje..." autocomplete="off" required />
             <div class="chat-submit-container">
                 <button type="submit">Chatear</button>
             </div>
@@ -265,11 +285,9 @@
     const URL_CHAT = "https://quiniela-hydra-1.onrender.com"; 
     const socket = io(URL_CHAT);
     
-    // Obtener el ID del grupo desde la URL de la página web (?grupo=GrupoNombre)
     const urlParams = new URLSearchParams(window.location.search);
     const miGrupo = urlParams.get('grupo') || "General";
     
-    // Personalizar títulos en base al grupo conectado
     document.getElementById('titulo-sala').innerText = `Quiniela360 Live | Grupo: ${miGrupo}`;
     document.getElementById('chat-titulo-sala').innerText = `💬 CHAT - ${miGrupo.toUpperCase()}`;
 
@@ -277,7 +295,6 @@
     const statusVoz = document.getElementById('status-voz');
     const usuariosLista = document.getElementById('usuarios-lista');
     const chatStatus = document.getElementById('chat-status');
-    
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
     const chatMessages = document.getElementById('chat-messages');
@@ -297,7 +314,6 @@
         chatStatus.style.background = "#3b0000";
     });
 
-    // 💬 CHAT FILTRADO POR SALA
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         if (chatInput.value.trim()) {
@@ -313,41 +329,30 @@
         chatMessages.scrollTop = chatMessages.scrollHeight; 
     });
 
-    // 📹 LÓGICA DE VIDEO Y AUDIO COMBINADOS (WEBRTC)
     btnMicrofono.addEventListener('click', async () => {
         window.audioContextGlobal = new (window.AudioContext || window.webkitAudioContext)();
         if (window.audioContextGlobal.state === 'suspended') await window.audioContextGlobal.resume();
 
         if (!miStreamLocal) {
             try {
-                // CAPTURA DE AUDIO Y VIDEO SIMULTÁNEAMENTE
                 miStreamLocal = await navigator.mediaDevices.getUserMedia({ 
                     audio: { echoCancellation: true, noiseSuppression: true }, 
-                    video: { width: 320, height: 240, frameRate: 15 } // Configuración ligera para optimizar datos
+                    video: { width: 320, height: 240, frameRate: 15 }
                 });
                 
-                statusVoz.innerText = "📹 Conectando Multimedia...";
-                btnMicrofono.innerText = "🔇 Desactivar Transmisión";
+                statusVoz.innerText = "📹 En Vivo";
+                btnMicrofono.innerText = "🔇 Apagar Transmisión";
                 btnMicrofono.classList.add('mutear');
 
                 miPeer = new Peer(undefined, {
-                    config: { 
-                        'iceServers': [
-                            { 'urls': 'stun:stun.l.google.com:19302' },
-                            { 'urls': 'stun:stun1.l.google.com:19302' }
-                        ] 
-                    }
+                    config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] }
                 });
 
                 miPeer.on('open', (peerId) => {
-                    statusVoz.innerText = `✅ Transmitiendo al grupo`;
                     agregarCuadroVideo(miPeer.id, `${miNombre} (Tú)`, miStreamLocal, true);
-                    
-                    // Notificar ingreso al servidor especificando el grupo
                     socket.emit('join-room', { peerId: peerId, nombre: miNombre, grupo: miGrupo });
                 });
 
-                // Atender llamadas entrantes con audio y video
                 miPeer.on('call', (llamada) => {
                     llamada.answer(miStreamLocal); 
                     llamada.on('stream', (streamRemoto) => {
@@ -357,10 +362,9 @@
 
             } catch (error) {
                 console.error(error);
-                statusVoz.innerText = "❌ Permite el acceso a la cámara/micrófono.";
+                statusVoz.innerText = "❌ Error de permisos.";
             }
         } else {
-            // Apagado completo de la cámara web y micrófono
             miStreamLocal.getTracks().forEach(track => track.stop());
             miStreamLocal = null;
             const miCaja = document.getElementById(`container-${miPeer.id}`);
@@ -368,11 +372,10 @@
             miPeer.destroy();
             btnMicrofono.innerText = "📹 Activar Cámara y Voz";
             btnMicrofono.classList.remove('mutear');
-            statusVoz.innerText = "Transmisión finalizada.";
+            statusVoz.innerText = "Desconectado.";
         }
     });
 
-    // Coordinación de Salas
     socket.on('user-joined-room', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
             socket.emit('reply-room', { peerId: miPeer.id, nombre: miNombre });
@@ -401,15 +404,8 @@
         }
     }
 
-    // FUNCIÓN PARA GENERAR LOS VIDEOS EN LA COLUMNA DE USUARIOS
     function agregarCuadroVideo(id, nombre, stream, esPropio) {
-        if (document.getElementById(`container-${id}`)) {
-            const videoExistente = document.getElementById(`video-${id}`);
-            if (videoExistente && videoExistente.srcObject !== stream) {
-                videoExistente.srcObject = stream;
-            }
-            return;
-        }
+        if (document.getElementById(`container-${id}`)) return;
 
         const contenedor = document.createElement('div');
         contenedor.className = 'video-box-container';
@@ -420,10 +416,7 @@
         videoElemento.srcObject = stream;
         videoElemento.autoplay = true;
         videoElemento.playsInline = true;
-        
-        if (esPropio) {
-            videoElemento.muted = true; // No escucharte a ti mismo
-        }
+        if (esPropio) videoElemento.muted = true;
 
         const etiqueta = document.createElement('div');
         etiqueta.className = 'video-label';
@@ -432,7 +425,6 @@
         contenedor.appendChild(videoElemento);
         contenedor.appendChild(etiqueta);
         usuariosLista.appendChild(contenedor);
-        
         videoElemento.play().catch(() => {});
     }
 </script>
