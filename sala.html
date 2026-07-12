@@ -108,6 +108,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            background: #000;
         }
         .video-label {
             position: absolute;
@@ -117,6 +118,7 @@
             padding: 2px 6px;
             font-size: 11px;
             border-radius: 3px;
+            z-index: 2;
         }
 
         /* COLUMNA 2: CENTRO (TRANSMISIÓN) */
@@ -191,7 +193,12 @@
         ::-webkit-scrollbar-track { background: #0e0e10; }
         ::-webkit-scrollbar-thumb { background: #464649; border-radius: 3px; }
 
-        /* 📱 RESPONSIVO MEJORADO EXCLUSIVO PARA CELULARES */
+        .btn-mic.activo { background-color: #9146ff !important; }
+        .btn-mic.activo:hover { background-color: #772ce8 !important; }
+        .btn-mic.mutear { background-color: #eb0400 !important; }
+        .btn-mic.mutear:hover { background-color: #c20300 !important; }
+
+        /* 📱 RESPONSIVO EXCLUSIVO PARA CELULARES */
         @media (max-width: 768px) {
             body { overflow: auto; height: auto; }
             .main-layout {
@@ -199,21 +206,18 @@
                 height: auto;
                 gap: 10px;
             }
-            /* El Stream se queda arriba fijo y se ve perfecto */
             .center-column {
                 order: 1;
                 width: 100%;
                 aspect-ratio: 16 / 9;
                 height: auto;
             }
-            /* Control de voz y cámaras pasa abajo del video */
             .left-column {
                 order: 2;
                 width: 100%;
                 flex: none;
                 height: auto;
             }
-            /* Los videos de las cámaras se alinean de lado de forma horizontal en celular */
             .usuarios-lista {
                 flex-direction: row;
                 overflow-x: auto;
@@ -223,19 +227,12 @@
                 width: 130px;
                 flex-shrink: 0;
             }
-            /* El chat abajo para interactuar de forma cómoda */
             .right-column {
                 order: 3;
                 width: 100%;
                 flex: none;
                 height: 400px;
             }
-            /* Estilos para los estados de los nuevos botones */
-.btn-mic.activo { background-color: #9146ff !important; }
-.btn-mic.activo:hover { background-color: #772ce8 !important; }
-.btn-mic.mutear { background-color: #eb0400 !important; }
-.btn-mic.mutear:hover { background-color: #c20300 !important; }
-            
         }
     </style>
 
@@ -251,28 +248,26 @@
 
 <div class="main-layout">
     
-    <!-- COLUMNA 1: CONTROLES / PARTICIPANTES -->
-    <div class="audio-controls">
-    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-        <button id="btn-video" class="btn-mic" style="background-color: #3a3a3d;">📷 Iniciar Cam</button>
-        <button id="btn-audio" class="btn-mic" style="background-color: #3a3a3d;">🎙️ Iniciar Micro</button>
-    </div>
-    <div id="status-voz">Desconectado. Activa tu cámara o micro para transmitir al grupo.</div>
-</div>
+    <div class="left-column">
+        <div class="audio-controls">
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <button id="btn-video" class="btn-mic" style="background-color: #3a3a3d;">📷 Iniciar Cam</button>
+                <button id="btn-audio" class="btn-mic" style="background-color: #3a3a3d;">🎙️ Iniciar Micro</button>
+            </div>
+            <div id="status-voz">Desconectado. Activa tu cámara o micro para transmitir al grupo.</div>
+        </div>
         <div class="usuarios-seccion">
             <h5 style="margin:0; color: #adadb8; text-transform: uppercase; font-size: 10px;">Participantes:</h5>
             <div class="usuarios-lista" id="usuarios-lista"></div>
         </div>
     </div>
 
-    <!-- COLUMNA 2: TRANSMISIÓN (Centro en PC / Arriba en Celular) -->
     <div class="center-column">
         <div class="tv-wrapper">
             <iframe src="live.html" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
     </div>
 
-    <!-- COLUMNA 3: CHAT -->
     <div class="right-column">
         <div class="chat-header">
             <span id="chat-titulo-sala">💬 CHAT</span>
@@ -299,7 +294,6 @@
     document.getElementById('titulo-sala').innerText = `Quiniela360 Live | Grupo: ${miGrupo}`;
     document.getElementById('chat-titulo-sala').innerText = `💬 CHAT - ${miGrupo.toUpperCase()}`;
 
-    // NUEVOS BOTONES SEPARADOS
     const btnVideo = document.getElementById('btn-video');
     const btnAudio = document.getElementById('btn-audio');
     
@@ -342,7 +336,6 @@
         chatMessages.scrollTop = chatMessages.scrollHeight; 
     });
 
-    // Función auxiliar para solicitar permisos y conectar Peer de forma inteligente
     async function inicializarMedios() {
         window.audioContextGlobal = new (window.AudioContext || window.webkitAudioContext)();
         if (window.audioContextGlobal.state === 'suspended') await window.audioContextGlobal.resume();
@@ -354,7 +347,6 @@
                     video: { width: 320, height: 240, frameRate: 15 }
                 });
                 
-                // Inicialmente apagamos las pistas hasta que se active su botón correspondiente
                 miStreamLocal.getVideoTracks().forEach(t => t.enabled = false);
                 miStreamLocal.getAudioTracks().forEach(t => t.enabled = false);
 
@@ -385,7 +377,6 @@
         return true;
     }
 
-    // Evento del botón de Cámara (Video)
     btnVideo.addEventListener('click', async () => {
         if (!miStreamLocal) {
             const listo = await inicializarMedios();
@@ -410,7 +401,6 @@
         verificarDesconexionFalsa();
     });
 
-    // Evento del botón de Micrófono (Audio)
     btnAudio.addEventListener('click', async () => {
         if (!miStreamLocal) {
             const listo = await inicializarMedios();
@@ -435,7 +425,6 @@
         verificarDesconexionFalsa();
     });
 
-    // Apaga completamente el hardware si el usuario desactiva ambos botones
     function verificarDesconexionFalsa() {
         if (!videoActivo && !audioActivo && miStreamLocal) {
             miStreamLocal.getTracks().forEach(track => track.stop());
@@ -491,8 +480,15 @@
         videoElemento.id = `video-${id}`;
         videoElemento.srcObject = stream;
         videoElemento.autoplay = true;
-        videoElemento.playsInline = true;
-        if (esPropio) videoElemento.muted = true;
+        videoElemento.setAttribute('playsinline', 'true');
+        videoElemento.setAttribute('webkit-playsinline', 'true');
+        
+        // El video remoto NO debe estar silenciado, pero el propio SÍ obligatoriamente
+        if (esPropio) {
+            videoElemento.muted = true;
+        } else {
+            videoElemento.muted = false;
+        }
 
         const etiqueta = document.createElement('div');
         etiqueta.className = 'video-label';
@@ -501,7 +497,11 @@
         contenedor.appendChild(videoElemento);
         contenedor.appendChild(etiqueta);
         usuariosLista.appendChild(contenedor);
-        videoElemento.play().catch(() => {});
+        
+        // Forzamos play de forma asíncrona manejando la promesa
+        setTimeout(() => {
+            videoElemento.play().catch(err => console.log("Video play interceptado:", err));
+        }, 300);
     }
 </script>
 </body>
