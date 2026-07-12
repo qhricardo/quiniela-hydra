@@ -542,6 +542,24 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
+<div class="feed-container">
+    <h3 class="feed-title">Muro de Noticias 📢</h3>
+    
+    <div class="post-creator">
+    <textarea id="post-text" placeholder="¿Qué estás pensando?" class="input-text"></textarea>
+    <div class="post-actions">
+        <button id="upload_widget" class="btn-upload">📷 Foto/Video</button>
+        <button onclick="publicarPost()" class="btn-post">Publicar</button>
+    </div>
+</div>
+
+    <div id="feed-items" class="feed-scroll">
+        </div>
+</div>
+<script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+<link rel="stylesheet" href="css/estilos.css">
+
+        
             
         <div class="container">
             <h1>Liga Mx Jornada 1</h1>
@@ -732,25 +750,7 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
     </div>
 
-    
-    <div class="feed-container">
-    <h3 class="feed-title">Muro de Noticias 📢</h3>
-    
-    <div class="post-creator">
-    <textarea id="post-text" placeholder="¿Qué estás pensando?" class="input-text"></textarea>
-    <div class="post-actions">
-        <button id="upload_widget" class="btn-upload">📷 Foto/Video</button>
-        <button onclick="publicarPost()" class="btn-post">Publicar</button>
-    </div>
-</div>
-
-    <div id="feed-items" class="feed-scroll">
-        </div>
-</div>
-<script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
-<link rel="stylesheet" href="css/estilos.css">
-
-    
+       
 
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
