@@ -230,6 +230,12 @@
                 flex: none;
                 height: 400px;
             }
+            /* Estilos para los estados de los nuevos botones */
+.btn-mic.activo { background-color: #9146ff !important; }
+.btn-mic.activo:hover { background-color: #772ce8 !important; }
+.btn-mic.mutear { background-color: #eb0400 !important; }
+.btn-mic.mutear:hover { background-color: #c20300 !important; }
+            
         }
     </style>
 
@@ -246,11 +252,13 @@
 <div class="main-layout">
     
     <!-- COLUMNA 1: CONTROLES / PARTICIPANTES -->
-    <div class="left-column">
-        <div class="audio-controls">
-            <button id="btn-microfono" class="btn-mic">📹 Activar Cámara y Voz</button>
-            <div id="status-voz">Desconectado.</div>
-        </div>
+    <div class="audio-controls">
+    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <button id="btn-video" class="btn-mic" style="background-color: #3a3a3d;">📷 Iniciar Cam</button>
+        <button id="btn-audio" class="btn-mic" style="background-color: #3a3a3d;">🎙️ Iniciar Micro</button>
+    </div>
+    <div id="status-voz">Desconectado. Activa tu cámara o micro para transmitir al grupo.</div>
+</div>
         <div class="usuarios-seccion">
             <h5 style="margin:0; color: #adadb8; text-transform: uppercase; font-size: 10px;">Participantes:</h5>
             <div class="usuarios-lista" id="usuarios-lista"></div>
@@ -291,7 +299,10 @@
     document.getElementById('titulo-sala').innerText = `Quiniela360 Live | Grupo: ${miGrupo}`;
     document.getElementById('chat-titulo-sala').innerText = `💬 CHAT - ${miGrupo.toUpperCase()}`;
 
-    const btnMicrofono = document.getElementById('btn-microfono');
+    // NUEVOS BOTONES SEPARADOS
+    const btnVideo = document.getElementById('btn-video');
+    const btnAudio = document.getElementById('btn-audio');
+    
     const statusVoz = document.getElementById('status-voz');
     const usuariosLista = document.getElementById('usuarios-lista');
     const chatStatus = document.getElementById('chat-status');
@@ -301,6 +312,8 @@
 
     let miStreamLocal = null;
     let miPeer = null;
+    let videoActivo = false;
+    let audioActivo = false;
     const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
 
     socket.on('connect', () => {
@@ -329,7 +342,8 @@
         chatMessages.scrollTop = chatMessages.scrollHeight; 
     });
 
-    btnMicrofono.addEventListener('click', async () => {
+    // Función auxiliar para solicitar permisos y conectar Peer de forma inteligente
+    async function inicializarMedios() {
         window.audioContextGlobal = new (window.AudioContext || window.webkitAudioContext)();
         if (window.audioContextGlobal.state === 'suspended') await window.audioContextGlobal.resume();
 
@@ -340,15 +354,16 @@
                     video: { width: 320, height: 240, frameRate: 15 }
                 });
                 
-                statusVoz.innerText = "📹 En Vivo";
-                btnMicrofono.innerText = "🔇 Apagar Transmisión";
-                btnMicrofono.classList.add('mutear');
+                // Inicialmente apagamos las pistas hasta que se active su botón correspondiente
+                miStreamLocal.getVideoTracks().forEach(t => t.enabled = false);
+                miStreamLocal.getAudioTracks().forEach(t => t.enabled = false);
 
                 miPeer = new Peer(undefined, {
                     config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] }
                 });
 
                 miPeer.on('open', (peerId) => {
+                    statusVoz.innerText = `✅ Conectado al grupo: ${miGrupo}`;
                     agregarCuadroVideo(miPeer.id, `${miNombre} (Tú)`, miStreamLocal, true);
                     socket.emit('join-room', { peerId: peerId, nombre: miNombre, grupo: miGrupo });
                 });
@@ -362,19 +377,80 @@
 
             } catch (error) {
                 console.error(error);
-                statusVoz.innerText = "❌ Error de permisos.";
+                statusVoz.innerText = "❌ Error de permisos multimedia.";
+                miStreamLocal = null;
+                return false;
             }
-        } else {
+        }
+        return true;
+    }
+
+    // Evento del botón de Cámara (Video)
+    btnVideo.addEventListener('click', async () => {
+        if (!miStreamLocal) {
+            const listo = await inicializarMedios();
+            if (!listo) return;
+        }
+
+        const videoTrack = miStreamLocal.getVideoTracks()[0];
+        if (videoTrack) {
+            videoActivo = !videoActivo;
+            videoTrack.enabled = videoActivo;
+            
+            if (videoActivo) {
+                btnVideo.innerText = "📹 Apagar Cam";
+                btnVideo.classList.remove('mutear');
+                btnVideo.classList.add('activo');
+            } else {
+                btnVideo.innerText = "📷 Encender Cam";
+                btnVideo.classList.remove('activo');
+                btnVideo.classList.add('mutear');
+            }
+        }
+        verificarDesconexionFalsa();
+    });
+
+    // Evento del botón de Micrófono (Audio)
+    btnAudio.addEventListener('click', async () => {
+        if (!miStreamLocal) {
+            const listo = await inicializarMedios();
+            if (!listo) return;
+        }
+
+        const audioTrack = miStreamLocal.getAudioTracks()[0];
+        if (audioTrack) {
+            audioActivo = !audioActivo;
+            audioTrack.enabled = audioActivo;
+            
+            if (audioActivo) {
+                btnAudio.innerText = "🔇 Silenciar Mic";
+                btnAudio.classList.remove('mutear');
+                btnAudio.classList.add('activo');
+            } else {
+                btnAudio.innerText = "🎙️ Activar Mic";
+                btnAudio.classList.remove('activo');
+                btnAudio.classList.add('mutear');
+            }
+        }
+        verificarDesconexionFalsa();
+    });
+
+    // Apaga completamente el hardware si el usuario desactiva ambos botones
+    function verificarDesconexionFalsa() {
+        if (!videoActivo && !audioActivo && miStreamLocal) {
             miStreamLocal.getTracks().forEach(track => track.stop());
             miStreamLocal = null;
             const miCaja = document.getElementById(`container-${miPeer.id}`);
             if (miCaja) miCaja.remove();
             miPeer.destroy();
-            btnMicrofono.innerText = "📹 Activar Cámara y Voz";
-            btnMicrofono.classList.remove('mutear');
+            
+            btnVideo.innerText = "📷 Iniciar Cam";
+            btnVideo.classList.remove('activo', 'mutear');
+            btnAudio.innerText = "🎙️ Iniciar Micro";
+            btnAudio.classList.remove('activo', 'mutear');
             statusVoz.innerText = "Desconectado.";
         }
-    });
+    }
 
     socket.on('user-joined-room', (data) => {
         if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
