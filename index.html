@@ -393,8 +393,11 @@ c
 .btn-upload { background: #e4e6eb; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1; }
 .btn-post { background: #006847; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; flex: 1; }
 
-/* Scroll del Feed */
-.feed-scroll { height: 500px; overflow-y: auto; }
+.feed-scroll { 
+    /* 100vh es la altura total de la pantalla, restamos 200px aprox para compensar márgenes y el formulario */
+    height: calc(100vh - 250px); 
+    overflow-y: auto; 
+}
 
 /* Tarjetas */
 .post-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 16px; border: 1px solid #eee; }
