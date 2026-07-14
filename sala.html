@@ -251,11 +251,11 @@
   <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
     <div>
       <h2 id="titulo-sala" style="margin:0; font-size: 16px;">Quiniela360 Fan Fest</h2>
-      <h2 id="usuario" style="margin:5px 0 0 0; font-size: 14px; font-weight: normal;">Cargando...</h2>
+      <h2 id="usuario" style="margin:5px 0 0 0; font-size: 14px; font-weight: normal;"></h2>
     </div>
     
     <div style="text-align: right;">
-      <div class="info">Fan Fest <span id="creditos">0</span></div>
+      <div class="info"> <span id="creditos"></span></div>
       <a href="index.html" class="btn-regresar" style="text-decoration: none; display: block; margin-top: 5px;">⬅️ Volver</a>
     </div>
   </div>
@@ -306,7 +306,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const miGrupo = urlParams.get('grupo') || "General";
     
-    document.getElementById('titulo-sala').innerText = `Quiniela360 Live | Grupo: ${miGrupo}`;
+    document.getElementById('titulo-sala').innerText = `Fan Fest Live | Grupo: ${miGrupo}`;
     document.getElementById('chat-titulo-sala').innerText = `💬 CHAT - ${miGrupo.toUpperCase()}`;
 
     const btnVideo = document.getElementById('btn-video');
