@@ -337,11 +337,16 @@
     });
 
     chatForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (chatInput.value.trim()) {
-            socket.emit('chat message', { user: miNombre, text: chatInput.value });
-            chatInput.value = '';
-        }
+    e.preventDefault();
+    if (chatInput.value.trim()) {
+        const mensajeData = { 
+            user: miNombre, 
+            text: chatInput.value,
+            grupo: miGrupo // Envía el grupo para que el servidor sepa dónde repartir
+        };
+        socket.emit('chat message', mensajeData);
+        chatInput.value = '';
+    }
     });
 
     socket.on('chat message', (data) => {
