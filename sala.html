@@ -281,6 +281,7 @@
         <div class="tv-wrapper">
             <iframe src="live.html" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
+        <button id="btn-screen" class="btn-mic" style="background-color: #3a3a3d; margin-top: 8px;">🖥️ Compartir Pantalla</button>
     </div>
 
     <div class="right-column">
@@ -523,6 +524,58 @@
             videoElemento.play().catch(err => console.log("Video play interceptado:", err));
         }, 300);
     }
+   
+    
+    const btnScreen = document.getElementById('btn-screen');
+const tvIframe = document.querySelector('.tv-wrapper iframe');
+let screenStream = null;
+
+btnScreen.addEventListener('click', async () => {
+    if (!screenStream) {
+        try {
+            // 1. Capturar pantalla
+            screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            
+            // 2. Mostrarla en el cuadro de TV
+            // Nota: Para mostrar un MediaStream en un iframe, lo ideal es reemplazar el contenido 
+            // o usar un elemento <video> que tape el iframe. 
+            // Aquí haremos lo más sencillo: cambiar el src del iframe a un objeto local o manipular el DOM.
+            
+            const videoElement = document.createElement('video');
+            videoElement.srcObject = screenStream;
+            videoElement.autoplay = true;
+            videoElement.style.width = "100%";
+            videoElement.style.height = "100%";
+            
+            // Reemplazamos el iframe por el video de la pantalla
+            tvIframe.style.display = 'none'; // Ocultamos el TV
+            document.querySelector('.tv-wrapper').appendChild(videoElement);
+            
+            btnScreen.innerText = "🛑 Detener Compartir";
+            
+            // Detectar cuando el usuario detiene la pantalla desde el navegador
+            screenStream.getVideoTracks()[0].onended = () => {
+                detenerPantalla();
+            };
+            
+        } catch (err) {
+            console.error("Error compartiendo pantalla:", err);
+        }
+    } else {
+        detenerPantalla();
+    }
+});
+
+function detenerPantalla() {
+    if (screenStream) {
+        screenStream.getTracks().forEach(track => track.stop());
+        screenStream = null;
+        const videoElement = document.querySelector('.tv-wrapper video');
+        if (videoElement) videoElement.remove();
+        tvIframe.style.display = 'block';
+        btnScreen.innerText = "🖥️ Compartir Pantalla";
+    }
+}
 </script>
 </body>
 </html>
