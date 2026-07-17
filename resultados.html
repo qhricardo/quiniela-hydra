@@ -4,291 +4,278 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Resultados 360</title>
-  <style>
+ <style>
     /* ───────────── Fondo General ───────────── */
     body {
-      font-family: 'Teko', 'Poppins', sans-serif;
-      background: radial-gradient(circle at top, #001a12 0%, #000 100%);
-      background-image: url('https://www.transparenttextures.com/patterns/football-no-lines.png');
-      color: #fff;
-      margin: 0;
-      padding: 0;
+        font-family: 'Teko', 'Poppins', sans-serif;
+        background: radial-gradient(circle at top, #001e3d 0%, #121212 100%);
+        background-image: url('https://www.transparenttextures.com/patterns/football-no-lines.png');
+        color: #fff;
+        margin: 0;
+        padding: 0;
     }
 
     /* ───────────── Header ───────────── */
     .header {
-      background: linear-gradient(90deg, #007a3d, #00a86b);
-      color: #fff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 18px 30px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-      border-bottom: 4px solid #FFD700;
+        background: linear-gradient(90deg, #002e5d, #004a99);
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 30px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        border-bottom: 4px solid #ffc20e;
     }
 
     .header h2 {
-      font-size: 28px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      text-shadow: 2px 2px 10px rgba(0,0,0,0.6);
-      margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.6);
+        margin: 0;
     }
 
     #logout-btn {
-      background: #d90429;
-      color: white;
-      padding: 12px 22px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 10px rgba(217, 4, 41, 0.5);
+        background: #d32f2f;
+        color: white;
+        padding: 12px 22px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(211, 47, 47, 0.5);
     }
 
     #logout-btn:hover {
-      background: #9b021e;
-      transform: scale(1.05);
+        background: #a00d20;
+        transform: scale(1.05);
     }
 
     /* ───────────── Botón Regresar ───────────── */
     .btn-regresar {
-      display: inline-block;
-      background: #FFD700;
-      color: #004d3a;
-      font-weight: bold;
-      text-decoration: none;
-      border-radius: 8px;
-      padding: 12px 30px;
-      margin: 25px auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
+        display: inline-block;
+        background: #ffc20e;
+        color: #002e5d;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 8px;
+        padding: 12px 30px;
+        margin: 25px auto;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
     }
 
     .btn-regresar:hover {
-      background-color: #fff176;
-      transform: translateY(-3px);
+        background-color: #ffd700;
+        transform: translateY(-3px);
     }
 
     /* ───────────── Cuadro Premio ───────────── */
     #premio-box {
-      background: rgba(0, 0, 0, 0.6);
-      border: 2px solid #FFD700;
-      border-radius: 15px;
-      text-align: center;
-      padding: 30px;
-      margin: 35px auto;
-      width: 90%;
-      max-width: 700px;
-      box-shadow: 0 0 25px rgba(255,215,0,0.4);
-      color: #000;
-      box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.6);
+        border: 2px solid #ffc20e;
+        border-radius: 15px;
+        text-align: center;
+        padding: 30px;
+        margin: 35px auto;
+        width: 90%;
+        max-width: 700px;
+        box-shadow: 0 0 25px rgba(255, 194, 14, 0.3);
+        color: #fff;
+        box-sizing: border-box;
     }
 
     #premio-box h3 {
-      color: #FFD700;
-      font-size: 26px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      text-shadow: 0 0 10px #FFD700;
+        color: #ffc20e;
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 0 10px rgba(255, 194, 14, 0.5);
     }
 
     #premio-total {
-      font-size: 34px;
-      font-weight: 800;
-      color: #000;
-      text-shadow: 0 0 12px #00ffcc;
+        font-size: 34px;
+        font-weight: 800;
+        color: #fff;
+        text-shadow: 0 0 12px #ffc20e;
     }
 
     /* ───────────── Contenedor para Tablas Responsivas ───────────── */
     .table-container {
-      width: 95%;
-      margin: 25px auto;
-      overflow-x: auto;
-      border-radius: 15px;
-      box-shadow: 0 0 25px rgba(0,255,204,0.2);
-      -webkit-overflow-scrolling: touch;
+        width: 95%;
+        margin: 25px auto;
+        overflow-x: auto;
+        border-radius: 15px;
+        box-shadow: 0 0 25px rgba(255, 194, 14, 0.15);
+        -webkit-overflow-scrolling: touch;
     }
 
     /* ───────────── Tabla Principal ───────────── */
     table {
-      width: 100%;
-      border-collapse: collapse;
-      background: rgba(0, 0, 0, 0.6);
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(0, 0, 0, 0.6);
     }
 
     th, td {
-      padding: 12px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.15);
-      color: #fff; 
-      white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        color: #fff;
+        white-space: nowrap;
     }
 
     th {
-      background: linear-gradient(10deg, #007a3d, #00a86b);
-      color: #fff;
-      text-transform: uppercase;
-      font-weight: bold;
-      font-size: 14px;
-      letter-spacing: 1px;
+        background: linear-gradient(10deg, #002e5d, #004a99);
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 14px;
+        letter-spacing: 1px;
     }
 
     td {
-      font-size: 16px;
-      color: #fff;
-      font-weight: 500;
+        font-size: 16px;
+        color: #fff;
+        font-weight: 500;
     }
 
     /* ───────────── Resaltado de Aciertos ───────────── */
     .highlight {
-      background: radial-gradient(circle, #FFD700 0%, #b89b00 90%);
-      color: #000 !important;
-      font-weight: bold;
-      border-radius: 5px;
+        background: radial-gradient(circle, #ffc20e 0%, #b8860b 90%);
+        color: #000 !important;
+        font-weight: bold;
+        border-radius: 5px;
     }
 
     /* ───────────── Partidos ───────────── */
     .partidos-cuadro {
-      background: rgba(0,0,0,0.7);
-      border: 2px solid #00ffcc;
-      border-radius: 15px;
-      width: 90%;
-      max-width: 650px;
-      margin: 30px auto;
-      padding: 25px;
-      text-align: center;
-      box-shadow: 0 0 25px rgba(0,255,204,0.3);
-      box-sizing: border-box;
+        background: rgba(0,0,0,0.7);
+        border: 2px solid #ffc20e;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 650px;
+        margin: 30px auto;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 0 25px rgba(255, 194, 14, 0.2);
+        box-sizing: border-box;
     }
 
     .partidos-cuadro h3 {
-      color: #00ffcc;
-      font-size: 26px;
-      margin-bottom: 12px;
-      text-shadow: 0 0 10px #00ffcc;
+        color: #ffc20e;
+        font-size: 26px;
+        margin-bottom: 12px;
+        text-shadow: 0 0 10px rgba(255, 194, 14, 0.5);
     }
 
     .partidos-cuadro li {
-      list-style: none;
-      padding: 8px 0;
-      font-size: 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+        list-style: none;
+        padding: 8px 0;
+        font-size: 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
     /* ───────────── Tabla Ganadores ───────────── */
     #tablaGanadores {
-      width: 100%;
-      max-width: 460px;
-      margin: 30px auto;
-      border-collapse: collapse;
-      background: rgba(0,0,0,0.85);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 25px rgba(0,255,128,0.3);
-      font-family: 'Poppins', sans-serif;
-      font-size: 18px;
-      color: #000;
-      text-align: center;
+        width: 100%;
+        max-width: 460px;
+        margin: 30px auto;
+        border-collapse: collapse;
+        background: rgba(0,0,0,0.85);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 0 25px rgba(255, 194, 14, 0.2);
+        font-family: 'Poppins', sans-serif;
+        font-size: 18px;
+        color: #fff;
+        text-align: center;
     }
 
     #tablaGanadores th {
-      background: linear-gradient(40deg, #00cc6a, #008c49);
-      color: #fff;
-      font-size: 20px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 14px;
+        background: linear-gradient(40deg, #002e5d, #004a99);
+        color: #fff;
+        font-size: 20px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 14px;
     }
 
     #tablaGanadores td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      color: #fff; /* Cambiado a blanco para mejor legibilidad general */
+        padding: 12px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        color: #fff;
     }
 
     /* 🥇 Primer lugar */
     #tablaGanadores tr.primer-lugar td {
-      background: linear-gradient(90deg, #FFD700, #fff6a1);
-      color: #000;
-      font-weight: 900;
-      font-size: 20px;
-      text-shadow: 0 0 5px rgba(255,255,255,0.5);
+        background: linear-gradient(90deg, #ffc20e, #fff6a1);
+        color: #000;
+        font-weight: 900;
+        font-size: 20px;
     }
 
     /* 🥈 Segundo lugar */
     #tablaGanadores tr.segundo-lugar td {
-      background: linear-gradient(90deg, #C0C0C0, #f0f0f0);
-      color: #000;
-      font-weight: 800;
-      font-size: 19px;
-      text-shadow: 0 0 4px rgba(255,255,255,0.4);
+        background: linear-gradient(90deg, #c0c0c0, #f0f0f0);
+        color: #000;
+        font-weight: 800;
+        font-size: 19px;
     }
 
     /* 🔹 Filas normales */
     #tablaGanadores tr:not(.primer-lugar):not(.segundo-lugar):hover {
-      background: rgba(255,255,255,0.05);
-      transform: scale(1.02);
-      transition: 0.2s;
+        background: rgba(255,255,255,0.05);
+        transform: scale(1.02);
+        transition: 0.2s;
     }
 
     /* ───────────── Inputs Resultados ───────────── */
     input[readonly] {
-      text-align: center;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid #00ffcc;
-      color: #fff;
-      font-weight: bold;
-      border-radius: 5px;
-      width: 38px;
-      height: 38px;
-      box-shadow: 0 0 6px rgba(0,255,204,0.4);
+        text-align: center;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid #ffc20e;
+        color: #fff;
+        font-weight: bold;
+        border-radius: 5px;
+        width: 38px;
+        height: 38px;
+        box-shadow: 0 0 6px rgba(255, 194, 14, 0.3);
     }
 
     /* ───────────── Footer ───────────── */
     footer {
-      background-color: #001a12;
-      color: #ccc;
-      text-align: center;
-      padding: 40px 20px;
-      font-size: 14px;
-      border-top: 2px solid #00ffcc;
+        background-color: #001224;
+        color: #ccc;
+        text-align: center;
+        padding: 40px 20px;
+        font-size: 14px;
+        border-top: 2px solid #ffc20e;
     }
 
     footer h2 {
-      color: #00ffcc;
-      margin-bottom: 8px;
+        color: #ffc20e;
+        margin-bottom: 8px;
     }
 
-    /* ───────────── MEDIA QUERIES (RESPONSIVO) ───────────── */
+    /* ───────────── MEDIA QUERIES ───────────── */
     @media (max-width: 768px) {
-      .header {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-        padding: 15px 20px;
-      }
-      .header h2 {
-        font-size: 22px;
-      }
-      #premio-box h3, .partidos-cuadro h3 {
-        font-size: 22px;
-      }
-      #premio-total {
-        font-size: 28px;
-      }
-      #tablaGanadores {
-        width: 95%;
-        font-size: 16px;
-      }
-      #tablaGanadores th {
-        font-size: 18px;
-      }
+        .header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+            padding: 15px 20px;
+        }
+        .header h2 { font-size: 22px; }
+        #premio-box h3, .partidos-cuadro h3 { font-size: 22px; }
+        #premio-total { font-size: 28px; }
+        #tablaGanadores { width: 95%; font-size: 16px; }
+        #tablaGanadores th { font-size: 18px; }
     }
-  </style>
+</style>
 </head>
 <body>
 
