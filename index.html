@@ -25,47 +25,60 @@
             padding: 0;
         }
 
-        header {
-            background-color: #FFFFFF;
-            background-image: url('https://www.shutterstock.com/image-photo/soccer-ball-on-green-grass-260nw-1663239277.jpg');
-            background-size: cover;
-            background-position: center;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            color: white;
-        }
+       header {
+        /* Degradado azul corporativo */
+        background: linear-gradient(90deg, #002e5d, #004a99);
+        padding: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        color: white;
+        border-bottom: 4px solid #ffc20e; /* Acento dorado */
+        border-radius: 0 0 25px 25px;
+        box-sizing: border-box;
+        animation: glowHeader 3s infinite alternate;
+    }
 
-        header h2 {
-            margin: 0;
-            text-align: center;
-        }
+    @keyframes glowHeader {
+        from { box-shadow: 0 0 15px #ffc20e; }
+        to { box-shadow: 0 0 25px #ffd700; }
+    }
 
-        header h2 img {
-            max-width: 65px;
-            height: auto;
-        }
+    header h2 {
+        margin: 0;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+    }
 
-        .header-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            width: 100%;
-        }
+    header h2 img {
+        max-width: 65px;
+        height: auto;
+    }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0,0,0,0.6);
-            padding: 8px 12px;
-            border-radius: 6px;
-            width: 100%;
-            box-sizing: border-box;
-            justify-content: space-between;
-        }
+    .header-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        /* Fondo semitransparente oscuro con borde dorado sutil */
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 194, 14, 0.3);
+        padding: 8px 12px;
+        border-radius: 10px;
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: space-between;
+    }
 
         /* Responsividad del Header */
         @media (min-width: 768px) {
