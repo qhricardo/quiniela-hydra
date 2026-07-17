@@ -5,11 +5,11 @@
   <!-- Etiqueta viewport obligatoria para que sea 100% responsivo en móviles -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quiniela360 | Interfaz</title>
-  <style>
+ <style>
     /* 🌍 Fondo principal */
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(145deg, #001f12 0%, #004d2a 100%);
+      background: linear-gradient(145deg, #00122e 0%, #002e5d 100%);
       background-attachment: fixed;
       margin: 0;
       padding: 0;
@@ -23,13 +23,13 @@
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: radial-gradient(circle at top center, rgba(0,255,150,0.15), rgba(0,0,0,0.8));
+      background: radial-gradient(circle at top center, rgba(255,194,14,0.15), rgba(0,0,0,0.8));
       z-index: -1;
     }
 
     /* 🔹 Header estilo deportivo */
     header {
-      background: linear-gradient(90deg, #007a33, #00c853);
+      background: linear-gradient(90deg, #002e5d, #004a99);
       box-shadow: 0 5px 25px rgba(0,0,0,0.5);
       padding: 25px 15px;
       text-align: center;
@@ -39,13 +39,13 @@
     }
 
     @keyframes glowHeader {
-      from { box-shadow: 0 0 15px #00e676; }
-      to { box-shadow: 0 0 25px #b2ff59; }
+      from { box-shadow: 0 0 15px #ffc20e; }
+      to { box-shadow: 0 0 25px #ffd700; }
     }
 
     header h2 {
       margin: 0;
-      font-size: 2rem; /* Adaptable a pantallas */
+      font-size: 2rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 2px;
@@ -56,13 +56,13 @@
     .info {
       font-size: 18px;
       margin-top: 10px;
-      color: #e0ffe0;
+      color: #ffde80;
     }
 
     /* 💬 Botón invitar */
     #btn-invitar {
-      background: linear-gradient(135deg, #ffcc00, #ff8800);
-      color: #222;
+      background: linear-gradient(135deg, #ffc20e, #d4a000);
+      color: #111;
       font-weight: bold;
       border: none;
       border-radius: 50px;
@@ -88,7 +88,6 @@
       box-sizing: border-box;
     }
 
-    /* Contenedor flexible de botones de compartir */
     .share-buttons-container {
       display: flex;
       flex-wrap: wrap;
@@ -104,41 +103,40 @@
       margin: 0 !important;
     }
 
-    /* Enlace de invitación responsivo para que no rompa la pantalla */
     #miLink {
-      color: #00ff99;
+      color: #ffc20e;
       font-weight: bold;
       margin-top: 15px;
       background: rgba(0, 0, 0, 0.4);
       padding: 12px;
       border-radius: 8px;
-      border: 1px dashed rgba(0, 255, 150, 0.4);
-      word-break: break-all; /* Evita que el enlace largo empuje los bordes del móvil */
+      border: 1px dashed rgba(255, 194, 14, 0.4);
+      word-break: break-all;
       font-size: 14px;
     }
 
     /* 🎯 Card general */
     .card {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(0,255,150,0.3);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,194,14,0.3);
       border-radius: 18px;
       padding: 30px 20px;
       width: 90%;
       max-width: 900px;
       margin: 30px auto;
       text-align: center;
-      box-shadow: 0 0 20px rgba(0,255,150,0.1);
+      box-shadow: 0 0 20px rgba(255,194,14,0.1);
       transition: 0.3s ease;
       box-sizing: border-box;
     }
 
     .card:hover {
-      box-shadow: 0 0 25px rgba(0,255,150,0.3);
+      box-shadow: 0 0 25px rgba(255,194,14,0.3);
       transform: translateY(-5px);
     }
 
     .card h3 {
-      color: #00ff99;
+      color: #ffc20e;
       text-transform: uppercase;
       letter-spacing: 1.5px;
       margin-bottom: 15px;
@@ -155,15 +153,15 @@
       font-size: 15px;
       text-align: center;
       color: #fff;
-      background: rgba(0,255,150,0.1);
-      border: 1px solid rgba(0,255,150,0.3);
+      background: rgba(255,194,14,0.1);
+      border: 1px solid rgba(255,194,14,0.3);
       transition: 0.3s ease;
       box-sizing: border-box;
     }
 
     input:focus {
-      background: rgba(0,255,150,0.2);
-      box-shadow: 0 0 10px rgba(0,255,150,0.5);
+      background: rgba(255,194,14,0.2);
+      box-shadow: 0 0 10px rgba(255,194,14,0.5);
     }
 
     button {
@@ -183,12 +181,10 @@
       transform: scale(1.05);
     }
 
-    /* 🟩 Botones específicos */
     #invitarWhatsApp { background: linear-gradient(135deg, #25D366, #128C7E); color: white; }
     #invitarMessenger { background: linear-gradient(135deg, #0084FF, #005FCC); color: white; }
     #copiarLink { background: linear-gradient(135deg, #FFD700, #FFB300); color: #222; }
 
-    /* 🏆 CSS Grid para visualización de grupos */
     #gruposContainer {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -199,7 +195,7 @@
     }
 
     .grupo-card {
-      background: linear-gradient(145deg, rgba(0,104,71,0.9), rgba(0,200,100,0.4));
+      background: linear-gradient(145deg, rgba(0,46,93,0.9), rgba(0,74,153,0.4));
       border-radius: 18px;
       padding: 25px;
       text-align: center;
@@ -208,14 +204,14 @@
       overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       transition: all 0.3s ease;
-      border: 1px solid rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,194,14,0.15);
       box-sizing: border-box;
     }
 
     .grupo-card:hover {
       transform: scale(1.04);
-      background: linear-gradient(145deg, rgba(0,255,150,0.9), rgba(0,150,80,0.4));
-      box-shadow: 0 12px 30px rgba(0,255,100,0.3);
+      background: linear-gradient(145deg, rgba(0,74,153,0.9), rgba(0,46,93,0.4));
+      box-shadow: 0 12px 30px rgba(255,194,14,0.3);
     }
 
     .grupo-card h3 {
@@ -225,21 +221,20 @@
     }
 
     .grupo-card small {
-      color: #b2ffd6;
+      color: #ffde80;
     }
 
     .grupo-card::before {
-      content: "⚽";
+      content: "🎮";
       position: absolute;
       font-size: 70px;
-      color: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.05);
       right: 15px;
       bottom: 10px;
       transform: rotate(-10deg);
       pointer-events: none;
     }
 
-    /* 💫 Modal de ingreso adaptable */
     #modal {
       display: none;
       position: fixed;
@@ -252,9 +247,9 @@
     }
 
     #modalContent {
-      background: linear-gradient(160deg, #002f1a, #004d2a);
-      border: 2px solid rgba(0,255,150,0.4);
-      box-shadow: 0 0 25px rgba(0,255,150,0.3);
+      background: linear-gradient(160deg, #00122e, #002e5d);
+      border: 2px solid rgba(255,194,14,0.4);
+      box-shadow: 0 0 25px rgba(255,194,14,0.3);
       width: 90%;
       max-width: 400px;
       margin: 15% auto;
@@ -272,7 +267,7 @@
       position: absolute;
       top: -50%; left: -50%;
       width: 200%; height: 200%;
-      background: radial-gradient(circle, rgba(0,255,150,0.15) 10%, transparent 70%);
+      background: radial-gradient(circle, rgba(255,194,14,0.1) 10%, transparent 70%);
       animation: pulse 3s infinite;
       z-index: 0;
     }
@@ -286,7 +281,7 @@
       position: relative;
       z-index: 1;
       text-transform: uppercase;
-      color: #00ff99;
+      color: #ffc20e;
       margin-top: 10px;
     }
 
@@ -302,7 +297,7 @@
       cursor: pointer;
       font-size: 24px;
       font-weight: bold;
-      color: #00ff99;
+      color: #ffc20e;
       z-index: 10;
     }
 
@@ -311,20 +306,19 @@
     }
 
     #btnEntrar {
-      background: linear-gradient(135deg, #00ff99, #00b36b);
-      color: #111;
+      background: linear-gradient(135deg, #ffc20e, #d4a000);
+      color: #000;
       font-weight: bold;
       margin-top: 15px;
     }
 
-    /* 📱 Breakpoints extras de ajuste fino para Celulares muy Pequeños */
     @media (max-width: 480px) {
       header h2 { font-size: 1.6rem; }
       .card h3, section h2 { font-size: 1.4rem; }
       .share-buttons-container button { min-width: 100%; }
       #modalContent { margin: 30% auto; }
     }
-  </style>
+</style>
 </head>
 <body>
 
