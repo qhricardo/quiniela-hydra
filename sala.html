@@ -301,29 +301,6 @@
 </div>
 
 <script>
-const grupoId = localStorage.getItem("grupoSeleccionado");
-
-if (!grupoId) {
-    alert("No se seleccionó ninguna sala. Regresando...");
-    window.location.href = "interfaz.html";
-} else {
-    // AQUÍ ES DONDE CARGAS LOS DATOS DEL GRUPO DINÁMICAMENTE
-    cargarDatosGrupo(grupoId);
-}
-
-async function cargarDatosGrupo(id) {
-    // Ejemplo de cómo deberías llamar a tu base de datos:
-    const grupoRef = doc(db, "grupos", id);
-    const grupoSnap = await getDoc(grupoRef);
-    
-    if (grupoSnap.exists()) {
-        const datos = grupoSnap.data();
-        document.getElementById("nombreSala").innerText = datos.nombre; // Ajusta según tu ID en HTML
-        console.log("Cargando sala:", datos.nombre);
-    }
-}
-
-
     
     const URL_CHAT = "https://quiniela-hydra-1.onrender.com"; 
     const socket = io(URL_CHAT);
