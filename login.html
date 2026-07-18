@@ -3,131 +3,147 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quiniela 360 - Login</title>
+  <title>Quiniela 360 - FanFest</title>
   <style>
-  .pantalla-login{
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-  }
-  .caja{
-    width:100%;
-    max-width:360px;
-    text-align:center;
-  }
-  .caja .marca{
-    font-family:var(--font-display);
-    font-size:20px;
-    margin-bottom:6px;
-  }
-  .caja .marca b{color:var(--oro);}
-  .caja h1{
-    font-size:22px;
-    margin:18px 0 8px;
-  }
-  .caja p.sub{
-    color:var(--texto-sec);
-    font-size:14px;
-    margin:0 0 28px;
-  }
-  #btn-google{
-    background:#fff;
-    color:#1f1f1f;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-  }
-  #btn-google img{width:18px;height:18px;}
-  .aviso-referido{
-    margin-top:16px;
-    font-size:12px;
-    color:var(--verde-300);
-    background:rgba(0,168,107,.1);
-    border:1px solid rgba(0,168,107,.3);
-    padding:8px 12px;
-    border-radius:var(--radius-sm);
-  }
-  .legal-mini{
-    margin-top:28px;
-    font-size:11px;
-    color:var(--texto-tenue);
-  }
-  #estado-carga{display:none;color:var(--texto-sec);font-size:13px;margin-top:14px;}
-</style>
+    :root {
+      --bg-dark: #0f172a; /* Azul muy oscuro */
+      --accent-neon: #00f2ff; /* Azul eléctrico */
+      --gold: #ffcc00; /* Oro */
+      --white: #ffffff;
+      --text-gray: #94a3b8;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg-dark);
+      color: var(--white);
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .pantalla-login {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+    }
+
+    .caja {
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .marca { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+    .marca b { color: var(--gold); }
+    
+    h1 { font-size: 24px; margin: 15px 0; }
+    .sub { color: var(--text-gray); margin-bottom: 30px; }
+
+    #btn-google {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    #btn-google:hover { transform: scale(1.02); }
+    #btn-google img { width: 20px; }
+
+    .aviso-referido {
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--accent-neon);
+      background: rgba(0, 242, 255, 0.1);
+      padding: 10px;
+      border-radius: 8px;
+    }
+  </style>
 </head>
 <body>
 
 <div class="pantalla-login">
   <div class="caja">
     <div class="marca">Quiniela <b>360</b></div>
-    <h1>Bienvenido de vuelta</h1>
-    <p class="sub">Todos los partidos de la Liga Mx en Zona FanFest.</p>
+    <h1>Zona FanFest</h1>
+    <p class="sub">Inicia sesión para vivir la Liga MX.</p>
 
-    <button id="btn-google" class="btn btn-bloque">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="">
+    <button id="btn-google">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
       Entrar con Google
     </button>
 
-    <p id="estado-carga">Entrando…</p>
-    <p id="aviso-referido" class="aviso-referido" hidden>🎁 Entras invitado por un amigo — le sumará un crédito cuando te registres.</p>
+    <p id="estado-carga" style="display:none; margin-top:15px;">Conectando al estadio...</p>
+    <p id="aviso-referido" class="aviso-referido" style="display:none;">🎁 ¡Entraste por invitación! Recibirás un crédito extra.</p>
 
-    <p class="legal-mini">Al continuar aceptas que Quiniela360 es un juego entre amigos y que la compra de créditos es opcional.</p>
+    <p style="margin-top:30px; font-size:11px; color:#64748b;">Quiniela 360 | Juego entre amigos</p>
   </div>
 </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-  <script src="js/firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
 
-  <script>
-    const db = firebase.firestore();
-    const urlParams = new URLSearchParams(window.location.search);
-    const referrerId = urlParams.get("ref");
+<script>
+  const db = firebase.firestore();
+  const urlParams = new URLSearchParams(window.location.search);
+  const referrerId = urlParams.get("ref");
 
-    // ─────────── LOGIN GOOGLE ───────────
-    document.getElementById('google-login').addEventListener('click', async () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-        const result = await firebase.auth().signInWithPopup(provider);
-        const user = result.user;
-        const userRef = db.collection('users').doc(user.uid);
-        const userDoc = await userRef.get();
+  // Mostrar aviso si hay referido
+  if (referrerId) document.getElementById('aviso-referido').style.display = 'block';
 
-        if (!userDoc.exists) {
-          await userRef.set({
-            uid: user.uid,
-            name: user.displayName || "Sin nombre",
-            email: user.email || "",
-            photoURL: user.photoURL || "",
-            creditos: 0,
-            invitadoPor: referrerId || null,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-
-          if (referrerId) {
-            const refUser = db.collection('users').doc(referrerId);
-            await db.runTransaction(async (transaction) => {
-              const refDoc = await transaction.get(refUser);
-              if (!refDoc.exists) return;
-              const currentCredits = refDoc.data().creditos || 0;
-              transaction.update(refUser, { creditos: currentCredits + 1 });
-            }).catch((err) => console.error("❌ Error en transacción:", err));
-          }
-        }
-        window.location.href = "interfaz.html";
-      } catch (error) {
-        console.error("❌ Error en login con Google:", error);
-        alert("Error al iniciar sesión: " + error.message);
-      }
-    });
-
+  document.getElementById('btn-google').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-google');
+    const loader = document.getElementById('estado-carga');
     
-  </script>
+    btn.disabled = true;
+    loader.style.display = 'block';
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      const result = await firebase.auth().signInWithPopup(provider);
+      const user = result.user;
+      const userRef = db.collection('users').doc(user.uid);
+      const userDoc = await userRef.get();
+
+      if (!userDoc.exists) {
+        await userRef.set({
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
+          creditos: referrerId ? 1 : 0, // Crédito inicial
+          invitadoPor: referrerId || null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        if (referrerId) {
+          const refUser = db.collection('users').doc(referrerId);
+          await refUser.update({ creditos: firebase.firestore.FieldValue.increment(1) });
+        }
+      }
+      window.location.href = "interfaz.html";
+    } catch (error) {
+      console.error(error);
+      alert("Error al conectar: " + error.message);
+      btn.disabled = false;
+      loader.style.display = 'none';
+    }
+  });
+</script>
 </body>
 </html>
