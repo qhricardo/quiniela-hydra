@@ -328,7 +328,7 @@ async function cargarDatosGrupo(id) {
     const URL_CHAT = "https://quiniela-hydra-1.onrender.com"; 
     const socket = io(URL_CHAT);
     
-    cconst urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(window.location.search);
     const grupoId = urlParams.get('id');
     
     document.getElementById('titulo-sala').innerText = `Fan Fest Live | Grupo: ${miGrupo}`;
