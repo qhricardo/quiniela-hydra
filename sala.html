@@ -302,18 +302,22 @@
 
 <script>
     
-    const URL_CHAT = "https://quiniela-hydra-1.onrender.com"; 
-    const socket = io(URL_CHAT);
-    
+<script>
+    // 1. Obtener el grupo de la URL
     const urlParams = new URLSearchParams(window.location.search);
-    const grupoId = urlParams.get('id');
+    const miGrupo = urlParams.get('grupo') || "General";
     
+    // 2. Mostrar el nombre del grupo en los elementos HTML
     document.getElementById('titulo-sala').innerText = `Fan Fest Live | Grupo: ${miGrupo}`;
     document.getElementById('chat-titulo-sala').innerText = `💬 CHAT - ${miGrupo.toUpperCase()}`;
 
+    // 3. Inicialización de Socket.io
+    const URL_CHAT = "https://quiniela-hydra-1.onrender.com"; 
+    const socket = io(URL_CHAT);
+
+    // Variables de control
     const btnVideo = document.getElementById('btn-video');
     const btnAudio = document.getElementById('btn-audio');
-    
     const statusVoz = document.getElementById('status-voz');
     const usuariosLista = document.getElementById('usuarios-lista');
     const chatStatus = document.getElementById('chat-status');
@@ -327,35 +331,33 @@
     let audioActivo = false;
     const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
 
+    // --- LÓGICA DE SOCKET Y CHAT ---
     socket.on('connect', () => {
         chatStatus.innerText = "EN LÍNEA";
         chatStatus.style.background = "#002b1b";
         chatStatus.style.color = "#00f593";
     });
 
-    socket.on('disconnect', () => {
-        chatStatus.innerText = "DESCONECTADO";
-        chatStatus.style.background = "#3b0000";
-    });
-
     chatForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (chatInput.value.trim()) {
-        const mensajeData = { 
-            user: miNombre, 
-            text: chatInput.value,
-            grupo: miGrupo // Envía el grupo para que el servidor sepa dónde repartir
-        };
-        socket.emit('chat message', mensajeData);
-        chatInput.value = '';
-    }
+        e.preventDefault();
+        if (chatInput.value.trim()) {
+            socket.emit('chat message', { 
+                user: miNombre, 
+                text: chatInput.value,
+                grupo: miGrupo 
+            });
+            chatInput.value = '';
+        }
     });
 
     socket.on('chat message', (data) => {
-        const item = document.createElement('li');
-        item.innerHTML = `<span class="user-name">${data.user}:</span><span>${data.text}</span>`;
-        chatMessages.appendChild(item);
-        chatMessages.scrollTop = chatMessages.scrollHeight; 
+        // Solo mostrar mensajes del mismo grupo
+        if (data.grupo === miGrupo) {
+            const item = document.createElement('li');
+            item.innerHTML = `<span class="user-name">${data.user}:</span><span>${data.text}</span>`;
+            chatMessages.appendChild(item);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     });
 
     async function inicializarMedios() {
