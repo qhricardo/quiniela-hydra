@@ -16,7 +16,7 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Evita scrolls dobles en la pantalla completa */
+            overflow: hidden;
         }
 
         .header-sala {
@@ -24,9 +24,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 20px;
-            /* Fondo con gradiente inspirado en los colores corporativos de FIFA */
             background: linear-gradient(90deg, #002e5d 0%, #004a99 100%);
-            /* Borde inferior dorado para un toque premium */
             border-bottom: 4px solid #ffc20e;
             border-radius: 8px 8px 0 0;
             flex-shrink: 0;
@@ -44,7 +42,6 @@
             border: 1px solid #3a3a3d;
         }
 
-        /* DISEÑO DE ESCRITORIO (TWITCH DE 3 COLUMNAS) */
         .main-layout {
             display: flex;
             gap: 12px;
@@ -54,7 +51,6 @@
             margin-top: 10px;
         }
 
-        /* COLUMNA 1: IZQUIERDA (CÁMARAS) */
         .left-column {
             flex: 0 0 250px; 
             background: #1f1f23;
@@ -74,7 +70,7 @@
             border: 1px solid #26262c;
         }
         .btn-mic { 
-            background-color: #9146ff; 
+            background-color: #3a3a3d; 
             color: white; 
             border: none; 
             padding: 10px 15px; 
@@ -84,8 +80,6 @@
             font-weight: bold; 
             width: 100%;
         }
-        .btn-mic.mutear { background-color: #eb0400; }
-        #status-voz { margin-top: 8px; font-size: 11px; color: #adadb8; }
 
         .usuarios-seccion {
             background: #18181b;
@@ -127,7 +121,6 @@
             z-index: 2;
         }
 
-        /* COLUMNA 2: CENTRO (TRANSMISIÓN) */
         .center-column {
             flex: 3;
             display: flex;
@@ -140,7 +133,6 @@
         .tv-wrapper { width: 100%; height: 100%; position: relative; }
         .tv-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
-        /* COLUMNA 3: DERECHA (CHAT) */
         .right-column {
             flex: 0 0 340px; 
             background: #1f1f23;
@@ -204,7 +196,6 @@
         .btn-mic.mutear { background-color: #eb0400 !important; }
         .btn-mic.mutear:hover { background-color: #c20300 !important; }
 
-        /* 📱 RESPONSIVO EXCLUSIVO PARA CELULARES */
         @media (max-width: 768px) {
             body { overflow: auto; height: auto; }
             .main-layout {
@@ -250,14 +241,13 @@
 <header class="header-sala">
   <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
     <div>
-      <!-- He cambiado el texto por defecto para indicar que está cargando el grupo -->
       <h2 id="titulo-sala" style="margin:0; font-size: 16px;">Quiniela360 Fan Fest | Cargando grupo...</h2>
       <h2 id="usuario" style="margin:5px 0 0 0; font-size: 14px; font-weight: normal;"></h2>
     </div>
     
     <div style="text-align: right;">
       <div class="info"> <span id="creditos"></span></div>
-      <a href="index.html" class="btn-regresar" style="text-decoration: none; display: block; margin-top: 5px;">🥇Entrar a Quiniela</a>
+      <a href="index.html" class="btn-regresar">🥇 Entrar a Quiniela</a>
     </div>
   </div>
 </header>
@@ -267,8 +257,8 @@
     <div class="left-column">
         <div class="audio-controls">
             <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                <button id="btn-video" class="btn-mic" style="background-color: #3a3a3d;">📷 Iniciar Cam</button>
-                <button id="btn-audio" class="btn-mic" style="background-color: #3a3a3d;">🎙️ Iniciar Micro</button>
+                <button id="btn-video" class="btn-mic">📷 Iniciar Cam</button>
+                <button id="btn-audio" class="btn-mic">🎙️ Iniciar Micro</button>
             </div>
             <div id="status-voz">Desconectado. Activa tu cámara o micro para transmitir al grupo.</div>
         </div>
@@ -301,19 +291,15 @@
 </div>
 
 <script>
-    // 1. Obtener el grupo de la URL
     const urlParams = new URLSearchParams(window.location.search);
     const miGrupo = urlParams.get('grupo') || "General";
     
-    // 2. Mostrar el nombre del grupo en los elementos HTML (Header y Chat)
     document.getElementById('titulo-sala').innerText = `Quiniela360 Fan Fest | Grupo: ${miGrupo}`;
     document.getElementById('chat-titulo-sala').innerText = `💬 CHAT - ${miGrupo.toUpperCase()}`;
 
-    // 3. Inicialización de Socket.io
     const URL_CHAT = "https://quiniela-hydra-1.onrender.com"; 
     const socket = io(URL_CHAT);
 
-    // Variables de control
     const btnVideo = document.getElementById('btn-video');
     const btnAudio = document.getElementById('btn-audio');
     const statusVoz = document.getElementById('status-voz');
@@ -328,12 +314,17 @@
     let videoActivo = false;
     let audioActivo = false;
     const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
+    document.getElementById('usuario').innerText = `Identificado como: ${miNombre}`;
 
-    // --- LÓGICA DE SOCKET Y CHAT ---
+    // Mapa para recordar qué Peer ID pertenece a qué nombre
+    const nombresDiccionario = {};
+
     socket.on('connect', () => {
         chatStatus.innerText = "EN LÍNEA";
         chatStatus.style.background = "#002b1b";
         chatStatus.style.color = "#00f593";
+        // Unirse al room del chat instantáneamente
+        socket.emit('store-user', { user: miNombre, grupo: miGrupo });
     });
 
     chatForm.addEventListener('submit', (e) => {
@@ -358,8 +349,24 @@
     });
 
     async function inicializarMedios() {
-        window.audioContextGlobal = new (window.AudioContext || window.webkitAudioContext)();
-        if (window.audioContextGlobal.state === 'suspended') await window.audioContextGlobal.resume();
+        if (!miPeer || miPeer.destroyed) {
+            miPeer = new Peer(undefined, {
+                config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] }
+            });
+
+            miPeer.on('open', (peerId) => {
+                statusVoz.innerText = `✅ Conectado al grupo de voz: ${miGrupo}`;
+                socket.emit('join-room', { peerId: peerId, nombre: miNombre, grupo: miGrupo });
+            });
+
+            miPeer.on('call', (llamada) => {
+                llamada.answer(miStreamLocal); 
+                llamada.on('stream', (streamRemoto) => {
+                    const nombreAmigo = nombresDiccionario[llamada.peer] || "Participante";
+                    agregarCuadroVideo(llamada.peer, nombreAmigo, streamRemoto, false);
+                });
+            });
+        }
 
         if (!miStreamLocal) {
             try {
@@ -368,28 +375,14 @@
                     video: { width: 320, height: 240, frameRate: 15 }
                 });
                 
-                miStreamLocal.getVideoTracks().forEach(t => t.enabled = false);
-                miStreamLocal.getAudioTracks().forEach(t => t.enabled = false);
+                // Inicialmente apagados hasta que el usuario decida activarlos explícitamente
+                miStreamLocal.getVideoTracks().forEach(t => t.enabled = videoActivo);
+                miStreamLocal.getAudioTracks().forEach(t => t.enabled = audioActivo);
 
-                miPeer = new Peer(undefined, {
-                    config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] }
-                });
-
-                miPeer.on('open', (peerId) => {
-                    statusVoz.innerText = `✅ Conectado al grupo: ${miGrupo}`;
-                    agregarCuadroVideo(miPeer.id, `${miNombre} (Tú)`, miStreamLocal, true);
-                    socket.emit('join-room', { peerId: peerId, nombre: miNombre, grupo: miGrupo });
-                });
-
-                miPeer.on('call', (llamada) => {
-                    llamada.answer(miStreamLocal); 
-                    llamada.on('stream', (streamRemoto) => {
-                        agregarCuadroVideo(llamada.peer, "Compañero", streamRemoto, false);
-                    });
-                });
+                agregarCuadroVideo(miPeer.id, `${miNombre} (Tú)`, miStreamLocal, true);
 
             } catch (error) {
-                console.error(error);
+                console.error("Error al acceder a dispositivos mecánicos:", error);
                 statusVoz.innerText = "❌ Error de permisos multimedia.";
                 miStreamLocal = null;
                 return false;
@@ -399,128 +392,127 @@
     }
 
     btnVideo.addEventListener('click', async () => {
-        if (!miStreamLocal) {
-            const listo = await inicializarMedios();
-            if (!listo) return;
-        }
+        videoActivo = !videoActivo;
+        const listo = await inicializarMedios();
+        if (!listo) { videoActivo = false; return; }
 
         const videoTrack = miStreamLocal.getVideoTracks()[0];
-        if (videoTrack) {
-            videoActivo = !videoActivo;
-            videoTrack.enabled = videoActivo;
-            
-            if (videoActivo) {
-                btnVideo.innerText = "📹 Apagar Cam";
-                btnVideo.classList.remove('mutear');
-                btnVideo.classList.add('activo');
-            } else {
-                btnVideo.innerText = "📷 Encender Cam";
-                btnVideo.classList.remove('activo');
-                btnVideo.classList.add('mutear');
-            }
+        if (videoTrack) videoTrack.enabled = videoActivo;
+        
+        if (videoActivo) {
+            btnVideo.innerText = "📹 Apagar Cam";
+            btnVideo.className = "btn-mic activo";
+        } else {
+            btnVideo.innerText = "📷 Encender Cam";
+            btnVideo.className = "btn-mic mutear";
         }
-        verificarDesconexionFalsa();
+        verificarApagadoTotal();
     });
 
     btnAudio.addEventListener('click', async () => {
-        if (!miStreamLocal) {
-            const listo = await inicializarMedios();
-            if (!listo) return;
-        }
+        audioActivo = !audioActivo;
+        const listo = await inicializarMedios();
+        if (!listo) { audioActivo = false; return; }
 
         const audioTrack = miStreamLocal.getAudioTracks()[0];
-        if (audioTrack) {
-            audioActivo = !audioActivo;
-            audioTrack.enabled = audioActivo;
-            
-            if (audioActivo) {
-                btnAudio.innerText = "🔇 Silenciar Mic";
-                btnAudio.classList.remove('mutear');
-                btnAudio.classList.add('activo');
-            } else {
-                btnAudio.innerText = "🎙️ Activar Mic";
-                btnAudio.classList.remove('activo');
-                btnAudio.classList.add('mutear');
-            }
+        if (audioTrack) audioTrack.enabled = audioActivo;
+        
+        if (audioActivo) {
+            btnAudio.innerText = "🔇 Silenciar Mic";
+            btnAudio.className = "btn-mic activo";
+        } else {
+            btnAudio.innerText = "🎙️ Activar Mic";
+            btnAudio.className = "btn-mic mutear";
         }
-        verificarDesconexionFalsa();
+        verificarApagadoTotal();
     });
 
-    function verificarDesconexionFalsa() {
+    function verificarApagadoTotal() {
+        // En lugar de destruir el Peer, solo liberamos la cámara si ambos están apagados
         if (!videoActivo && !audioActivo && miStreamLocal) {
             miStreamLocal.getTracks().forEach(track => track.stop());
             miStreamLocal = null;
+            
             const miCaja = document.getElementById(`container-${miPeer.id}`);
             if (miCaja) miCaja.remove();
-            miPeer.destroy();
             
             btnVideo.innerText = "📷 Iniciar Cam";
-            btnVideo.classList.remove('activo', 'mutear');
+            btnVideo.className = "btn-mic";
             btnAudio.innerText = "🎙️ Iniciar Micro";
-            btnAudio.classList.remove('activo', 'mutear');
-            statusVoz.innerText = "Desconectado.";
+            btnAudio.className = "btn-mic";
+            statusVoz.innerText = "Transmisión local pausada.";
         }
     }
 
     socket.on('user-joined-room', (data) => {
-        if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
-            socket.emit('reply-room', { peerId: miPeer.id, nombre: miNombre });
-            setTimeout(() => { conectarAPeer(data.peerId); }, 1200);
+        if (data.grupo === miGrupo) {
+            nombresDiccionario[data.peerId] = data.nombre;
+            if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
+                // Respondemos para que sepa nuestro nombre
+                socket.emit('reply-room', { peerId: miPeer.id, nombre: miNombre, grupo: miGrupo });
+                setTimeout(() => { conectarAPeer(data.peerId, data.nombre); }, 1000);
+            }
         }
     });
 
     socket.on('user-replied-room', (data) => {
-        if (miPeer && miStreamLocal && data.peerId !== miPeer.id) {
-            setTimeout(() => { conectarAPeer(data.peerId); }, 1200);
+        if (data.grupo === miGrupo) {
+            nombresDiccionario[data.peerId] = data.nombre;
+            // Al responder, el flujo se estabiliza reduciendo colisiones cruzadas
         }
     });
 
     socket.on('user-left-room', (peerId) => {
         const contenedorVideo = document.getElementById(`container-${peerId}`);
         if (contenedorVideo) contenedorVideo.remove();
+        delete nombresDiccionario[peerId];
     });
 
-    function conectarAPeer(remotePeerId) {
-        if (!miPeer || miPeer.destroyed) return;
+    function conectarAPeer(remotePeerId, nombreRemoto) {
+        if (!miPeer || miPeer.destroyed || !miStreamLocal) return;
+        
+        // Evitar duplicar llamadas si ya existe el contenedor
+        if (document.getElementById(`container-${remotePeerId}`)) return;
+
         const llamada = miPeer.call(remotePeerId, miStreamLocal);
         if (llamada) {
             llamada.on('stream', (streamRemoto) => {
-                agregarCuadroVideo(remotePeerId, "Participante", streamRemoto, false);
+                agregarCuadroVideo(remotePeerId, nombreRemoto, streamRemoto, false);
             });
         }
     }
 
     function agregarCuadroVideo(id, nombre, stream, esPropio) {
-        if (document.getElementById(`container-${id}`)) return;
-
-        const contenedor = document.createElement('div');
-        contenedor.className = 'video-box-container';
-        contenedor.id = `container-${id}`;
-
-        const videoElemento = document.createElement('video');
-        videoElemento.id = `video-${id}`;
-        videoElemento.srcObject = stream;
-        videoElemento.autoplay = true;
-        videoElemento.setAttribute('playsinline', 'true');
-        videoElemento.setAttribute('webkit-playsinline', 'true');
+        let contenedor = document.getElementById(`container-${id}`);
         
-        if (esPropio) {
-            videoElemento.muted = true;
-        } else {
-            videoElemento.muted = false;
+        if (!contenedor) {
+            contenedor = document.createElement('div');
+            contenedor.className = 'video-box-container';
+            contenedor.id = `container-${id}`;
+
+            const videoElemento = document.createElement('video');
+            videoElemento.id = `video-${id}`;
+            videoElemento.autoplay = true;
+            videoElemento.setAttribute('playsinline', 'true');
+            videoElemento.setAttribute('webkit-playsinline', 'true');
+            videoElemento.muted = esPropio;
+
+            const etiqueta = document.createElement('div');
+            etiqueta.className = 'video-label';
+            etiqueta.innerText = nombre;
+
+            contenedor.appendChild(videoElemento);
+            contenedor.appendChild(etiqueta);
+            usuariosLista.appendChild(contenedor);
         }
 
-        const etiqueta = document.createElement('div');
-        etiqueta.className = 'video-label';
-        etiqueta.innerText = nombre;
-
-        contenedor.appendChild(videoElemento);
-        contenedor.appendChild(etiqueta);
-        usuariosLista.appendChild(contenedor);
-        
-        setTimeout(() => {
-            videoElemento.play().catch(err => console.log("Video play interceptado:", err));
-        }, 300);
+        const videoEl = document.getElementById(`video-${id}`);
+        if (videoEl && videoEl.srcObject !== stream) {
+            videoEl.srcObject = stream;
+            setTimeout(() => {
+                videoEl.play().catch(err => console.log("Auto-play prevenido o interactuado:", err));
+            }, 300);
+        }
     }
 </script>
 </body>
