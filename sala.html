@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiniela360 | Sala de Grupo</title>
     
-   <style>
+    <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             margin: 0; 
@@ -19,20 +19,20 @@
             overflow: hidden; /* Evita scrolls dobles en la pantalla completa */
         }
 
-       .header-sala {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    /* Fondo con gradiente inspirado en los colores corporativos de FIFA */
-    background: linear-gradient(90deg, #002e5d 0%, #004a99 100%);
-    /* Borde inferior dorado para un toque premium */
-    border-bottom: 4px solid #ffc20e;
-    border-radius: 8px 8px 0 0;
-    flex-shrink: 0;
-    color: #ffffff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
+        .header-sala {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            /* Fondo con gradiente inspirado en los colores corporativos de FIFA */
+            background: linear-gradient(90deg, #002e5d 0%, #004a99 100%);
+            /* Borde inferior dorado para un toque premium */
+            border-bottom: 4px solid #ffc20e;
+            border-radius: 8px 8px 0 0;
+            flex-shrink: 0;
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
         .btn-regresar {
             padding: 6px 14px;
             background-color: #1f1f23;
@@ -250,7 +250,8 @@
 <header class="header-sala">
   <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
     <div>
-      <h2 id="titulo-sala" style="margin:0; font-size: 16px;">Quiniela360 Fan Fest</h2>
+      <!-- He cambiado el texto por defecto para indicar que está cargando el grupo -->
+      <h2 id="titulo-sala" style="margin:0; font-size: 16px;">Quiniela360 Fan Fest | Cargando grupo...</h2>
       <h2 id="usuario" style="margin:5px 0 0 0; font-size: 14px; font-weight: normal;"></h2>
     </div>
     
@@ -281,7 +282,6 @@
         <div class="tv-wrapper">
             <iframe src="live.html" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
-       <!-- <button id="btn-screen" class="btn-mic" style="background-color: #3a3a3d; margin-top: 8px;">🖥️ Compartir Pantalla</button>-->
     </div>
 
     <div class="right-column">
@@ -301,14 +301,12 @@
 </div>
 
 <script>
-    
-<script>
     // 1. Obtener el grupo de la URL
     const urlParams = new URLSearchParams(window.location.search);
     const miGrupo = urlParams.get('grupo') || "General";
     
-    // 2. Mostrar el nombre del grupo en los elementos HTML
-    document.getElementById('titulo-sala').innerText = `Fan Fest Live | Grupo: ${miGrupo}`;
+    // 2. Mostrar el nombre del grupo en los elementos HTML (Header y Chat)
+    document.getElementById('titulo-sala').innerText = `Quiniela360 Fan Fest | Grupo: ${miGrupo}`;
     document.getElementById('chat-titulo-sala').innerText = `💬 CHAT - ${miGrupo.toUpperCase()}`;
 
     // 3. Inicialización de Socket.io
@@ -351,7 +349,6 @@
     });
 
     socket.on('chat message', (data) => {
-        // Solo mostrar mensajes del mismo grupo
         if (data.grupo === miGrupo) {
             const item = document.createElement('li');
             item.innerHTML = `<span class="user-name">${data.user}:</span><span>${data.text}</span>`;
@@ -507,7 +504,6 @@
         videoElemento.setAttribute('playsinline', 'true');
         videoElemento.setAttribute('webkit-playsinline', 'true');
         
-        // El video remoto NO debe estar silenciado, pero el propio SÍ obligatoriamente
         if (esPropio) {
             videoElemento.muted = true;
         } else {
@@ -522,63 +518,10 @@
         contenedor.appendChild(etiqueta);
         usuariosLista.appendChild(contenedor);
         
-        // Forzamos play de forma asíncrona manejando la promesa
         setTimeout(() => {
             videoElemento.play().catch(err => console.log("Video play interceptado:", err));
         }, 300);
     }
-   
-    
-const btnScreen = document.getElementById('btn-screen');
-const tvIframe = document.querySelector('.tv-wrapper iframe');
-let screenStream = null;
-
-btnScreen.addEventListener('click', async () => {
-    if (!screenStream) {
-        try {
-            // 1. Capturar pantalla
-            screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-            
-            // 2. Mostrarla en el cuadro de TV
-            // Nota: Para mostrar un MediaStream en un iframe, lo ideal es reemplazar el contenido 
-            // o usar un elemento <video> que tape el iframe. 
-            // Aquí haremos lo más sencillo: cambiar el src del iframe a un objeto local o manipular el DOM.
-            
-            const videoElement = document.createElement('video');
-            videoElement.srcObject = screenStream;
-            videoElement.autoplay = true;
-            videoElement.style.width = "100%";
-            videoElement.style.height = "100%";
-            
-            // Reemplazamos el iframe por el video de la pantalla
-            tvIframe.style.display = 'none'; // Ocultamos el TV
-            document.querySelector('.tv-wrapper').appendChild(videoElement);
-            
-            btnScreen.innerText = "🛑 Detener Compartir";
-            
-            // Detectar cuando el usuario detiene la pantalla desde el navegador
-            screenStream.getVideoTracks()[0].onended = () => {
-                detenerPantalla();
-            };
-            
-        } catch (err) {
-            console.error("Error compartiendo pantalla:", err);
-        }
-    } else {
-        detenerPantalla();
-    }
-});
-
-function detenerPantalla() {
-    if (screenStream) {
-        screenStream.getTracks().forEach(track => track.stop());
-        screenStream = null;
-        const videoElement = document.querySelector('.tv-wrapper video');
-        if (videoElement) videoElement.remove();
-        tvIframe.style.display = 'block';
-        btnScreen.innerText = "🖥️ Compartir Pantalla";
-    }
-}
 </script>
 </body>
 </html>
