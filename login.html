@@ -5,266 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quiniela 360 - Login</title>
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-image: url('https://images.unsplash.com/photo-1569337042150-c21c85b80a10?q=80&w=1540&auto=format&fit=crop');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      margin: 0;
-      color: #fff;
-    }
-
-    header {
-      text-align: center;
-      background: rgba(0, 104, 71, 0.95);
-      padding: 15px 0;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    header h1 {
-      font-size: 28px;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-    }
-
-    header img {
-      width: 45px;
-    }
-
-    /* LOGIN BOX RESPONSIVO */
-    .login-container {
-      background: rgba(255,255,255,0.95);
-      color: #333;
-      margin: 40px auto;
-      padding: 2rem;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 350px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      box-sizing: border-box;
-    }
-
-    h2 {
-      text-align: center;
-      color: #FFF;
-      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-    }
-
-    .login-container h2 {
-      color: #006847;
-      text-shadow: none;
-      margin-top: 0;
-    }
-
-    button, #google-login {
-      width: 100%;
-      padding: 12px;
-      background: #006847;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      box-sizing: border-box;
-    }
-
-    button:hover, #google-login:hover {
-      background: #004d33;
-      transform: scale(1.03);
-    }
-
-    /* Secciones de Contenido e Instrucciones */
-    .content-section {
-      width: 90%;
-      max-width: 600px;
-      margin: 30px auto;
-      text-align: center;
-    }
-
-    .img-responsive {
-      width: 100%;
-      max-width: 500px;
-      height: auto;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    }
-
-    /* ───────────── Noticias con Scroll Interno ───────────── */
-    #noticias {
-      width: 90%;
-      max-width: 800px;
-      margin: 20px auto;
-      background: rgba(0,0,0,0.75);
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      box-sizing: border-box;
-      max-height: 500px; /* Evita que la página sea infinitamente larga en celulares */
-      overflow-y: auto;
-    }
-
-    #noticias div {
-      background: rgba(255,255,255,0.08);
-      padding: 15px;
-      margin: 15px 0;
-      border-radius: 8px;
-    }
-
-    #noticias h3 {
-      color: #00ff99;
-      margin: 0 0 10px;
-      font-size: 18px;
-      line-height: 1.4;
-    }
-
-    #noticias p {
-      color: #ddd;
-      font-size: 14px;
-      line-height: 1.5;
-      margin: 10px 0;
-    }
-
-    #noticias a {
-      color: #ffd700;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    /* ───────────── Contenedor Estadísticas Responsivo ───────────── */
-    .stats-container {
-      width: 90%;
-      max-width: 800px;
-      margin: 20px auto;
-      background: rgba(0,0,0,0.8);
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      box-sizing: border-box;
-    }
-
-    .table-scroll {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      border-radius: 8px;
-    }
-
-    #tabla-liga {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    #tabla-liga th {
-      background: linear-gradient(90deg, #00a86b, #007a3d);
-      color: white;
-      padding: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    #tabla-liga td {
-      padding: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      white-space: nowrap;
-    }
-
-    #tabla-liga tr:hover {
-      background: rgba(255,255,255,0.05);
-    }
-
-    .zona-clasificacion {
-      border-left: 5px solid #00ff99;
-    }
-
-    footer {
-      text-align: center;
-      padding: 20px;
-      background: rgba(0,0,0,0.85);
-      color: #ccc;
-      margin-top: 40px;
-      font-size: 14px;
-    }
-
-    @media (max-width: 480px) {
-      header h1 {
-        font-size: 24px;
-      }
-      .login-container {
-        padding: 1.5rem;
-      }
-      #noticias h3 {
-        font-size: 16px;
-      }
-      #tabla-liga {
-        font-size: 12px;
-      }
-    }
-  </style>
+  .pantalla-login{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .caja{
+    width:100%;
+    max-width:360px;
+    text-align:center;
+  }
+  .caja .marca{
+    font-family:var(--font-display);
+    font-size:20px;
+    margin-bottom:6px;
+  }
+  .caja .marca b{color:var(--oro);}
+  .caja h1{
+    font-size:22px;
+    margin:18px 0 8px;
+  }
+  .caja p.sub{
+    color:var(--texto-sec);
+    font-size:14px;
+    margin:0 0 28px;
+  }
+  #btn-google{
+    background:#fff;
+    color:#1f1f1f;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+  }
+  #btn-google img{width:18px;height:18px;}
+  .aviso-referido{
+    margin-top:16px;
+    font-size:12px;
+    color:var(--verde-300);
+    background:rgba(0,168,107,.1);
+    border:1px solid rgba(0,168,107,.3);
+    padding:8px 12px;
+    border-radius:var(--radius-sm);
+  }
+  .legal-mini{
+    margin-top:28px;
+    font-size:11px;
+    color:var(--texto-tenue);
+  }
+  #estado-carga{display:none;color:var(--texto-sec);font-size:13px;margin-top:14px;}
+</style>
 </head>
 <body>
 
-  <header>
-    <h1>Quiniela 360 <img src="https://i.postimg.cc/Sx6wL6gR/504667444-122141205488674048-8857650743605451691-n.jpg" alt="logo"></h1>
-  </header>
+<div class="pantalla-login">
+  <div class="caja">
+    <div class="marca">Quiniela <b>360</b></div>
+    <h1>Bienvenido de vuelta</h1>
+    <p class="sub">Todos los partidos de la Liga Mx en Zona FanFest.</p>
 
-  <div class="login-container">
-    <h2>Iniciar Sesión</h2>
-    <button id="google-login" style="background-color:#4285F4; display:flex; align-items:center; justify-content:center; gap:10px;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="20" height="20" alt="Google">
+    <button id="btn-google" class="btn btn-bloque">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="">
       Entrar con Google
     </button>
-  </div>
 
-  <div class="content-section">
-    <h2>📋 INSTRUCCIONES</h2>
-    <img src="img/instruccion.jpg" alt="Instrucciones" class="img-responsive">
-  </div>
-  
-  <h2 style="text-align: center; margin-top: 40px;">📰 Últimas Noticias de Fútbol MX (Desliza)</h2>
-  <div id="noticias">Cargando noticias de la Liga MX...</div>
+    <p id="estado-carga">Entrando…</p>
+    <p id="aviso-referido" class="aviso-referido" hidden>🎁 Entras invitado por un amigo — le sumará un crédito cuando te registres.</p>
 
-  <!-- ───────────── CUADRO DE ESTADÍSTICAS (LIGA MX) ───────────── -->
-  <div class="stats-container">
-    <h2 style="margin-top: 0; font-size: 22px; color: #00ff99;">📊 Tabla General de Posiciones (Liga MX)</h2>
-    <div class="table-scroll">
-      <table id="tabla-liga">
-        <thead>
-          <tr>
-            <th>Pos</th>
-            <th style="text-align: left;">Club</th>
-            <th>JJ</th>
-            <th>JG</th>
-            <th>JE</th>
-            <th>JP</th>
-            <th>GF</th>
-            <th>GC</th>
-            <th>DG</th>
-            <th>Pts</th>
-          </tr>
-        </thead>
-        <tbody id="tabla-liga-body">
-          <!-- Datos dinámicos cargados por JavaScript -->
-          <tr><td colspan="10">Sincronizando estadísticas oficiales...</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p style="font-size: 12px; color: #aaa; margin-top: 10px; text-align: left;">
-      🟢 <span style="color:#00ff99; font-weight:bold;">Zona Verde:</span> Clasificación directa a liguilla / Play-In.
-    </p>
+    <p class="legal-mini">Al continuar aceptas que Quiniela360 es un juego entre amigos y que la compra de créditos es opcional.</p>
   </div>
-
-  <footer>© 2025 Quiniela360 - Todos los derechos reservados</footer>
+</div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
@@ -314,100 +127,7 @@
       }
     });
 
-    // ─────────── API DE NOTICIAS (INCREMENTADO A 8) ───────────
-    async function cargarNoticias() {
-      try {
-        const response = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.mediotiempo.com%2Frss%2Ffutbol%2Fliga-mx');
-        const data = await response.json();
-
-        if (data.status !== 'ok' || !data.items || data.items.length === 0) throw new Error();
-
-        let html = "";
-        // Muestra hasta 8 noticias ahora
-        data.items.slice(0, 8).forEach((item) => {
-          const title = item.title || "";
-          const link = item.link || "#";
-          let description = item.description || "";
-          description = description.replace(/<[^>]*>/g, ''); 
-          if (description.length > 140) description = description.substring(0, 140) + "...";
-
-          let imgTag = "";
-          if (item.thumbnail) {
-            imgTag = `<img src="${item.thumbnail}" style="width:100%; max-width:280px; border-radius:6px; margin: 10px 0; display:block;">`;
-          }
-
-          html += `
-            <div style="margin-bottom:15px; text-align: left;">
-              <h3>${title}</h3>
-              ${imgTag}
-              <p>${description}</p>
-              <p style="margin-top:8px;"><a href="${link}" target="_blank">Leer noticia completa ➔</a></p>
-            </div>
-            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.15); margin: 15px 0;">`;
-        });
-
-        document.getElementById("noticias").innerHTML = html;
-      } catch (err) {
-        // Respaldo de contingencia si falla la respuesta externa
-        let htmlBackup = "";
-        for(let i=1; i<=8; i++) {
-          htmlBackup += `
-            <div style="margin-bottom:15px; text-align: left;">
-              <h3>Análisis e información de la Jornada de Fútbol Mexicano</h3>
-              <p>Sigue de cerca el rendimiento de los equipos punteros y las estadísticas del torneo actual para asegurar tus puntos en la quiniela.</p>
-              <p style="margin-top:8px;"><a href="https://www.mediotiempo.com/futbol/liga-mx" target="_blank">Ver cobertura completa ➔</a></p>
-            </div><hr style="border:0; border-top:1px solid rgba(255,255,255,0.15); margin: 15px 0;">`;
-        }
-        document.getElementById("noticias").innerHTML = htmlBackup;
-      }
-    }
-
-    // ─────────── CARGAR TABLA DE ESTADÍSTICAS REALISTA ───────────
-    async function cargarEstadisticas() {
-      try {
-        // Consumimos datos limpios de la tabla general usando una pasarela JSON limpia
-        const response = await fetch('https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.espn.com%2Fxml%2Fsyndication%2F001%2Fpodcasts%2Ffeed%3Fid%3D10304323');
-        
-        // Datos simulados reales y estructurados basados en los puntajes competitivos estándar de la Liga MX para garantizar despliegue inmediato e infalible
-        const tablaData = [
-          { pos: 1, club: "Cruz Azul", jj: 17, jg: 13, je: 3, jp: 1, gf: 39, gc: 12, dg: 27, pts: 42 },
-          { pos: 2, club: "Toluca", jj: 17, jg: 10, je: 5, jp: 2, gf: 38, gc: 16, dg: 22, pts: 35 },
-          { pos: 3, club: "Tigres UANL", jj: 17, jg: 10, je: 4, jp: 3, gf: 25, gc: 15, dg: 10, pts: 34 },
-          { pos: 4, club: "Pumas UNAM", jj: 17, jg: 9, je: 4, jp: 4, gf: 21, gc: 13, dg: 8, pts: 31 },
-          { pos: 5, club: "Monterrey", jj: 17, jg: 9, je: 4, jp: 4, gf: 26, gc: 19, dg: 7, pts: 31 },
-          { pos: 6, club: "Club América", jj: 17, jg: 8, je: 3, jp: 6, gf: 27, gc: 21, dg: 6, pts: 27 },
-          { pos: 7, club: "Atlético de San Luis", jj: 17, jg: 8, je: 3, jp: 6, gf: 26, gc: 24, dg: 2, pts: 27 },
-          { pos: 8, club: "Chivas Guadalajara", jj: 17, jg: 7, je: 4, jp: 6, gf: 24, gc: 15, dg: 9, pts: 25 },
-          { pos: 9, club: "Tijuana", jj: 17, jg: 7, je: 4, jp: 6, gf: 22, gc: 25, dg: -3, pts: 25 },
-          { pos: 10, club: "Atlas", jj: 17, jg: 5, je: 7, jp: 5, gf: 17, gc: 23, dg: -6, pts: 22 }
-        ];
-
-        let htmlRows = "";
-        tablaData.forEach(team => {
-          const claseClasificacion = team.pos <= 10 ? 'class="zona-clasificacion"' : '';
-          htmlRows += `
-            <tr ${claseClasificacion}>
-              <td style="font-weight:bold; color: ${team.pos <= 6 ? '#00ff99' : '#ffd700'}">${team.pos}</td>
-              <td style="text-align: left; font-weight: bold;">${team.club}</td>
-              <td>${team.jj}</td>
-              <td>${team.jg}</td>
-              <td>${team.je}</td>
-              <td>${team.jp}</td>
-              <td>${team.gf}</td>
-              <td>${team.gc}</td>
-              <td style="color: ${team.dg >= 0 ? '#00ff99' : '#ff4d4d'}">${team.dg > 0 ? '+' + team.dg : team.dg}</td>
-              <td style="font-weight:bold; color:#00ff99;">${team.pts}</td>
-            </tr>
-          `;
-        });
-        document.getElementById("tabla-liga-body").innerHTML = htmlRows;
-      } catch (error) {
-        console.error("Error al pintar estadísticas", error);
-      }
-    }
     
-    cargarNoticias();
-    cargarEstadisticas();
   </script>
 </body>
 </html>
