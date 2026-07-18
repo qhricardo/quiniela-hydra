@@ -613,8 +613,13 @@
 }
 
     function abrirModal(grupoId, grupo) {
+      // Forzamos a que limpie cualquier rastro de la selección anterior
       grupoSeleccionado = grupoId;
-      grupoPassword = grupo.password || null;
+      grupoPassword = grupo.password ? grupo.password.toString().trim() : null;
+      
+      // Limpiar el input de contraseña anterior por seguridad
+      document.getElementById("passwordInput").value = "";
+      
       document.getElementById("modalTitulo").innerText = grupo.nombre;
       document.getElementById("modalInfo").innerText = `Creado por: ${grupo.creadorNombre || "Sin nombre"}`;
       document.getElementById("passwordDiv").style.display = grupoPassword ? "block" : "none";
@@ -623,32 +628,47 @@
 
     document.getElementById("closeModal").onclick = () => {
       document.getElementById("modal").style.display = "none";
+      // Limpiamos los estados al cerrar
+      grupoSeleccionado = null;
+      grupoPassword = null;
     };
 
     document.getElementById("btnEntrar").onclick = async () => {
       if (!usuarioActual) return alert("Debes iniciar sesión primero.");
-      if (grupoSeleccionado) {
-        if (grupoPassword) {
-          const passIngresada = document.getElementById("passwordInput").value;
-          if ((passIngresada || "").trim() !== (grupoPassword || "").trim()) {
-            alert("Contraseña incorrecta ❌");
-            return;
-          }
-        }
-        const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
-        try {
-          await setDoc(doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid), {
-            nombre: nombreUsuario,
-            agregadoPor: usuarioActual.uid,
-            fechaIngreso: new Date()
-          }, { merge: true });
+      
+      if (!grupoSeleccionado) {
+        alert("Error: No se ha detectado ninguna sala seleccionada.");
+        return;
+      }
 
-          localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
-          window.location.href = `sala.html?id=${grupoSeleccionado}`;
-        } catch (error) {
-          console.error("Error al entrar al grupo:", error);
-          alert("No se pudo entrar al grupo. Revisa permisos en Firestore.");
+      // Validación estricta de contraseña si el grupo la requiere
+      if (grupoPassword) {
+        const passIngresada = document.getElementById("passwordInput").value.trim();
+        if (passIngresada !== grupoPassword) {
+          alert("Contraseña incorrecta ❌");
+          return;
         }
+      }
+
+      const nombreUsuario = usuarioActual.displayName || usuarioActual.email.split("@")[0];
+      
+      try {
+        // Guardamos el miembro en la subcolección del grupo ESPECÍFICO elegido
+        await setDoc(doc(db, "grupos", grupoSeleccionado, "miembros", usuarioActual.uid), {
+          nombre: nombreUsuario,
+          agregadoPor: usuarioActual.uid,
+          fechaIngreso: new Date()
+        }, { merge: true });
+
+        // Guardamos en almacenamiento local para asegurar persistencia limpia
+        localStorage.setItem("grupoSeleccionado", grupoSeleccionado);
+        
+        // Redirección explícita inyectando la variable exacta actual
+        window.location.href = `sala.html?id=${grupoSeleccionado}`;
+        
+      } catch (error) {
+        console.error("Error al entrar al grupo:", error);
+        alert("No se pudo entrar al grupo. Revisa los permisos de tus reglas en Firestore.");
       }
     };
 
