@@ -256,7 +256,7 @@
     
     <div style="text-align: right;">
       <div class="info"> <span id="creditos"></span></div>
-      <a href="index.html" class="btn-regresar" style="text-decoration: none; display: block; margin-top: 5px;">🥇Entrar a Quiniela</a>
+      <a href="index.html" class="btn-regresar" style="text-decoration: none; display: block; margin-top: 5px;">⬅️ Volver</a>
     </div>
   </div>
 </header>
@@ -281,7 +281,7 @@
         <div class="tv-wrapper">
             <iframe src="live.html" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
-       <!-- <button id="btn-screen" class="btn-mic" style="background-color: #3a3a3d; margin-top: 8px;">🖥️ Compartir Pantalla</button>-->
+        <button id="btn-screen" class="btn-mic" style="background-color: #3a3a3d; margin-top: 8px;">🖥️ Compartir Pantalla</button>
     </div>
 
     <div class="right-column">
@@ -301,23 +301,18 @@
 </div>
 
 <script>
+    const URL_CHAT = "https://quiniela-hydra-1.onrender.com"; 
+    const socket = io(URL_CHAT);
     
-<script>
-    // 1. Obtener el grupo de la URL
     const urlParams = new URLSearchParams(window.location.search);
     const miGrupo = urlParams.get('grupo') || "General";
     
-    // 2. Mostrar el nombre del grupo en los elementos HTML
     document.getElementById('titulo-sala').innerText = `Fan Fest Live | Grupo: ${miGrupo}`;
     document.getElementById('chat-titulo-sala').innerText = `💬 CHAT - ${miGrupo.toUpperCase()}`;
 
-    // 3. Inicialización de Socket.io
-    const URL_CHAT = "https://quiniela-hydra-1.onrender.com"; 
-    const socket = io(URL_CHAT);
-
-    // Variables de control
     const btnVideo = document.getElementById('btn-video');
     const btnAudio = document.getElementById('btn-audio');
+    
     const statusVoz = document.getElementById('status-voz');
     const usuariosLista = document.getElementById('usuarios-lista');
     const chatStatus = document.getElementById('chat-status');
@@ -331,33 +326,35 @@
     let audioActivo = false;
     const miNombre = "Usuario_" + Math.floor(Math.random() * 900 + 100);
 
-    // --- LÓGICA DE SOCKET Y CHAT ---
     socket.on('connect', () => {
         chatStatus.innerText = "EN LÍNEA";
         chatStatus.style.background = "#002b1b";
         chatStatus.style.color = "#00f593";
     });
 
+    socket.on('disconnect', () => {
+        chatStatus.innerText = "DESCONECTADO";
+        chatStatus.style.background = "#3b0000";
+    });
+
     chatForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (chatInput.value.trim()) {
-            socket.emit('chat message', { 
-                user: miNombre, 
-                text: chatInput.value,
-                grupo: miGrupo 
-            });
-            chatInput.value = '';
-        }
+    e.preventDefault();
+    if (chatInput.value.trim()) {
+        const mensajeData = { 
+            user: miNombre, 
+            text: chatInput.value,
+            grupo: miGrupo // Envía el grupo para que el servidor sepa dónde repartir
+        };
+        socket.emit('chat message', mensajeData);
+        chatInput.value = '';
+    }
     });
 
     socket.on('chat message', (data) => {
-        // Solo mostrar mensajes del mismo grupo
-        if (data.grupo === miGrupo) {
-            const item = document.createElement('li');
-            item.innerHTML = `<span class="user-name">${data.user}:</span><span>${data.text}</span>`;
-            chatMessages.appendChild(item);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+        const item = document.createElement('li');
+        item.innerHTML = `<span class="user-name">${data.user}:</span><span>${data.text}</span>`;
+        chatMessages.appendChild(item);
+        chatMessages.scrollTop = chatMessages.scrollHeight; 
     });
 
     async function inicializarMedios() {
@@ -529,56 +526,44 @@
     }
    
     
-const btnScreen = document.getElementById('btn-screen');
-const tvIframe = document.querySelector('.tv-wrapper iframe');
-let screenStream = null;
+  btnScreen.addEventListener('click', async () => {
+    // Verificamos si el navegador soporta compartir pantalla
+    if (!navigator.mediaDevices.getDisplayMedia) {
+        alert("Lo sentimos, tu navegador o dispositivo no soporta la función de compartir pantalla.");
+        return;
+    }
 
-btnScreen.addEventListener('click', async () => {
     if (!screenStream) {
         try {
-            // 1. Capturar pantalla
             screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
             
-            // 2. Mostrarla en el cuadro de TV
-            // Nota: Para mostrar un MediaStream en un iframe, lo ideal es reemplazar el contenido 
-            // o usar un elemento <video> que tape el iframe. 
-            // Aquí haremos lo más sencillo: cambiar el src del iframe a un objeto local o manipular el DOM.
-            
             const videoElement = document.createElement('video');
+            videoElement.id = "video-pantalla-compartida";
             videoElement.srcObject = screenStream;
             videoElement.autoplay = true;
             videoElement.style.width = "100%";
             videoElement.style.height = "100%";
+            videoElement.style.objectFit = "contain";
+            videoElement.style.background = "#000";
             
-            // Reemplazamos el iframe por el video de la pantalla
-            tvIframe.style.display = 'none'; // Ocultamos el TV
+            // Ocultamos el iframe y mostramos el video
+            tvIframe.style.display = 'none';
             document.querySelector('.tv-wrapper').appendChild(videoElement);
             
-            btnScreen.innerText = "🛑 Detener Compartir";
+            btnScreen.innerText = "🛑 Detener";
             
-            // Detectar cuando el usuario detiene la pantalla desde el navegador
             screenStream.getVideoTracks()[0].onended = () => {
                 detenerPantalla();
             };
             
         } catch (err) {
-            console.error("Error compartiendo pantalla:", err);
+            console.error("Error al compartir pantalla:", err);
+            // Esto suele ocurrir si el usuario cancela el permiso
         }
     } else {
         detenerPantalla();
     }
 });
-
-function detenerPantalla() {
-    if (screenStream) {
-        screenStream.getTracks().forEach(track => track.stop());
-        screenStream = null;
-        const videoElement = document.querySelector('.tv-wrapper video');
-        if (videoElement) videoElement.remove();
-        tvIframe.style.display = 'block';
-        btnScreen.innerText = "🖥️ Compartir Pantalla";
-    }
-}
 </script>
 </body>
 </html>
