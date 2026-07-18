@@ -281,7 +281,6 @@
         <div class="tv-wrapper">
             <iframe src="live.html" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
-        <button id="btn-screen" class="btn-mic" style="background-color: #3a3a3d; margin-top: 8px;">🖥️ Compartir Pantalla</button>
     </div>
 
     <div class="right-column">
@@ -524,46 +523,6 @@
             videoElemento.play().catch(err => console.log("Video play interceptado:", err));
         }, 300);
     }
-   
-    
-  btnScreen.addEventListener('click', async () => {
-    // Verificamos si el navegador soporta compartir pantalla
-    if (!navigator.mediaDevices.getDisplayMedia) {
-        alert("Lo sentimos, tu navegador o dispositivo no soporta la función de compartir pantalla.");
-        return;
-    }
-
-    if (!screenStream) {
-        try {
-            screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-            
-            const videoElement = document.createElement('video');
-            videoElement.id = "video-pantalla-compartida";
-            videoElement.srcObject = screenStream;
-            videoElement.autoplay = true;
-            videoElement.style.width = "100%";
-            videoElement.style.height = "100%";
-            videoElement.style.objectFit = "contain";
-            videoElement.style.background = "#000";
-            
-            // Ocultamos el iframe y mostramos el video
-            tvIframe.style.display = 'none';
-            document.querySelector('.tv-wrapper').appendChild(videoElement);
-            
-            btnScreen.innerText = "🛑 Detener";
-            
-            screenStream.getVideoTracks()[0].onended = () => {
-                detenerPantalla();
-            };
-            
-        } catch (err) {
-            console.error("Error al compartir pantalla:", err);
-            // Esto suele ocurrir si el usuario cancela el permiso
-        }
-    } else {
-        detenerPantalla();
-    }
-});
 </script>
 </body>
 </html>
